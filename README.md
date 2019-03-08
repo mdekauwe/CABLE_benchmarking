@@ -2,7 +2,7 @@
 
 Repository to benchmark a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
 
-The code will check out, build and run the head of the trunk and the user's personal branch. The code will evaluation N standard science configurations.
+The code will: (i) check out; (ii) build; (iii) run both the head of the trunk and the user's personal branch across N standard science configurations.
 
 NB. the code is flexible enough that "trunk" could be any branch, allowing the user to compare across personal branches.
 
