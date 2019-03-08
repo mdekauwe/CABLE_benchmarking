@@ -8,8 +8,8 @@ NB. the code is flexible enough that "trunk" could be any branch, allowing the u
 
 ## Multi-site comparison
 
-Runs both cable executables (trunk and user branch) across a suite of FLUXNET sites, plots seasonal cycles and comparison to benchmark statistics. Although these plots are generated, the results of each repository should be uploaded to
-[Gab's benchmarking website](https://modelevaluation.org/) for further evaluation.
+Runs both cable executables (trunk and the user's branch) across a suite of FLUXNET sites, plots seasonal cycles and comparison benchmark statistics. Although these plots are generated locally, the results of each repository should be uploaded to
+[Gab's benchmarking website](https://modelevaluation.org/) for further benchmarking and evaluation.
 
 ## Global comparison
 
