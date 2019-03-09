@@ -25,15 +25,10 @@ This should be pretty self-evident, the expectation is that the user will only c
 
 In many cases we recommend you don't change the defaults, e.g. (however things **should** be robust to you doing as you please)
 
-    #------------- User set stuff ------------- #
-
     src_dir = "src"
     run_dir = "runs"
     log_dir = "logs"
     plot_dir = "plots"
-
-    ...
-    # ------------------------------------------- #
 
 To pass different science configurations, the code expects the details to be passed as a [dictonary](https://docs.python.org/2/tutorial/datastructures.html#dictionaries). All options passed are added to the cable namelist file, so it is pretty flexible.
 
@@ -52,14 +47,23 @@ This isn't an issue for other flags, e.g.
         "fixedCO2": "400.0",
     }
 
-Finally, if you are running more than a single-site, there are two MPI flags you should consider setting to speed up things:
+To run a single site, you just need to set which site you wish to run in the python list variable, e.g.
 
-    #------------- User set stuff ------------- #
+    met_subset = ['TumbaFluxnet.1.4_met.nc']
+
+This structure is very flexible, so if you want to run three sites, you just expand the entry:
+
+    met_subset = ['TumbaFluxnet.1.4_met.nc', 'HarvardFluxnet.1.4_met.nc','HowardFluxnet.1.4_met.nc']
+
+And to simply run all the met sites in a directory, leave the list empty:
+
+    met_subset = []
+
+Finally, if you are running more than a single-site, there are two MPI flags you should consider setting to speed up things:
 
     mpi = True
     num_cores = 4 # set to a number, if None it will use all cores...!
 
-    # ------------------------------------------- #
 
 
 ## Global comparison
