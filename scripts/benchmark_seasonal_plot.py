@@ -18,7 +18,7 @@ import numpy as np
 from matplotlib.ticker import FixedLocator
 
 def main(old_fname, new_fname, plot_fname):
-
+    
     df_old = read_cable_file(old_fname)
     df_old = resample_to_seasonal_cycle(df_old)
 

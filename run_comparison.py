@@ -36,6 +36,7 @@ repos = [repo1, repo2]
 src_dir = "src"
 run_dir = "runs"
 log_dir = "logs"
+plot_dir = "plots"
 met_dir = "/Users/mdekauwe/Desktop/plumber_met"
 output_dir = "outputs"
 restart_dir = "restart_files"
@@ -67,6 +68,7 @@ met_subset = ['TumbaFluxnet.1.4_met.nc']
 # ------------------------------------------- #
 
 
-benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, output_dir,
-                  restart_dir, namelist_dir, NCDIR, NCMOD, FC, CFLAGS, LD,
-                  LDFLAGS, sci_configs, mpi, num_cores, met_subset, cwd)
+benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
+                  output_dir, restart_dir, namelist_dir, NCDIR, NCMOD, FC,
+                  CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores, met_subset,
+                  cwd)
