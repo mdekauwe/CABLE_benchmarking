@@ -49,9 +49,6 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
         os.makedirs(run_dir)
     os.chdir(run_dir)
 
-    if not os.path.exists(plot_dir):
-        os.makedirs(plot_dir)
-
     for repo_id, repo in enumerate(repos):
         aux_dir = "../src/CABLE-AUX/"
         cable_src = "../src/%s" % (repo)
@@ -67,6 +64,9 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
     #
     ## Make seasonal plots ...
     #
+    if not os.path.exists(plot_dir):
+        os.makedirs(plot_dir)
+
     ofdir = os.path.join(run_dir, output_dir)
     all_files = glob.glob(os.path.join(ofdir, "*.nc"))
     sites = np.unique([os.path.basename(f).split(".")[0].split("_")[0] \
