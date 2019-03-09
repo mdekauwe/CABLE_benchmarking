@@ -68,6 +68,15 @@ class GetCable(object):
             if error is 1:
                 raise("Error downloading repo")
 
+        # Checkout named branch ... 
+        else:
+
+            cmd = "svn checkout %s/branches/Users/%s/%s" % \
+                    (self.root, self.user, repo_name)
+            error = subprocess.call(cmd, shell=True)
+            if error is 1:
+                raise("Error downloading repo")
+
         # Checkout CABLE-AUX
         if not os.path.exists(self.aux_dir):
             cmd = "svn checkout %s/branches/Share/%s %s" % \
@@ -90,8 +99,9 @@ if __name__ == "__main__":
     src_dir = "src"
     user = "mgk576"
     repo1 = "Trunk_%s" % (date)
-    #repo2 = "CABLE_trunk"
+    repo2 = "CMIP6-MOSRS"
     # ------------------------------------------- #
 
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repo1, trunk=True)
+    G.main(repo_name=repo2, trunk=False)
