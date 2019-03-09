@@ -23,7 +23,7 @@ This should be pretty self-evident, the expectation is that the user will only c
     ...
     # ------------------------------------------- #
 
-To pass different science configurations, the code expects the details to be passed as a dictonary. All options passed are added to the cable namelist file, so it is pretty flexible.
+To pass different science configurations, the code expects the details to be passed as a [dictonary](https://docs.python.org/2/tutorial/datastructures.html#dictionaries). All options passed are added to the cable namelist file, so it is pretty flexible.
 
 There are a couple of potential gotchas:
 
