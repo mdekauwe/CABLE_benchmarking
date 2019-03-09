@@ -41,11 +41,10 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
 
-    os.chdir(run_dir)
-
     # Run CABLE for each science config, for each repo
     if not os.path.exists(run_dir):
         os.makedirs(run_dir)
+    os.chdir(run_dir)
 
     for repo_id, repo in enumerate(repos):
         aux_dir = "../src/CABLE-AUX/"
