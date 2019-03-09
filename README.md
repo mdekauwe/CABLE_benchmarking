@@ -15,10 +15,22 @@ To run the multi-site comparison, please update the relevant paths, library loca
 
     $ run_comparison.py
 
-This should be pretty self-evident, the expectation is that the user will only change entries between
+This should be pretty self-evident, the expectation is that the user will only change entries between:
 
     #------------- User set stuff ------------- #
     user = "XXX579"
+
+    ...
+    # ------------------------------------------- #
+
+In many cases we recommend you don't change the defaults, e.g. (however things **should** be robust to you doing as you please)
+
+    #------------- User set stuff ------------- #
+
+    src_dir = "src"
+    run_dir = "runs"
+    log_dir = "logs"
+    plot_dir = "plots"
 
     ...
     # ------------------------------------------- #
