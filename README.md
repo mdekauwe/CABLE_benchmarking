@@ -34,7 +34,7 @@ To pass different science configurations, the code expects the details to be pas
 
 **There are a couple of potential gotchas:**
 
-To pass a string flag, you need a double set of quotation marks as shown below. If you encounter a problem this is likely to be the issue ...
+To pass a string flag, you need a double set of quotation marks (i.e. double and single) as shown below. If you encounter a problem this is likely to be the issue ...
 
     sci = {
         "cable_user%GS_SWITCH": "'medlyn'",
@@ -46,6 +46,8 @@ This isn't an issue for other flags, e.g.
         "output%restart": ".FALSE.",
         "fixedCO2": "400.0",
     }
+
+*Single-site, multi-sites and all-sites ...*
 
 To run a single site, you just need to set which site you wish to run in the python list variable, e.g.
 
