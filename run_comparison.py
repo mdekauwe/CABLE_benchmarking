@@ -29,6 +29,7 @@ user = "mgk576"
 
 repo1 = "Trunk_%s" % (date)
 repo2 = "CMIP6-MOSRS"
+repos = [repo1, repo2]
 
 # user directories ...
 src_dir = "src"
@@ -47,14 +48,23 @@ CFLAGS = '-O2'
 LD = "'-lnetcdf -lnetcdff'"
 LDFLAGS = "'-L/opt/local/lib -O2'"
 
+# science configs
+sci1 = {
+        "cable_user%FWSOIL_SWITCH": "'Standard'",
+        "cable_user%GS_SWITCH": "'medlyn'",
+}
+
+sci2 = {
+        "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
+        "cable_user%GS_SWITCH": "'medlyn'",
+}
+sci_configs = [sci1, sci2]
+
 mpi = False
 num_cores = 4 # set to a number, if None it will use all cores...!
 # if empty...run all the files in the met_dir
 met_subset = ['TumbaFluxnet.1.4_met.nc']
 # ------------------------------------------- #
-
-
-
 
 
 
@@ -76,18 +86,6 @@ if not os.path.exists(run_dir):
     os.makedirs(run_dir)
 
 os.chdir(run_dir)
-
-sci1 = {
-        "cable_user%FWSOIL_SWITCH": "'Standard'",
-        "cable_user%GS_SWITCH": "'medlyn'",
-}
-
-sci2 = {
-        "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
-        "cable_user%GS_SWITCH": "'medlyn'",
-}
-sci_configs = [sci1, sci2]
-repos = [repo1, repo2]
 
 for repo in repos:
     aux_dir = "../src/CABLE-AUX/"
