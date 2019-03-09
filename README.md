@@ -32,7 +32,7 @@ In many cases we recommend you don't change the defaults, e.g. (however things *
 
 To pass different science configurations, the code expects the details to be passed as a [dictonary](https://docs.python.org/2/tutorial/datastructures.html#dictionaries). All options passed are added to the cable namelist file, so it is pretty flexible.
 
-There are a couple of potential gotchas:
+**There are a couple of potential gotchas:**
 
 To pass a string flag, you need a double set of quotation marks as shown below. If you encounter a problem this is likely to be the issue ...
 
