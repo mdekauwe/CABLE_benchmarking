@@ -23,7 +23,7 @@ from call_wrapper import benchmark_wrapper
 now = datetime.datetime.now()
 date = now.strftime("%d_%m_%Y")
 cwd = os.getcwd()
-
+(sysname, nodename, release, version, machine) = os.uname()
 
 #------------- User set stuff ------------- #
 user = "mgk576"
@@ -43,12 +43,23 @@ restart_dir = "restart_files"
 namelist_dir = "namelists"
 
 # Needs different paths for NCI, storm ... this is set for my mac
-NCDIR = '/opt/local/lib/'
-NCMOD = '/opt/local/include/'
-FC = 'gfortran'
-CFLAGS = '-O2'
-LD = "'-lnetcdf -lnetcdff'"
-LDFLAGS = "'-L/opt/local/lib -O2'"
+if "Mac" in nodename:
+    NCDIR = '/opt/local/lib/'
+    NCMOD = '/opt/local/include/'
+    FC = 'gfortran'
+    CFLAGS = '-O2'
+    LD = "'-lnetcdf -lnetcdff'"
+    LDFLAGS = "'-L/opt/local/lib -O2'"
+elif "unsw" in nodename:
+    raise("not implemented!")
+    #NCDIR = '/opt/local/lib/'
+    #NCMOD = '/opt/local/include/'
+    #FC = 'gfortran'
+    #CFLAGS = '-O2'
+    #LD = "'-lnetcdf -lnetcdff'"
+    #LDFLAGS = "'-L/opt/local/lib -O2'"
+elif "raijin" in nodename:
+    raise("not implemented!")
 
 # science configs
 sci1 = {
