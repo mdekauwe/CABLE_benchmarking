@@ -21,16 +21,16 @@ from build_cable import BuildCable
 from run_cable_site import RunCable
 from benchmark_seasonal_plot import main as seas_plot
 
-def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
-                      output_dir, restart_dir, namelist_dir, NCDIR, NCMOD, FC,
-                      CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores,
-                      met_subset, cwd):
+def benchmark_wrapper(user, trunk, repos, src_dir, run_dir, log_dir, met_dir,
+                      plot_dir, output_dir, restart_dir, namelist_dir, NCDIR,
+                      NCMOD, FC, CFLAGS, LD, LDFLAGS, sci_configs, mpi,
+                      num_cores, met_subset, cwd):
 
     #
     ## Get CABLE ...
     #
     G = GetCable(src_dir=src_dir, user=user)
-    G.main(repo_name=repos[0], trunk=True)
+    G.main(repo_name=repos[0], trunk=trunk) # Default is True
     G.main(repo_name=repos[1], trunk=False)
 
     #

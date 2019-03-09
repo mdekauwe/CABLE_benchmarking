@@ -29,6 +29,11 @@ cwd = os.getcwd()
 #------------- User set stuff ------------- #
 user = "mgk576"
 
+#
+## Repositories to test, default is head of the trunk against personal repo.
+## But if trunk is false, repo1 could be anything
+#
+trunk = True
 repo1 = "Trunk_%s" % (date)
 repo2 = "CMIP6-MOSRS"
 repos = [repo1, repo2]
@@ -77,14 +82,14 @@ sci2 = {
 sci_configs = [sci1, sci2]
 
 mpi = False
-num_cores = 4 # set to a number, if None it will use all cores...!
+num_cores = None #4 # set to a number, if None it will use all cores...!
 # if empty...run all the files in the met_dir
-met_subset = ['TumbaFluxnet.1.4_met.nc']
-#met_subset = []
+#met_subset = ['TumbaFluxnet.1.4_met.nc']
+met_subset = []
 # ------------------------------------------- #
 
 
-benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
-                  output_dir, restart_dir, namelist_dir, NCDIR, NCMOD, FC,
-                  CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores, met_subset,
-                  cwd)
+benchmark_wrapper(user, trunk, repos, src_dir, run_dir, log_dir, met_dir,
+                  plot_dir, output_dir, restart_dir, namelist_dir, NCDIR,
+                  NCMOD, FC, CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores,
+                  met_subset, cwd)
