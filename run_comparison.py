@@ -86,10 +86,22 @@ elif "unsw" in nodename:
 
 elif "raijin" in nodename:
 
+    cmd = "module load netcdf/netcdf/4.2.1.1"
+    error = subprocess.call(cmd, shell=True)
+    if error is 1:
+        raise("Error loading netcdf libs")
+
+    NCDIR = '/share/apps/netcdf/intel/4.2.1.1/lib'
+    NCMOD = '/share/apps/netcdf/intel/4.2.1.1/include'
+    FC = 'ifort'
+    CFLAGS = '-O2'
+    LD = "'-lnetcdf -lnetcdff'"
+    LDFLAGS = "'-L/opt/local/lib -O2'"
     #
     ## Met paths ...
     #
-    met_dir = "/Users/mdekauwe/Desktop/plumber_met"
+    met_dir = ("/g/data1/w35/Shared_data/Observations/Fluxnet_data/"
+               "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
 
 #
 ## Met files ...
