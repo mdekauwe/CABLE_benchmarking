@@ -27,20 +27,24 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
                       CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores,
                       met_subset, cwd):
 
-    # Get CABLE ...
+    #
+    ## Get CABLE ...
+    #
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repos[0], trunk=True)
     G.main(repo_name=repos[1], trunk=False)
 
-
-    # Build CABLE ...
+    #
+    ## Build CABLE ...
+    #
     B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
 
-
-    # Run CABLE for each science config, for each repo
+    #
+    ## Run CABLE for each science config, for each repo
+    #
     if not os.path.exists(run_dir):
         os.makedirs(run_dir)
     os.chdir(run_dir)
@@ -60,8 +64,9 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
             R.main(sci_config, repo_id, sci_id)
     os.chdir(cwd)
 
-
-    # Make seasonal plots ...
+    #
+    ## Make seasonal plots ...
+    #
     ofdir = os.path.join(run_dir, output_dir)
     all_files = glob.glob(os.path.join(ofdir, "*.nc"))
     sites = np.unique([os.path.basename(f).split(".")[0].split("_")[0] \
