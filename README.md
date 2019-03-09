@@ -15,6 +15,15 @@ To run the multi-site comparison, please update the relevant paths, library loca
 
     $ run_comparison.py
 
+This should be pretty self-evident, the expectation is that the user will only change entries between
+
+    #------------- User set stuff ------------- #
+    user = "mgk576"
+
+    ...
+    # ------------------------------------------- #
+
+    
 ## Global comparison
 
 Blah, blah
