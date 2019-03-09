@@ -53,6 +53,8 @@ then
 
     $ conda install docopt xarray matplotlib pandas scipy numpy
 
+If you're working locally on a mac or linux machine, you could as easily use your favourite package manager (e.g. macports, apt-get, etc).
+
 ## Contacts
 * [Martin De Kauwe](http://mdekauwe.github.io/).
 * [Gab Abramowitz](http://web.science.unsw.edu.au/~gabrielabramowitz/UNSW_homepage/Gab_Abramowitz_home_page.html).
