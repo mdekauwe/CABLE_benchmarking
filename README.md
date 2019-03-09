@@ -52,6 +52,15 @@ This isn't an issue for other flags, e.g.
         "fixedCO2": "400.0",
     }
 
+Finally, if you are running more than a single-site, there are two MPI flags you should consider setting to speed up things:
+
+    #------------- User set stuff ------------- #
+
+    mpi = True
+    num_cores = 4 # set to a number, if None it will use all cores...!
+
+    # ------------------------------------------- #
+
 
 ## Global comparison
 
