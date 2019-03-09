@@ -68,7 +68,7 @@ class GetCable(object):
             if error is 1:
                 raise("Error downloading repo")
 
-        # Checkout named branch ...
+        # Checkout named branch ... 
         else:
 
             cmd = "svn checkout %s/branches/Users/%s/%s" % \

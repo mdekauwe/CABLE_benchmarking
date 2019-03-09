@@ -119,7 +119,7 @@ if __name__ == "__main__":
     repo2 = "CMIP6-MOSRS"
     # ------------------------------------------- #
 
-    G = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
+    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
-    G.main(repo_name=repo1)
-    G.main(repo_name=repo2)
+    B.main(repo_name=repo1)
+    B.main(repo_name=repo2)
