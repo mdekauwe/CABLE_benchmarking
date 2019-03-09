@@ -20,6 +20,7 @@ from get_cable import GetCable
 from build_cable import BuildCable
 from run_cable_site import RunCable
 from call_wrapper import benchmark_wrapper
+from set_default_paths import set_paths
 
 now = datetime.datetime.now()
 date = now.strftime("%d_%m_%Y")
@@ -51,65 +52,15 @@ namelist_dir = "namelists"
 
 #
 ## Needs different paths for NCI, storm ... this is set for my mac
+## comment out the below and set your own, see scripts/set_default_paths.py
 #
-if "Mac" in nodename:
-    NCDIR = '/opt/local/lib/'
-    NCMOD = '/opt/local/include/'
-    FC = 'gfortran'
-    CFLAGS = '-O2'
-    LD = "'-lnetcdf -lnetcdff'"
-    LDFLAGS = "'-L/opt/local/lib -O2'"
-
-    #
-    ## Met paths ...
-    #
-    met_dir = "/Users/mdekauwe/Desktop/plumber_met"
-
-elif "unsw" in nodename:
-    cmd = "module load netcdf/4.1.3-intel"
-    error = subprocess.call(cmd, shell=True)
-    if error is 1:
-        raise("Error loading netcdf libs")
-
-    NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
-    NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
-    FC = 'ifort'
-    CFLAGS = '-O2'
-    LD = "'-lnetcdf -lnetcdff'"
-    LDFLAGS = "'-L/opt/local/lib -O2'"
-
-    #
-    ## Met paths ...
-    #
-    met_dir = ("/srv/ccrc/data04/z3509830/Fluxnet_data/"
-               "All_flux_sites_processed/all_sites_no_duplicates")
-
-elif "raijin" in nodename:
-
-    cmd = "module load netcdf/netcdf/4.2.1.1"
-    error = subprocess.call(cmd, shell=True)
-    if error is 1:
-        raise("Error loading netcdf libs")
-
-    NCDIR = '/share/apps/netcdf/intel/4.2.1.1/lib'
-    NCMOD = '/share/apps/netcdf/intel/4.2.1.1/include'
-    FC = 'ifort'
-    CFLAGS = '-O2'
-    LD = "'-lnetcdf -lnetcdff'"
-    LDFLAGS = "'-L/opt/local/lib -O2'"
-    #
-    ## Met paths ...
-    #
-    met_dir = ("/g/data1/w35/Shared_data/Observations/Fluxnet_data/"
-               "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
+(met_dir, NCDIR, NCMOD, FC, CFLAGS, LD, LDFLAGS) = set_paths(nodename)
 
 #
 ## Met files ...
 #
-# if empty...run all the files in the met_dir
-#met_subset = ['TumbaFluxnet.1.4_met.nc']
-met_subset = []
-
+met_subset = ['TumbaFluxnet.1.4_met.nc']
+#met_subset = [] # if empty...run all the files in the met_dir
 
 #
 ## science configs
