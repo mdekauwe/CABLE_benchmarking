@@ -14,6 +14,7 @@ __email__ = "mdekauwe@gmail.com"
 import os
 import sys
 import datetime
+import subprocess
 sys.path.append("scripts")
 from get_cable import GetCable
 from build_cable import BuildCable
@@ -51,6 +52,11 @@ if "Mac" in nodename:
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
 elif "unsw" in nodename:
+    cmd = "module load netcdf/4.1.3-intel"
+    error = subprocess.call(cmd, shell=True)
+    if error is 1:
+        raise("Error loading netcdf libs")
+
     NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
     NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
     FC = 'ifort'
