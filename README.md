@@ -23,6 +23,23 @@ This should be pretty self-evident, the expectation is that the user will only c
     ...
     # ------------------------------------------- #
 
+To pass different science configurations, the code expects the details to be passed as a dictonary. All options passed are added to the cable namelist file, so it is pretty flexible.
+
+There are a couple of potential gotchas:
+
+To pass a string flag, you need a double set of quotation marks as shown below. If you encounter a problem this is likely to be the issue ...
+
+    sci = {
+        "cable_user%GS_SWITCH": "'medlyn'",
+    }
+
+This isn't an issue for other flags, e.g.
+
+    sci = {
+        "output%restart": ".FALSE.",
+        "fixedCO2": "400.0",
+    }
+
 
 ## Global comparison
 
