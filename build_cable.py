@@ -122,4 +122,4 @@ if __name__ == "__main__":
     G = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
     G.main(repo_name=repo1)
-    #G.main(repo_name=repo2)
+    G.main(repo_name=repo2)
