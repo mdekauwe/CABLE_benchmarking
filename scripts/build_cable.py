@@ -95,7 +95,7 @@ class BuildCable(object):
         if error is 1:
             raise("Error changing file to executable")
 
-        cmd = "./%s clean" % (ofname)
+        cmd = "./%s" % (ofname)
         error = subprocess.call(cmd, shell=True)
         if error is 1:
             raise("Error building executable")
