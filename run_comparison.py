@@ -38,17 +38,20 @@ repo1 = "Trunk_%s" % (date)
 repo2 = "CMIP6-MOSRS"
 repos = [repo1, repo2]
 
-# user directories ...
+#
+## user directories ...
+#
 src_dir = "src"
 run_dir = "runs"
 log_dir = "logs"
 plot_dir = "plots"
-met_dir = "/Users/mdekauwe/Desktop/plumber_met"
 output_dir = "outputs"
 restart_dir = "restart_files"
 namelist_dir = "namelists"
 
-# Needs different paths for NCI, storm ... this is set for my mac
+#
+## Needs different paths for NCI, storm ... this is set for my mac
+#
 if "Mac" in nodename:
     NCDIR = '/opt/local/lib/'
     NCMOD = '/opt/local/include/'
@@ -56,6 +59,12 @@ if "Mac" in nodename:
     CFLAGS = '-O2'
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
+
+    #
+    ## Met paths ...
+    #
+    met_dir = "/Users/mdekauwe/Desktop/plumber_met"
+
 elif "unsw" in nodename:
     cmd = "module load netcdf/4.1.3-intel"
     error = subprocess.call(cmd, shell=True)
@@ -68,10 +77,30 @@ elif "unsw" in nodename:
     CFLAGS = '-O2'
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
-elif "raijin" in nodename:
-    raise("not implemented!")
 
-# science configs
+    #
+    ## Met paths ...
+    #
+    met_dir = "/Users/mdekauwe/Desktop/plumber_met"
+
+elif "raijin" in nodename:
+
+    #
+    ## Met paths ...
+    #
+    met_dir = "/Users/mdekauwe/Desktop/plumber_met"
+
+#
+## Met files ...
+#
+# if empty...run all the files in the met_dir
+#met_subset = ['TumbaFluxnet.1.4_met.nc']
+met_subset = []
+
+
+#
+## science configs
+#
 sci1 = {
         "cable_user%GS_SWITCH": "'medlyn'",
 }
@@ -81,11 +110,12 @@ sci2 = {
 }
 sci_configs = [sci1, sci2]
 
+#
+## MPI stuff
+#
 mpi = False
 num_cores = None #4 # set to a number, if None it will use all cores...!
-# if empty...run all the files in the met_dir
-#met_subset = ['TumbaFluxnet.1.4_met.nc']
-met_subset = []
+
 # ------------------------------------------- #
 
 
