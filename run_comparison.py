@@ -87,14 +87,14 @@ if not os.path.exists(run_dir):
 
 os.chdir(run_dir)
 
-for repo in repos:
+for repo_id, repo in enumerate(repos):
     aux_dir = "../src/CABLE-AUX/"
     cable_src = "../src/%s" % (repo)
-    for sci_config in sci_configs:
-        R = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
-                     restart_dir=restart_dir, aux_dir=aux_dir,
-                     namelist_dir=namelist_dir, met_subset=met_subset,
-                     cable_src=cable_src, mpi=mpi, num_cores=num_cores)
-    R.main(sci_config)
+    R = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
+                 restart_dir=restart_dir, aux_dir=aux_dir,
+                 namelist_dir=namelist_dir, met_subset=met_subset,
+                 cable_src=cable_src, mpi=mpi, num_cores=num_cores)
+    for sci_id, sci_config in enumerate(sci_configs):
+        R.main(sci_config, repo_id, sci_id)
 
 os.chdir(cwd)

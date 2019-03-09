@@ -67,7 +67,7 @@ class RunCable(object):
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
 
-    def main(self, sci_config):
+    def main(self, sci_config, repo_id, sci_id):
 
         (met_files, url, rev) = self.initialise_stuff()
 
@@ -88,16 +88,16 @@ class RunCable(object):
                 # setup a list of processes that we want to run
                 p = mp.Process(target=self.worker,
                                args=(met_files[start:end], url, rev,
-                                     sci_config, ))
+                                     sci_config, repo_id, sci_id, ))
                 processes.append(p)
 
             # Run processes
             for p in processes:
                 p.start()
         else:
-            self.worker(met_files, url, rev, sci_config)
+            self.worker(met_files, url, rev, sci_config, repo_id, sci_id)
 
-    def worker(self, met_files, url, rev, sci_config):
+    def worker(self, met_files, url, rev, sci_config, repo_id, sci_id):
 
         for fname in met_files:
             site = os.path.basename(fname).split(".")[0]
@@ -107,7 +107,8 @@ class RunCable(object):
             nml_fname = "cable_%s.nml" % (site)
             shutil.copy(base_nml_fn, nml_fname)
 
-            (out_fname, out_log_fname) = self.clean_up_old_files(site)
+            (out_fname,
+             out_log_fname) = self.clean_up_old_files(site, repo_id, sci_id)
 
             # Add LAI to met file?
             if self.fixed_lai is not None or self.lai_dir is not None:
@@ -170,8 +171,9 @@ class RunCable(object):
 
         return (met_files, url, rev)
 
-    def clean_up_old_files(self, site):
-        out_fname = os.path.join(self.output_dir, "%s_out.nc" % (site))
+    def clean_up_old_files(self, site, repo_id, sci_id):
+        out_fname = os.path.join(self.output_dir, "%s_%s_%s_out.nc" % \
+                                 (site, repo_id, sci_id))
         if os.path.isfile(out_fname):
             os.remove(out_fname)
 
