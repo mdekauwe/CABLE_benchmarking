@@ -18,7 +18,7 @@ To run the multi-site comparison, please update the relevant paths, library loca
 This should be pretty self-evident, the expectation is that the user will only change entries between
 
     #------------- User set stuff ------------- #
-    user = "mgk576"
+    user = "XXX579"
 
     ...
     # ------------------------------------------- #
