@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 """
-Get CABLE, build the executables, setup the run directory, run CABLE ... this is
-a wrapper around the actual scripts (see scripts directory)
+Wrapper around the actual scripts (see scripts directory)
 
 That's all folks.
 """
