@@ -81,7 +81,8 @@ elif "unsw" in nodename:
     #
     ## Met paths ...
     #
-    met_dir = "/Users/mdekauwe/Desktop/plumber_met"
+    met_dir = ("/srv/ccrc/data04/z3509830/Fluxnet_data/"
+               "All_flux_sites_processed/all_sites_no_duplicates")
 
 elif "raijin" in nodename:
 
