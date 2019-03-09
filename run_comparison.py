@@ -51,13 +51,12 @@ if "Mac" in nodename:
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
 elif "unsw" in nodename:
-    raise("not implemented!")
-    #NCDIR = '/opt/local/lib/'
-    #NCMOD = '/opt/local/include/'
-    #FC = 'gfortran'
-    #CFLAGS = '-O2'
-    #LD = "'-lnetcdf -lnetcdff'"
-    #LDFLAGS = "'-L/opt/local/lib -O2'"
+    NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
+    NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
+    FC = 'ifort'
+    CFLAGS = '-O2 -fp-model precise'
+    LD = "'-lnetcdf -lnetcdff'"
+    LDFLAGS = "'-L/opt/local/lib -O2'"
 elif "raijin" in nodename:
     raise("not implemented!")
 
