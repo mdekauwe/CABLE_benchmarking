@@ -60,7 +60,7 @@ elif "unsw" in nodename:
     NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
     NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
     FC = 'ifort'
-    CFLAGS = '-O2 -fp-model precise'
+    CFLAGS = '-O2'
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
 elif "raijin" in nodename:
