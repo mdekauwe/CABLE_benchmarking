@@ -40,7 +40,7 @@ output_dir = "outputs"
 restart_dir = "restart_files"
 namelist_dir = "namelists"
 
-# Needs different paths for NCI, storm ...
+# Needs different paths for NCI, storm ... this is set for my mac
 NCDIR = '/opt/local/lib/'
 NCMOD = '/opt/local/include/'
 FC = 'gfortran'
@@ -50,13 +50,11 @@ LDFLAGS = "'-L/opt/local/lib -O2'"
 
 # science configs
 sci1 = {
-        "cable_user%FWSOIL_SWITCH": "'Standard'",
         "cable_user%GS_SWITCH": "'medlyn'",
 }
 
 sci2 = {
-        "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
-        "cable_user%GS_SWITCH": "'medlyn'",
+        "cable_user%GS_SWITCH": "'leuning'",
 }
 sci_configs = [sci1, sci2]
 
@@ -90,11 +88,11 @@ os.chdir(run_dir)
 for repo_id, repo in enumerate(repos):
     aux_dir = "../src/CABLE-AUX/"
     cable_src = "../src/%s" % (repo)
-    R = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
-                 restart_dir=restart_dir, aux_dir=aux_dir,
-                 namelist_dir=namelist_dir, met_subset=met_subset,
-                 cable_src=cable_src, mpi=mpi, num_cores=num_cores)
     for sci_id, sci_config in enumerate(sci_configs):
+        R = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
+                     restart_dir=restart_dir, aux_dir=aux_dir,
+                     namelist_dir=namelist_dir, met_subset=met_subset,
+                     cable_src=cable_src, mpi=mpi, num_cores=num_cores)
         R.main(sci_config, repo_id, sci_id)
 
 os.chdir(cwd)

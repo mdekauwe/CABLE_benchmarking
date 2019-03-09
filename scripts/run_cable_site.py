@@ -127,8 +127,9 @@ class RunCable(object):
                             "fixedCO2": "%.2f" % (self.co2_conc),
                             "casafile%phen": "'%s'" % (self.phen_fname),
                             "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
+                            "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
             }
-            replace_dict = Merge(replace_dict, sci_config)
+            replace_dict = merge_two_dicts(replace_dict, sci_config)
             adjust_nml_file(nml_fname, replace_dict)
 
             self.run_me(nml_fname)
@@ -172,7 +173,7 @@ class RunCable(object):
         return (met_files, url, rev)
 
     def clean_up_old_files(self, site, repo_id, sci_id):
-        out_fname = os.path.join(self.output_dir, "%s_%s_%s_out.nc" % \
+        out_fname = os.path.join(self.output_dir, "%s_R%s_S%s_out.nc" % \
                                  (site, repo_id, sci_id))
         if os.path.isfile(out_fname):
             os.remove(out_fname)
@@ -198,9 +199,11 @@ class RunCable(object):
             if error is 1:
                 print("Job failed to submit")
 
-def Merge(dict1, dict2):
-    res = {**dict1, **dict2}
-    return res
+def merge_two_dicts(x, y):
+    """Given two dicts, merge them into a new dict as a shallow copy."""
+    z = x.copy()
+    z.update(y)
+    return z
 
 if __name__ == "__main__":
 
