@@ -63,8 +63,8 @@ sci_configs = [sci1, sci2]
 mpi = False
 num_cores = 4 # set to a number, if None it will use all cores...!
 # if empty...run all the files in the met_dir
-#met_subset = ['TumbaFluxnet.1.4_met.nc']
-met_subset = []
+met_subset = ['TumbaFluxnet.1.4_met.nc']
+#met_subset = []
 # ------------------------------------------- #
 
 

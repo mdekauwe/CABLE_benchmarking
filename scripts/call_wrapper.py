@@ -27,8 +27,6 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
                       CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores,
                       met_subset, cwd):
 
-    #"""
-
     # Get CABLE ...
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repos[0], trunk=True)
@@ -41,10 +39,14 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
 
+
     # Run CABLE for each science config, for each repo
     if not os.path.exists(run_dir):
         os.makedirs(run_dir)
     os.chdir(run_dir)
+
+    if not os.path.exists(plot_dir):
+        os.makedirs(plot_dir)
 
     for repo_id, repo in enumerate(repos):
         aux_dir = "../src/CABLE-AUX/"
@@ -56,11 +58,11 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
                          met_subset=met_subset, cable_src=cable_src, mpi=mpi,
                          num_cores=num_cores)
             R.main(sci_config, repo_id, sci_id)
-    #"""
+    os.chdir(cwd)
+
 
     # Make seasonal plots ...
     ofdir = os.path.join(run_dir, output_dir)
-    pldir = os.path.join(run_dir, plot_dir)
     all_files = glob.glob(os.path.join(ofdir, "*.nc"))
     sites = np.unique([os.path.basename(f).split(".")[0].split("_")[0] \
                        for f in all_files])
@@ -69,7 +71,5 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
         for sci_id, sci_config in enumerate(sci_configs):
             fn1 = os.path.join(ofdir, "%s_R0_S%d_out.nc" % (site, sci_id))
             fn2 = os.path.join(ofdir, "%s_R1_S%d_out.nc" % (site, sci_id))
-            plot_fname = "%s/%s_S%d_seas_plot.pdf" % (pldir, site, sci_id)
+            plot_fname = "%s/%s_S%d_seas_plot.pdf" % (plot_dir, site, sci_id)
             seas_plot(fn1, fn2, plot_fname)
-
-    os.chdir(cwd)
