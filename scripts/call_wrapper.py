@@ -66,11 +66,9 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
         os.makedirs(plot_dir)
     os.chdir(cwd)
 
-    # site = os.path.basename(fname).split(".")[0]
     ofdir = os.path.join(run_dir, output_dir)
     pldir = os.path.join(run_dir, plot_dir)
     all_files = glob.glob(os.path.join(ofdir, "*.nc"))
-
     sites = np.unique([os.path.basename(f).split(".")[0].split("_")[0] \
                        for f in all_files])
 
@@ -78,7 +76,7 @@ def benchmark_wrapper(user, repos, src_dir, run_dir, log_dir, met_dir, plot_dir,
         for sci_id, sci_config in enumerate(sci_configs):
             fn1 = os.path.join(ofdir, "%s_R0_S%d_out.nc" % (site, sci_id))
             fn2 = os.path.join(ofdir, "%s_R1_S%d_out.nc" % (site, sci_id))
-            plot_fname = "%s/%s_%s_seas_plot.png" % (pldir, site, sci_id)
+            plot_fname = "%s/%s_%s_seas_plot.pdf" % (pldir, site, sci_id)
             seas_plot(fn1, fn2, plot_fname)
 
 
