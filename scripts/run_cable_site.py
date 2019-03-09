@@ -67,7 +67,7 @@ class RunCable(object):
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
 
-    def main(self):
+    def main(self, sci_config):
 
         (met_files, url, rev) = self.initialise_stuff()
 
@@ -87,16 +87,17 @@ class RunCable(object):
 
                 # setup a list of processes that we want to run
                 p = mp.Process(target=self.worker,
-                               args=(met_files[start:end], url, rev, ))
+                               args=(met_files[start:end], url, rev,
+                                     sci_config, ))
                 processes.append(p)
 
             # Run processes
             for p in processes:
                 p.start()
         else:
-            self.worker(met_files, url, rev)
+            self.worker(met_files, url, rev, sci_config)
 
-    def worker(self, met_files, url, rev):
+    def worker(self, met_files, url, rev, sci_config):
 
         for fname in met_files:
             site = os.path.basename(fname).split(".")[0]
@@ -125,12 +126,8 @@ class RunCable(object):
                             "fixedCO2": "%.2f" % (self.co2_conc),
                             "casafile%phen": "'%s'" % (self.phen_fname),
                             "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
-                            "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
-                            "cable_user%GS_SWITCH": "'medlyn'",
-                            "cable_user%GW_MODEL": ".FALSE.",
-                            "cable_user%or_evap": ".FALSE.",
-                            #"elev_fname": "'%s'" % (self.elev_fname),
             }
+            replace_dict = Merge(replace_dict, sci_config)
             adjust_nml_file(nml_fname, replace_dict)
 
             self.run_me(nml_fname)
@@ -199,10 +196,14 @@ class RunCable(object):
             if error is 1:
                 print("Job failed to submit")
 
+def Merge(dict1, dict2):
+    res = {**dict1, **dict2}
+    return res
+
 if __name__ == "__main__":
 
     #------------- Change stuff ------------- #
-    met_dir = "/Users/mdekauwe/research/CABLE_runs/met_data/plumber_met"
+    met_dir = "../../met_data/plumber_met"
     log_dir = "logs"
     output_dir = "outputs"
     restart_dir = "restart_files"
@@ -213,12 +214,11 @@ if __name__ == "__main__":
     num_cores = 4 # set to a number, if None it will use all cores...!
     # if empty...run all the files in the met_dir
     met_subset = ['TumbaFluxnet.1.4_met.nc']
+    sci_config = {}
     # ------------------------------------------- #
 
     C = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
                  restart_dir=restart_dir, aux_dir=aux_dir,
                  namelist_dir=namelist_dir, met_subset=met_subset,
                  cable_src=cable_src, mpi=mpi, num_cores=num_cores)
-    C.main()
-
-    os.chdir(cwd)
+    C.main(sci_config)
