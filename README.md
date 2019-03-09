@@ -23,10 +23,10 @@ This should be pretty self-evident, the expectation is that the user will only c
     ...
     # ------------------------------------------- #
 
-    
+
 ## Global comparison
 
-Blah, blah
+Coming soon ...
 
 
 ## Code dependencies
