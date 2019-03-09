@@ -18,7 +18,6 @@ sys.path.append("scripts")
 from get_cable import GetCable
 from build_cable import BuildCable
 from run_cable_site import RunCable
-from call_wrapper import run_everything
 
 now = datetime.datetime.now()
 date = now.strftime("%d_%m_%Y")
