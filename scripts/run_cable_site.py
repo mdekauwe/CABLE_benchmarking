@@ -104,7 +104,7 @@ class RunCable(object):
             print(site)
 
             base_nml_fn = os.path.join(self.grid_dir, "%s" % (self.nml_fname))
-            nml_fname = "cable_%s.nml" % (site)
+            nml_fname = "cable_%s_R%s_S%s.nml" % (site, repo_id, sci_id)
             shutil.copy(base_nml_fn, nml_fname)
 
             (out_fname,
@@ -178,7 +178,8 @@ class RunCable(object):
         if os.path.isfile(out_fname):
             os.remove(out_fname)
 
-        out_log_fname = os.path.join(self.log_dir, "%s_log.txt" % (site))
+        out_log_fname = os.path.join(self.log_dir, "%s_R%s_S%s_log.txt" % \
+                                     (site, repo_id, sci_id))
         if os.path.isfile(out_log_fname):
             os.remove(out_log_fname)
 
