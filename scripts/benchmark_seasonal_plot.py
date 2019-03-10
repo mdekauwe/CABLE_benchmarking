@@ -60,7 +60,7 @@ def main(old_fname, new_fname, plot_fname):
     for i,a in enumerate(axes):
         a.set_xticks([1, 6, 12])
         if i != 1:
-            a.set_ylim(ymin=0)
+            a.set_ylim(bottom=0)
         a.xaxis.set_minor_locator(xtickagaes_minor)
         a.set_xticklabels(['Jan', 'Jun', 'Dec'])
         if i < 4:
