@@ -134,7 +134,7 @@ class RunCable(object):
 
             self.run_me(nml_fname)
 
-            add_attributes_to_output_file(nml_fname, out_fname, url, rev)
+            #add_attributes_to_output_file(nml_fname, out_fname, url, rev)
             shutil.move(nml_fname, os.path.join(self.namelist_dir, nml_fname))
 
             if self.fixed_lai is not None or self.lai_dir is not None:
