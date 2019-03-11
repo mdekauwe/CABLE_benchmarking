@@ -16,7 +16,7 @@ import subprocess
 import datetime
 
 def set_paths(nodename):
-    
+
     if "Mac" in nodename or "imac" in nodename:
         NCDIR = '/opt/local/lib/'
         NCMOD = '/opt/local/include/'
@@ -51,8 +51,10 @@ def set_paths(nodename):
         #           "Nc_files/Met")
         met_dir = ("/srv/ccrc/data45/z3509830/CABLE_runs/Inputs/"
                    "PLUMBER_sites/met")
+    else:
 
-    elif "raijin" in nodename:
+    # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
+    #elif "raijin" in nodename:
 
         cmd = "module unload netcdf"
         error = subprocess.call(cmd, shell=True)
