@@ -59,8 +59,8 @@ def set_paths(nodename):
         if error is 1:
             raise("Error loading netcdf libs")
 
-        NCDIR = '/share/apps/netcdf/intel/4.2.1.1/lib'
-        NCMOD = '/share/apps/netcdf/intel/4.2.1.1/include'
+        NCDIR = '/apps/netcdf/4.2.1.1/lib'
+        NCMOD = '/apps/netcdf/4.2.1.1/include'
         FC = 'ifort'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
