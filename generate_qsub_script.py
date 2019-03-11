@@ -26,7 +26,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("#PBS -l ncpus=%d\n" % (ncpus))
     f.write("#PBS -l mem=%s\n" % (mem))
     f.write("#PBS -l walltime=%s\n" % (wall_time))
-    f.write("#PBS -q normal\n")
+    f.write("#PBS -q express\n")
     f.write("#PBS -P %s\n" % (project))
     f.write("#PBS -m ae\n")
     f.write("#PBS -M %s\n" % (email_address))
@@ -51,7 +51,7 @@ project = "w35"
 ofname = "benchmark_cable_qsub.sh"
 ncpus = 2
 mem = "32GB"
-wall_time = "00:30:00"
+wall_time = "00:05:00"
 email_address = "mdekauwe@gmail.com"
 # ------------------------------------------- #
 
