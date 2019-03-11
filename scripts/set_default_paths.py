@@ -68,7 +68,8 @@ def set_paths(nodename):
         #
         ## Met paths ...
         #
-        met_dir = ("/g/data1/w35/Shared_data/Observations/Fluxnet_data/"
-                   "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
-
+        #met_dir = ("/g/data1/w35/Shared_data/Observations/Fluxnet_data/"
+        #           "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
+        met_dir = "/g/data1/w35/amu561/PLUMBER_sites"
+        
     return (met_dir, NCDIR, NCMOD, FC, CFLAGS, LD, LDFLAGS)
