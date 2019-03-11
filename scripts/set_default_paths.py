@@ -47,7 +47,7 @@ def set_paths(nodename):
         ## Met paths ...
         #
         met_dir = ("/srv/ccrc/data04/z3509830/Fluxnet_data/"
-                   "All_flux_sites_processed/all_sites_no_duplicates/
+                   "All_flux_sites_processed/all_sites_no_duplicates/"
                    "Nc_files/Flux")
 
     elif "raijin" in nodename:
