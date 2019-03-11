@@ -72,5 +72,4 @@ def set_paths(nodename):
         #           "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
         met_dir = "/g/data1/w35/amu561/PLUMBER_sites"
 
-    print("nodename")
     return (met_dir, NCDIR, NCMOD, FC, CFLAGS, LD, LDFLAGS)

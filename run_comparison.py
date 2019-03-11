@@ -27,6 +27,9 @@ date = now.strftime("%d_%m_%Y")
 cwd = os.getcwd()
 (sysname, nodename, release, version, machine) = os.uname()
 
+f = open("tmp_log.txt", "w")
+f.write("%s %s %s %s %s\n" % (sysname, nodename, release, version, machine))
+f.close()
 #------------- User set stuff ------------- #
 user = "mgk576"
 
