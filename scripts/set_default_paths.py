@@ -54,6 +54,11 @@ def set_paths(nodename):
 
     elif "raijin" in nodename:
 
+        cmd = "module unload netcdf"
+        error = subprocess.call(cmd, shell=True)
+        if error is 1:
+            raise("Error unloading netcdf libs")
+
         cmd = "module load netcdf/4.2.1.1"
         error = subprocess.call(cmd, shell=True)
         if error is 1:
