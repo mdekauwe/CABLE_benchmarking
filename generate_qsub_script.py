@@ -45,14 +45,30 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     os.chmod(ofname, 0o755)
 
 
+if __name__ == "__main__":
 
-#------------- User set stuff ------------- #
-project = "w35"
-ofname = "benchmark_cable_qsub.sh"
-ncpus = 2
-mem = "32GB"
-wall_time = "00:30:00"
-email_address = "mdekauwe@gmail.com"
-# ------------------------------------------- #
+    #------------- User set stuff ------------- #
+    project = "w35"
+    ofname = "benchmark_cable_qsub.sh"
+    ncpus = 2
+    mem = "32GB"
+    wall_time = "00:30:00"
+    email_address = "mdekauwe@gmail.com"
+    # ------------------------------------------- #
 
-create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address)
+    create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address)
+
+    #
+    ## Get CABLE ...
+    #
+    G = GetCable(src_dir=src_dir, user=user)
+    G.main(repo_name=repos[0], trunk=trunk) # Default is True
+    G.main(repo_name=repos[1], trunk=False)
+
+    #
+    ## Build CABLE ...
+    #
+    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
+                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
+    B.main(repo_name=repos[0])
+    B.main(repo_name=repos[1])
