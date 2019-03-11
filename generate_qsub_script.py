@@ -34,7 +34,6 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("\n")
     f.write("ulimit -s unlimited")
     f.write("\n")
-    #f.write("cd $PBS_O_WORKDIR\n")
     f.write("\n")
     f.write("umask 022\n")
     f.write("\n")
@@ -49,7 +48,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
 
 #------------- User set stuff ------------- #
 project = "w35"
-ofname = "run_comparison_on_nci.sh"
+ofname = "benchmark_cable_qsub.sh"
 ncpus = 2
 mem = "32GB"
 wall_time = "00:30:00"
