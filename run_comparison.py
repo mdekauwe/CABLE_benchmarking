@@ -12,6 +12,7 @@ __version__ = "1.0 (09.03.2019)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
+import shutil
 import sys
 import datetime
 import subprocess
@@ -52,7 +53,7 @@ namelist_dir = "namelists"
 
 # clean out old src directory
 if os.path.exists(src_dir):
-    os.rmdir(src_dir)
+    shutil.rmtree(src_dir)
     os.makedirs(src_dir)
 
 #
