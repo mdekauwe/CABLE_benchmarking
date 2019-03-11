@@ -31,7 +31,9 @@ def create_qsub_script(ofname, ncpus, wall_time, project, email_address):
     f.write("set -e\n")
     f.write("\n")
     f.write("cd $PBS_O_WORKDIR\n")
+    f.write("\n")
     f.write("umask 022\n")
+    f.write("\n")
     f.write("./run_comparison.py\n")
     f.write("\n")
 
