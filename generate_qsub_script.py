@@ -39,13 +39,13 @@ def create_qsub_script(ofname, ncpus, wall_time, project, email_address):
 
     os.chmod(ofname, 0o755)
 
-    
+
 
 #------------- User set stuff ------------- #
 project = "w35"
 ofname = "run_comparison_on_nci.sh"
-ncpus = 12
-wall_time = "12:00:00"
+ncpus = 2
+wall_time = "00:30:00"
 email_address = "mdekauwe@gmail.com"
 # ------------------------------------------- #
 
