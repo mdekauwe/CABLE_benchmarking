@@ -59,8 +59,12 @@ namelist_dir = "namelists"
 #
 ## Met files ...
 #
-met_subset = ['TumbaFluxnet.1.4_met.nc']
-#met_subset = [] # if empty...run all the files in the met_dir
+if "unsw" in nodename:
+    met_subset = ['AU-Tum_2002-2016_OzFlux_Flux.nc']
+    #met_subset = [] # if empty...run all the files in the met_dir
+else:
+    met_subset = ['TumbaFluxnet.1.4_met.nc']
+    #met_subset = [] # if empty...run all the files in the met_dir
 
 #
 ## science configs
