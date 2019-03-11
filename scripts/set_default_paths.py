@@ -16,7 +16,7 @@ import subprocess
 import datetime
 
 def set_paths(nodename):
-
+    
     if "Mac" in nodename or "imac" in nodename:
         NCDIR = '/opt/local/lib/'
         NCMOD = '/opt/local/include/'

@@ -54,6 +54,11 @@ output_dir = "outputs"
 restart_dir = "restart_files"
 namelist_dir = "namelists"
 
+# clean out old src directory
+if os.path.exists(src_dir):
+    os.rmdir(src_dir)
+    os.makedirs(src_dir)
+
 #
 ## Needs different paths for NCI, storm ... this is set for my mac
 ## comment out the below and set your own, see scripts/set_default_paths.py
