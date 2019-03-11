@@ -59,13 +59,13 @@ def set_paths(nodename):
         if error is 1:
             raise("Error unloading netcdf libs")
 
-        cmd = "module load netcdf/4.2.1.1"
+        cmd = "module load netcdf/4.3.3.1"
         error = subprocess.call(cmd, shell=True)
         if error is 1:
             raise("Error loading netcdf libs")
 
-        NCDIR = '/apps/netcdf/4.2.1.1/lib'
-        NCMOD = '/apps/netcdf/4.2.1.1/include'
+        NCDIR = '/apps/netcdf/4.3.3.1/lib'
+        NCMOD = '/apps/netcdf/4.3.3.1/include'
         FC = 'ifort'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
