@@ -22,6 +22,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
 
     f.write("#!/bin/bash\n")
     f.write("\n")
+    f.write("#PBS -l wd\n")
     f.write("#PBS -l ncpus=%d\n" % (ncpus))
     f.write("#PBS -l mem=%s\n" % (mem))
     f.write("#PBS -l walltime=%s\n" % (wall_time))
