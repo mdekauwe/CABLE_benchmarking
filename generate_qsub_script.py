@@ -38,7 +38,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("\n")
     f.write("umask 022\n")
     f.write("\n")
-    f.write("python ./run_comparison.py\n")
+    f.write("python run_comparison.py\n")
     f.write("\n")
 
     f.close()
