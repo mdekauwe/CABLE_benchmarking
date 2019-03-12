@@ -55,7 +55,7 @@ class GetCable(object):
             if error is 1:
                 raise("Error checking if repo exists")
 
-            if "non-existent" in str(output):
+            if "non-existent" in str(output) or "problem" in str(output):
                 cmd = "svn copy %s/trunk %s/branches/Users/%s/%s -m %s" % \
                         (self.root, self.root, self.user, repo_name, self.msg)
                 error = subprocess.call(cmd, shell=True)
@@ -68,7 +68,7 @@ class GetCable(object):
             if error is 1:
                 raise("Error downloading repo")
 
-        # Checkout named branch ... 
+        # Checkout named branch ...
         else:
 
             cmd = "svn checkout %s/branches/Users/%s/%s" % \
