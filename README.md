@@ -71,7 +71,7 @@ After updating user_options.py, to run the code
 If you're on the NCI and wish to submit a qsub script instead:
 
     $ ./initialise_qsub_job.py
-    $ qsub
+    $ qsub benchmark_cable_qsub.sh
 
 There are two steps here as the NCI nodes don't have internet access, so we
 need to check out and build CABLE first.
