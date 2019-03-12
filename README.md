@@ -6,6 +6,10 @@ The code will: (i) check out; (ii) build; and (iii) run both the head of the tru
 
 NB. the code is flexible enough that "trunk" could be any branch, allowing the user to compare across personal branches.
 
+To get started:
+
+    $ git clone https://github.com/mdekauwe/CABLE_benchmarking.git
+
 ## Multi-site comparison
 
 Runs both cable executables (trunk and the user's branch) across a suite of FLUXNET sites and plots seasonal cycles. Whilst these plots are generated locally, the results of each repository should be uploaded to
