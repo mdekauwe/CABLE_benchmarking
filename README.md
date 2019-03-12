@@ -64,7 +64,17 @@ Finally, if you are running more than a single-site, there are two MPI flags you
     mpi = True
     num_cores = 4 # set to a number, if None it will use all cores...!
 
+After updating user_options.py, to run the code
 
+    $ ./run_comparison.py
+
+If you're on the NCI and wish to submit a qsub script instead:
+
+    $ ./initialise_qsub_job.py
+    $ qsub
+
+There are two steps here as the NCI nodes don't have internet access, so we
+need to check out and build CABLE first.
 
 ## Global comparison
 
