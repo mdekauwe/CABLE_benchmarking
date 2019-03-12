@@ -16,85 +16,31 @@ import shutil
 import sys
 import datetime
 import subprocess
+
+from user_options import *
+
 sys.path.append("scripts")
-from get_cable import GetCable
-from build_cable import BuildCable
-from run_cable_site import RunCable
 from call_wrapper import benchmark_wrapper
-from set_default_paths import set_paths
-
-now = datetime.datetime.now()
-date = now.strftime("%d_%m_%Y")
-cwd = os.getcwd()
-(sysname, nodename, release, version, machine) = os.uname()
-
-#------------- User set stuff ------------- #
-user = "mgk576"
-
-#
-## Repositories to test, default is head of the trunk against personal repo.
-## But if trunk is false, repo1 could be anything
-#
-trunk = True
-repo1 = "Trunk_%s" % (date)
-repo2 = "CMIP6-MOSRS"
-repos = [repo1, repo2]
-
-#
-## user directories ...
-#
-src_dir = "src"
-run_dir = "runs"
-log_dir = "logs"
-plot_dir = "plots"
-output_dir = "outputs"
-restart_dir = "restart_files"
-namelist_dir = "namelists"
-
-# clean out old src directory
-if os.path.exists(src_dir):
-    shutil.rmtree(src_dir)
-    os.makedirs(src_dir)
-
-#
-## Needs different paths for NCI, storm ... this is set for my mac
-## comment out the below and set your own, see scripts/set_default_paths.py
-#
-(met_dir, NCDIR, NCMOD, FC, CFLAGS, LD, LDFLAGS) = set_paths(nodename)
-
-#
-## Met files ...
-#
-if "unsw" in nodename:
-    #met_subset = ['AU-Tum_2002-2016_OzFlux_Met.nc']
-    met_subset = ['TumbaFluxnet.1.4_met.nc']#
-    #met_subset = [] # if empty...run all the files in the met_dir
-else:
-    met_subset = ['TumbaFluxnet.1.4_met.nc']
-    #met_subset = [] # if empty...run all the files in the met_dir
-
-#
-## science configs
-#
-sci1 = {
-        "cable_user%GS_SWITCH": "'medlyn'",
-}
-
-sci2 = {
-        "cable_user%GS_SWITCH": "'leuning'",
-}
-sci_configs = [sci1, sci2]
-
-#
-## MPI stuff
-#
-mpi = False
-num_cores = None #4 # set to a number, if None it will use all cores...!
-
-# ------------------------------------------- #
 
 
-benchmark_wrapper(user, trunk, repos, src_dir, run_dir, log_dir, met_dir,
-                  plot_dir, output_dir, restart_dir, namelist_dir, NCDIR,
-                  NCMOD, FC, CFLAGS, LD, LDFLAGS, sci_configs, mpi, num_cores,
-                  met_subset, cwd)
+if __name__ == "__main__":
+
+    from optparse import OptionParser
+
+    parser = OptionParser()
+    parser.add_option("--qsub", action="store_true", default=False,
+                      help="Run qsub script?")
+
+    (options, args) = parser.parse_args()
+
+    main(options.old_fname, options.new_fname, options.plot_fname)
+
+    if option.qsub:
+        benchmark_wrapper_qsub(repos, run_dir, log_dir, met_dir, plot_dir,
+                               output_dir, restart_dir, namelist_dir,
+                               sci_configs, mpi, num_cores, met_subset, cwd)
+    else:
+        benchmark_wrapper(user, trunk, repos, src_dir, run_dir, log_dir,
+                          met_dir, plot_dir, output_dir, restart_dir,
+                          namelist_dir, NCDIR, NCMOD, FC, CFLAGS, LD, LDFLAGS,
+                          sci_configs, mpi, num_cores, met_subset, cwd)

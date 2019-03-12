@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 
 """
-Generate a qsub script to wrap cable benchmarking scripts when used on raijin
-
+Generate qsub script
 
 That's all folks.
 """
 
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (11.03.2019)"
+__version__ = "1.0 (09.03.2019)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
 import sys
-import datetime
 import subprocess
+import datetime
 
 def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
 
@@ -37,7 +36,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("\n")
     f.write("umask 022\n")
     f.write("\n")
-    f.write("python run_comparison.py\n")
+    f.write("python run_comparison.py --qsub\n")
     f.write("\n")
 
     f.close()
@@ -47,7 +46,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
 
 if __name__ == "__main__":
 
-    #------------- User set stuff ------------- #
+    #------------- Change stuff ------------- #
     project = "w35"
     ofname = "benchmark_cable_qsub.sh"
     ncpus = 2
@@ -57,18 +56,3 @@ if __name__ == "__main__":
     # ------------------------------------------- #
 
     create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address)
-
-    #
-    ## Get CABLE ...
-    #
-    G = GetCable(src_dir=src_dir, user=user)
-    G.main(repo_name=repos[0], trunk=trunk) # Default is True
-    G.main(repo_name=repos[1], trunk=False)
-
-    #
-    ## Build CABLE ...
-    #
-    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
-    B.main(repo_name=repos[0])
-    B.main(repo_name=repos[1])
