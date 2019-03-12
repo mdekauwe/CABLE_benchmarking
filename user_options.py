@@ -80,4 +80,4 @@ sci_configs = [sci1, sci2]
 mpi = False
 num_cores = None #4 # set to a number, if None it will use all cores...!
 
-# --------------Don't edit below this------------------------- #
+# ----------------------------------------------------------------------- #
