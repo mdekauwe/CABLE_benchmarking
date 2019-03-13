@@ -129,7 +129,10 @@ class RunCable(object):
                             "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
                             "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
             }
-            replace_dict = merge_two_dicts(replace_dict, sci_config)
+
+            # Make sure the dict isn't empty
+            if bool(sci_config):
+                replace_dict = merge_two_dicts(replace_dict, sci_config)
             adjust_nml_file(nml_fname, replace_dict)
 
             self.run_me(nml_fname)
