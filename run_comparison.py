@@ -35,8 +35,8 @@ if __name__ == "__main__":
                       help="Run qsub script?")
 
     (options, args) = parser.parse_args()
-
-    if option.qsub == False:
+    
+    if options.qsub == False:
 
         #
         ## Get CABLE ...
