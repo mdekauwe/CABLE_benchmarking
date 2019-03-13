@@ -14,6 +14,7 @@ __email__ = "mdekauwe@gmail.com"
 import os
 import shutil
 import sys
+import glob
 import datetime
 import subprocess
 
@@ -35,7 +36,7 @@ if __name__ == "__main__":
                       help="Run qsub script?")
 
     (options, args) = parser.parse_args()
-    
+
     if options.qsub == False:
 
         #
