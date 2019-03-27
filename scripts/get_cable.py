@@ -119,8 +119,10 @@ class GetCable(object):
         else:
 
             if need_pass:
-                cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % \
-                        (self.root, self.user, repo_name, pswd)
+                #cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % \
+                #        (self.root, self.user, repo_name, pswd)
+                cmd = "svn checkout %s/branches/Share/integration --password %s" % \
+                    (self.root, pswd)
 
                 with tempfile.NamedTemporaryFile(mode='w+t') as f:
                     f.write(cmd)
@@ -131,8 +133,9 @@ class GetCable(object):
                         raise("Error downloading repo")
                     f.close()
             else:
-                cmd = "svn checkout %s/branches/Users/%s/%s" % \
-                        (self.root, self.user, repo_name)
+                #cmd = "svn checkout %s/branches/Users/%s/%s" % \
+                #        (self.root, self.user, repo_name)
+                cmd = "svn checkout %s/branches/Share/integration" % (self.root)
                 error = subprocess.call(cmd, shell=True)
                 if error is 1:
                     raise("Error downloading repo")

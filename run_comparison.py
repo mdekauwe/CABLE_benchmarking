@@ -45,7 +45,7 @@ if __name__ == "__main__":
         #
         G = GetCable(src_dir=src_dir, user=user)
         G.main(repo_name=repos[0], trunk=trunk) # Default is True
-        G.main(repo_name=repos[1], trunk=False)
+        G.main(repo_name=repos[1], trunk=False) # integration branch
 
         #
         ## Build CABLE ...
