@@ -44,7 +44,8 @@ class GetCable(object):
         cwd = os.getcwd()
         os.chdir(self.src_dir)
 
-        if len(os.listdir('%s/.subversion/auth/svn.simple/' % (home_dir))) == 0:
+        where = os.listdir('%s/.subversion/auth/svn.simple/' % (self.home_dir))
+        if len(where) == 0:
             pswd = "'" + getpass.getpass('Password:') + "'"
             need_pass = True
 
