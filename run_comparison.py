@@ -17,6 +17,7 @@ import sys
 import glob
 import datetime
 import subprocess
+import numpy as np
 
 from user_options import *
 
