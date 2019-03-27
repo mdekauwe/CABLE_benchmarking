@@ -60,8 +60,8 @@ if os.path.exists(src_dir):
 #
 ## Met files ...
 #
-met_subset = ['TumbaFluxnet.1.4_met.nc']
-#met_subset = [] # if empty...run all the files in the met_dir
+#met_subset = ['TumbaFluxnet.1.4_met.nc']
+met_subset = [] # if empty...run all the files in the met_dir
 
 #
 ## science configs
@@ -78,7 +78,7 @@ sci_configs = [sci1, sci2]
 #
 ## MPI stuff
 #
-mpi = False
-num_cores = None #4 # set to a number, if None it will use all cores...!
+mpi = True
+num_cores = 8 #4 # set to a number, if None it will use all cores...!
 
 # ----------------------------------------------------------------------- #
