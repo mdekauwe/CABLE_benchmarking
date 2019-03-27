@@ -31,7 +31,7 @@ email_address = "mdekauwe@gmail.com"
 user = "mgk576"
 trunk = True
 repo1 = "Trunk_%s" % (date)
-repo2 = "CMIP6-MOSRS"
+repo2 = "integration"
 repos = [repo1, repo2]
 
 #
