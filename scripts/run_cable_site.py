@@ -127,7 +127,6 @@ class RunCable(object):
                             "fixedCO2": "%.2f" % (self.co2_conc),
                             "casafile%phen": "'%s'" % (self.phen_fname),
                             "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
-                            "cable_user%FWSOIL_SWITCH": "'Haverd2013'",
             }
 
             # Make sure the dict isn't empty
@@ -137,7 +136,8 @@ class RunCable(object):
 
             self.run_me(nml_fname)
 
-            add_attributes_to_output_file(nml_fname, out_fname, url, rev)
+            add_attributes_to_output_file(nml_fname, out_fname, sci_config,
+                                          url, rev)
             shutil.move(nml_fname, os.path.join(self.namelist_dir, nml_fname))
 
             if self.fixed_lai is not None or self.lai_dir is not None:
