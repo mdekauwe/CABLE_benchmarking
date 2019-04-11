@@ -28,7 +28,7 @@ def set_paths(nodename):
         #
         ## Met paths ...
         #
-        met_dir = "/Users/mdekauwe/Desktop/plumber_met"
+        met_dir = "/Users/mdekauwe/research/CABLE_runs/met_data/plumber_met"
 
     elif "unsw" in nodename:
         cmd = "module load netcdf/4.1.3-intel"
