@@ -21,7 +21,7 @@ project = "w35"
 qsub_fname = "benchmark_cable_qsub.sh"
 ncpus = 16
 mem = "32GB"
-wall_time = "00:30:00"
+wall_time = "01:30:00"
 email_address = "mdekauwe@gmail.com"
 
 #
@@ -58,8 +58,8 @@ if not os.path.exists(src_dir):
 #
 ## Met files ...
 #
-#met_subset = ['TumbaFluxnet.1.4_met.nc']
-met_subset = [] # if empty...run all the files in the met_dir
+met_subset = ['TumbaFluxnet.1.4_met.nc']
+#met_subset = [] # if empty...run all the files in the met_dir
 
 #
 ## science configs
