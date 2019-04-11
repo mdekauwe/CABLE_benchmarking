@@ -20,8 +20,8 @@ from set_default_paths import set_paths
 project = "w35"
 qsub_fname = "benchmark_cable_qsub.sh"
 ncpus = 16
-mem = "64GB"
-wall_time = "01:00:00"
+mem = "32GB"
+wall_time = "00:30:00"
 email_address = "mdekauwe@gmail.com"
 
 #
