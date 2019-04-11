@@ -33,7 +33,7 @@ create_qsub_script(qsub_fname, ncpus, mem, wall_time, project, email_address)
 #
 G = GetCable(src_dir=src_dir, user=user)
 G.main(repo_name=repos[0], trunk=trunk) # Default is True
-G.main(repo_name=repos[1], trunk=False)
+G.main(repo_name=repos[1], trunk=False) # integration branch
 
 #
 ## Build CABLE ...
