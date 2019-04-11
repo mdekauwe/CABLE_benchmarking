@@ -116,12 +116,16 @@ def get_svn_info(here, there):
     return url, rev
 
 
-def add_attributes_to_output_file(nml_fname, fname, url, rev):
+def add_attributes_to_output_file(nml_fname, fname, sci_config, url, rev):
 
     # Add SVN info to output file
     nc = netCDF4.Dataset(fname, 'r+')
     nc.setncattr('cable_branch', url)
     nc.setncattr('svn_revision_number', rev)
+
+    for key, val in sci_config.items():
+        config_name = "%s_%s" % (key, val)
+        nc.setncattr('SCI_CONFIG', config_name)
 
     # Add namelist to output file
     fp = open(nml_fname, "r")
