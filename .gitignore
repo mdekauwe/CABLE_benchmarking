@@ -4,4 +4,4 @@ scripts/__pycache__/*
 __pycache__/*
 .DS_Store
 plots/*
-benchmark_cable_qsub.sh
+./benchmark_cable_qsub.sh
