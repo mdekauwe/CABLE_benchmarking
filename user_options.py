@@ -46,9 +46,7 @@ output_dir = "outputs"
 restart_dir = "restart_files"
 namelist_dir = "namelists"
 
-# clean out old src directory
-if os.path.exists(src_dir):
-    shutil.rmtree(src_dir)
+if not os.path.exists(src_dir):
     os.makedirs(src_dir)
 
 #
