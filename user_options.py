@@ -58,8 +58,8 @@ if not os.path.exists(src_dir):
 #
 ## Met files ...
 #
-met_subset = ['TumbaFluxnet.1.4_met.nc']
-#met_subset = [] # if empty...run all the files in the met_dir
+#met_subset = ['TumbaFluxnet.1.4_met.nc']
+met_subset = [] # if empty...run all the files in the met_dir
 
 #
 ## science configs
