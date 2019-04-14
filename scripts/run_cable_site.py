@@ -63,7 +63,7 @@ class RunCable(object):
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
         self.verbose = verbose
         self.mpi = mpi
-        self.num_cores = num_cores
+        self.num_cores = num_cores - 1 # save one core for management of tasks
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
 
@@ -77,7 +77,7 @@ class RunCable(object):
                 self.num_cores = mp.cpu_count()
             chunk_size = int(np.ceil(len(met_files) / float(self.num_cores)))
             pool = mp.Pool(processes=self.num_cores)
-            processes = []
+            jobs = []
 
             for i in range(self.num_cores):
                 start = chunk_size * i
@@ -89,11 +89,15 @@ class RunCable(object):
                 p = mp.Process(target=self.worker,
                                args=(met_files[start:end], url, rev,
                                      sci_config, repo_id, sci_id, ))
-                processes.append(p)
+                jobs.append(p)
+                p.start()
+
+                #processes.append(p)
+
 
             # Run processes
-            for p in processes:
-                p.start()
+            #for p in processes:
+            #    p.start()
         else:
             self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
 
@@ -101,8 +105,7 @@ class RunCable(object):
 
         for fname in met_files:
             site = os.path.basename(fname).split(".")[0]
-            print(site)
-
+            
             base_nml_fn = os.path.join(self.grid_dir, "%s" % (self.nml_fname))
             nml_fname = "cable_%s_R%s_S%s.nml" % (site, repo_id, sci_id)
             shutil.copy(base_nml_fn, nml_fname)
