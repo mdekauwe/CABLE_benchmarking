@@ -70,7 +70,6 @@ for repo_id, repo in enumerate(repos):
                      met_subset=met_subset, cable_src=cable_src, mpi=mpi,
                      num_cores=num_cores)
         R.main(sci_config, repo_id, sci_id)
-        
 os.chdir(cwd)
 
 #
