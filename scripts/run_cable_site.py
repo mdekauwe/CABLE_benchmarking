@@ -193,18 +193,12 @@ class RunCable(object):
 
     def run_me(self, nml_fname):
         # run the model
+        cmd = './%s %s' % (self.cable_exe, nml_fname)
+        print(cmd)
+        # Capture stdout and stderr in output
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         if self.verbose:
-            cmd = './%s %s' % (self.cable_exe, nml_fname)
-            error = subprocess.call(cmd, shell=True)
-            if error is 1:
-                print("Job failed to submit")
-                raise
-        else:
-            # No outputs to the screen: stout and stderr to dev/null
-            cmd = './%s %s > /dev/null 2>&1' % (self.cable_exe, nml_fname)
-            error = subprocess.call(cmd, shell=True)
-            if error is 1:
-                print("Job failed to submit")
+            print(output)
 
 def merge_two_dicts(x, y):
     """Given two dicts, merge them into a new dict as a shallow copy."""
