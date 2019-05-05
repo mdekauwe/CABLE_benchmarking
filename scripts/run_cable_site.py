@@ -102,13 +102,14 @@ class RunCable(object):
             self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
 
     def worker(self, met_files, url, rev, sci_config, repo_id, sci_id):
-
+        cwd = os.getcwd()
         for fname in met_files:
             site = os.path.basename(fname).split(".")[0]
 
             base_nml_fn = os.path.join(self.grid_dir, "%s" % (self.nml_fname))
             nml_fname = "cable_%s_R%s_S%s.nml" % (site, repo_id, sci_id)
             shutil.copy(base_nml_fn, nml_fname)
+            #nml_fname = os.path.join(cwd, nml_fname)
 
             (out_fname,
              out_log_fname) = self.clean_up_old_files(site, repo_id, sci_id)
@@ -170,11 +171,13 @@ class RunCable(object):
         (url, rev) = get_svn_info(cwd, self.cable_src)
 
         # delete local executable, copy a local copy and use that
+        #local_exe = os.path.join(cwd, "cable")
         local_exe = "cable"
         if os.path.isfile(local_exe):
             os.remove(local_exe)
         shutil.copy(self.cable_exe, local_exe)
         self.cable_exe = local_exe
+        print(self.cable_exe)
 
         return (met_files, url, rev)
 
@@ -192,6 +195,8 @@ class RunCable(object):
         return (out_fname, out_log_fname)
 
     def run_me(self, nml_fname):
+
+        
         # run the model
         cmd = './%s %s' % (self.cable_exe, nml_fname)
         print(cmd)
@@ -200,6 +205,23 @@ class RunCable(object):
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         if self.verbose:
             print(output)
+
+
+        """
+        if self.verbose:
+            cmd = './%s %s' % (self.cable_exe, nml_fname)
+            error = subprocess.call(cmd, shell=True)
+            if error is 1:
+                print("Job failed to submit")
+                raise
+        else:
+            # No outputs to the screen: stout and stderr to dev/null
+            cmd = './%s %s > /dev/null 2>&1' % (self.cable_exe, nml_fname)
+            error = subprocess.call(cmd, shell=True)
+            if error is 1:
+                print("Job failed to submit")
+            print(output)
+        """
 
 def merge_two_dicts(x, y):
     """Given two dicts, merge them into a new dict as a shallow copy."""
