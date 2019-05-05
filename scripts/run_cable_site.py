@@ -105,7 +105,7 @@ class RunCable(object):
 
         for fname in met_files:
             site = os.path.basename(fname).split(".")[0]
-            
+
             base_nml_fn = os.path.join(self.grid_dir, "%s" % (self.nml_fname))
             nml_fname = "cable_%s_R%s_S%s.nml" % (site, repo_id, sci_id)
             shutil.copy(base_nml_fn, nml_fname)
@@ -195,6 +195,7 @@ class RunCable(object):
         # run the model
         cmd = './%s %s' % (self.cable_exe, nml_fname)
         print(cmd)
+
         # Capture stdout and stderr in output
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         if self.verbose:
