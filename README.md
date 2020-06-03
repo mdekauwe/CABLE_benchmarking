@@ -10,6 +10,12 @@ To get started:
 
     $ git clone https://github.com/mdekauwe/CABLE_benchmarking.git
 
+## Setup integration branch
+
+This ought to be a one time thing, but just to remind myself how we got this...
+
+    $ python scripts/setup_integration_branch.py
+
 ## Multi-site comparison
 
 Runs both cable executables (trunk and the user's branch) across a suite of FLUXNET sites and plots seasonal cycles. Whilst these plots are generated locally, the results of each repository should be uploaded to
