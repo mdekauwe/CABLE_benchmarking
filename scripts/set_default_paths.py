@@ -7,7 +7,7 @@ That's all folks.
 """
 
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (09.03.2019)"
+__version__ = "1.0 (06.06.2020)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
@@ -53,8 +53,8 @@ def set_paths(nodename):
                    "PLUMBER_sites/met")
     else:
 
-    # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
-    #elif "raijin" in nodename:
+        # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
+        #elif "raijin" in nodename:
 
         cmd = "module unload netcdf"
         error = subprocess.call(cmd, shell=True)
@@ -66,8 +66,8 @@ def set_paths(nodename):
         if error is 1:
             raise("Error loading netcdf libs")
 
-        NCDIR = '/apps/netcdf/4.3.3.1/lib'
-        NCMOD = '/apps/netcdf/4.3.3.1/include'
+        NCDIR = '/apps/netcdf/4.7.1/lib'
+        NCMOD = '/apps/netcdf/4.7.1/include'
         FC = 'ifort'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
