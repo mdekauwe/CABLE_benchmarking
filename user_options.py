@@ -105,8 +105,8 @@ sci8 = {
 }
 
 
-sci_configs = [sci1, sci2, sci3, sci4, sci5, sci6, sci7, sci8]
-
+#sci_configs = [sci1, sci2, sci3, sci4, sci5, sci6, sci7, sci8]
+sci_configs = [sci1, sci2]
 #
 ## MPI stuff
 #

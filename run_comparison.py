@@ -27,16 +27,17 @@ sys.path.append("scripts")
 from get_cable import GetCable
 from build_cable import BuildCable
 from run_cable_site import RunCable
-from benchmark_seasonal_plot import main as seas_plot
+
 
 parser = OptionParser()
 parser.add_option("--qsub", action="store_true", default=False,
                   help="Run qsub script?")
+parser.add_option("-s", "--skipsrc", action="store_true", default=False,
+                  help="Rebuild src?")
 
 (options, args) = parser.parse_args()
 
-"""
-if options.qsub == False:
+if options.qsub == False and options.skipsrc == False:
 
     #
     ## Get CABLE ...
@@ -52,7 +53,7 @@ if options.qsub == False:
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
-"""
+
 
 #
 ## Run CABLE for each science config, for each repo
@@ -73,17 +74,5 @@ for repo_id, repo in enumerate(repos):
                      num_cores=num_cores)
         R.main(sci_config, repo_id, sci_id)
 
-"""
+
 os.chdir(cwd)
-
-#
-## Make seasonal plots ...
-#
-if not os.path.exists(plot_dir):
-    os.makedirs(plot_dir)
-
-ofdir = os.path.join(run_dir, output_dir)
-all_files = glob.glob(os.path.join(ofdir, "*.nc"))
-sites = np.unique([os.path.basename(f).split(".")[0].split("_")[0] \
-                   for f in all_files])
-"""
