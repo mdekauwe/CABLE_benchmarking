@@ -18,7 +18,7 @@ import datetime
 class BuildCable(object):
 
     def __init__(self, src_dir=None, NCDIR=None, NCMOD=None, FC=None,
-                 CFLAGS=None, LD=None, LDFLAGS=None):
+                 CFLAGS=None, LD=None, LDFLAGS=None, debug=False):
 
         self.src_dir = src_dir
         self.NCDIR = NCDIR
@@ -27,6 +27,7 @@ class BuildCable(object):
         self.CFLAGS = CFLAGS
         self.LD = LD
         self.LDFLAGS = LDFLAGS
+        self.debug = debug
 
     def main(self, repo_name=None, trunk=False):
 
@@ -57,10 +58,11 @@ class BuildCable(object):
         ofname = "my_build.ksh"
         of = open(ofname, "w")
 
+        check_host = "host_%s()" % (host)
         i = 0
         while i < len(lines):
             line = lines[i]
-            if 'known_hosts()' in line:
+            if 'known_hosts()' in line and i < 10:
                 print("known_hosts()", end="\n", file=of)
                 print("{", end="\n", file=of)
                 print("  set -A kh  pear jigg nXXX raij ces2 ccrc mael %s" %\
@@ -80,6 +82,10 @@ class BuildCable(object):
                 print("}", end="\n\n", file=of)
 
                 i += 5
+            elif ('known_hosts()' not in line) and (check_host in line):
+                # rename duplicate host, i.e. stud
+                fudge_host = "host_%s()" % ("XXXX")
+                print("%s" % (fudge_host), end="\n", file=of)
             else:
                 print(line, end="", file=of)
             i += 1
@@ -95,7 +101,7 @@ class BuildCable(object):
         if error is 1:
             raise("Error changing file to executable")
 
-        cmd = "./%s" % (ofname)
+        cmd = "./%s clean" % (ofname)
         error = subprocess.call(cmd, shell=True)
         if error is 1:
             raise("Error building executable")
@@ -108,15 +114,16 @@ if __name__ == "__main__":
     date = now.strftime("%d_%m_%Y")
 
     #------------- Change stuff ------------- #
+    ver = "4.7.1"
     src_dir = "src"
-    NCDIR = '/opt/local/lib/'
-    NCMOD = '/opt/local/include/'
-    FC = 'gfortran'
+    NCDIR = '/apps/netcdf/%s/lib' % (ver)
+    NCMOD = '/apps/netcdf/%s/include' % (ver)
+    FC = 'ifort'
     CFLAGS = '-O2'
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
-    repo1 = "Trunk_%s" % (date)
-    repo2 = "CMIP6-MOSRS"
+    repo1 = "Trunk"
+    repo2 = "integration"
     # ------------------------------------------- #
 
     B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
