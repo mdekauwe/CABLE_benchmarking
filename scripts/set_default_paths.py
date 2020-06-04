@@ -55,19 +55,19 @@ def set_paths(nodename):
 
         # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
         #elif "raijin" in nodename:
-
+        ver = "4.7.1"
         cmd = "module unload netcdf"
         error = subprocess.call(cmd, shell=True)
         if error is 1:
             raise("Error unloading netcdf libs")
 
-        cmd = "module load netcdf/4.7.1"
+        cmd = "module load netcdf/%s" % (ver)
         error = subprocess.call(cmd, shell=True)
         if error is 1:
             raise("Error loading netcdf libs")
 
-        NCDIR = '/apps/netcdf/4.7.1/lib'
-        NCMOD = '/apps/netcdf/4.7.1/include'
+        NCDIR = '/apps/netcdf/%s/lib' % (ver)
+        NCMOD = '/apps/netcdf/%s/include' % (ver)
         FC = 'ifort'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
