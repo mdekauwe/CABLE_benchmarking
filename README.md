@@ -76,7 +76,7 @@ Finally, if you are running more than a single-site, there are two MPI flags you
 
 After updating user_options.py, to run the code
 
-    $ ./run_comparison.py
+    $ ./run_site_comparison.py
 
 If you're on the NCI and wish to submit a qsub script instead:
 
@@ -92,7 +92,7 @@ If you've already built the src once and just want to run things again:
 
 will generate the qsub script and
 
-    $ ./run_comparison.py -s
+    $ ./run_site_comparison.py -s
 
 will run a local benchmarking without trying to download and rebuild src code
 
@@ -100,7 +100,7 @@ If you want to make some quick local benchmark plots:
 
     $ ./make_seasonal_plots.py
 
-    
+
 
 ## Global comparison
 
