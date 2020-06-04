@@ -18,7 +18,7 @@ import datetime
 class BuildCable(object):
 
     def __init__(self, src_dir=None, NCDIR=None, NCMOD=None, FC=None,
-                 CFLAGS=None, LD=None, LDFLAGS=None, debug=False):
+                 CFLAGS=None, LD=None, LDFLAGS=None, debug=False, mpi=False):
 
         self.src_dir = src_dir
         self.NCDIR = NCDIR
@@ -28,6 +28,7 @@ class BuildCable(object):
         self.LD = LD
         self.LDFLAGS = LDFLAGS
         self.debug = debug
+        self.mpi = mpi
 
     def main(self, repo_name=None, trunk=False):
 
@@ -50,12 +51,18 @@ class BuildCable(object):
         if error is 1:
             raise("Error checking if repo exists")
 
-        fname = "build.ksh"
+        if self.mpi:
+            fname = "build_mpi.ksh"
+        else:
+            fname = "build.ksh"
         f = open(fname, "r")
         lines = f.readlines()
         f.close()
 
-        ofname = "my_build.ksh"
+        if self.mpi:
+            ofname = "my_build_mpi.ksh"
+        else:
+            ofname = "my_build.ksh"
         of = open(ofname, "w")
 
         check_host = "host_%s()" % (host)
@@ -112,13 +119,17 @@ if __name__ == "__main__":
 
     now = datetime.datetime.now()
     date = now.strftime("%d_%m_%Y")
-
+    mpi = False
     #------------- Change stuff ------------- #
     ver = "4.7.1"
     src_dir = "src"
     NCDIR = '/apps/netcdf/%s/lib' % (ver)
     NCMOD = '/apps/netcdf/%s/include' % (ver)
-    FC = 'ifort'
+
+    if mpi:
+        FC = 'mpif90'
+    else:
+        FC = 'ifort'
     CFLAGS = '-O2'
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
@@ -127,6 +138,6 @@ if __name__ == "__main__":
     # ------------------------------------------- #
 
     B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
+                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS, mpi=mpi)
     B.main(repo_name=repo1)
     B.main(repo_name=repo2)

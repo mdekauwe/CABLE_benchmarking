@@ -60,14 +60,14 @@ class RunCable(object):
 
     def __init__(self, met_dir=None, log_dir=None, output_dir=None,
                  restart_dir=None, aux_dir=None, cable_src=None, nml_fname=None,
-                 spin_up=False, qsub_fname=None,
+                 spin_up=False, qsub_fname=None, tmp_ancillary_dir=None,
                  spinup_dir="spinup_restart",
                  namelist_dir="namelists",
                  soil_fname="def_soil_params.txt",
                  veg_fname="def_veg_params_zr_clitt_albedo_fix.txt",
                  co2_fname="Annual_CO2_concentration_until_2010.txt",
-                 grid_fname="SE_AU_AWAP_NVIS_iveg_csiro_soil_gimms_lai_grid.nc",
-                 mask_fname="SE_AUS_AWAP_csiro_soil_landmask.nc",
+                 grid_fname="gridinfo_mmy_MD_elev_orig_std_avg-sand_mask.nc",
+                 mask_fname="gridinfo_mmy_MD_elev_orig_std_avg-sand_landmask.nc",
                  met_data="GSWP3",
                  cable_exe="cable-mpi", walltime=None, mem="64GB", ncpus="48"):
 
@@ -83,10 +83,10 @@ class RunCable(object):
         self.biogeochem_dir = os.path.join(self.aux_dir, "core/biogeochem/")
         self.veg_fname = os.path.join(self.biogeophys_dir, veg_fname)
         self.soil_fname = os.path.join(self.biogeophys_dir, soil_fname)
-        self.grid_fname = os.path.join("SE_AUS_AWAP_grid_mask_files/grid", (grid_fname))
-        self.mask_fname = os.path.join("SE_AUS_AWAP_grid_mask_files/mask", (mask_fname))
+        self.grid_fname = os.path.join(tmp_ancillary_dir, grid_fname)
+        self.mask_fname = os.path.join(tmp_ancillary_dir, mask_fname)
         self.namelist_dir = namelist_dir
-        self.co2_fname = co2_fname
+        self.co2_fname = os.path.join(tmp_ancillary_dir, co2_fname)
         self.qsub_fname = qsub_fname
         self.cable_src = cable_src
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
@@ -265,8 +265,8 @@ if __name__ == "__main__":
     spinup_start_yr = 1995
     #spinup_end_yr = 1995
     spinup_end_yr = 2000
-    run_start_yr = 2000
-    run_end_yr = 2010
+    run_start_yr = 1901
+    run_end_yr = 1901
     # ------------------------------------------- #
 
     (log_fname, out_fname, restart_in_fname,

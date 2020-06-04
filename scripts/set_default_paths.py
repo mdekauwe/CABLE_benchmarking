@@ -68,6 +68,8 @@ def set_paths(nodename):
 
         NCDIR = '/apps/netcdf/%s/lib' % (ver)
         NCMOD = '/apps/netcdf/%s/include' % (ver)
+
+        FCMPI = 'mpif90'
         FC = 'ifort'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
@@ -79,4 +81,4 @@ def set_paths(nodename):
         #           "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
         met_dir = ("/g/data/w35/Shared_data/Observations/Fluxnet_data/"
                    "Post-processed_PLUMBER2_outputs/Nc_files/Met")
-    return (met_dir, NCDIR, NCMOD, FC, CFLAGS, LD, LDFLAGS)
+    return (met_dir, NCDIR, NCMOD, FC, FCMPI, CFLAGS, LD, LDFLAGS)
