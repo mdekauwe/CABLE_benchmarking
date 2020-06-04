@@ -61,7 +61,7 @@ def set_paths(nodename):
         if error is 1:
             raise("Error unloading netcdf libs")
 
-        cmd = "module load netcdf/4.3.3.1"
+        cmd = "module load netcdf/4.7.1"
         error = subprocess.call(cmd, shell=True)
         if error is 1:
             raise("Error loading netcdf libs")
