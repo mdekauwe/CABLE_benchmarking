@@ -2,7 +2,7 @@
 
 Repository to benchmark a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
 
-The code will: (i) check out; (ii) build; and (iii) run both the head of the trunk and the user's personal branch across N standard science configurations.
+The code will: (i) check out; (ii) build; and (iii) run both the head of the trunk and the user's personal branch (or integration branch) across N standard science configurations.
 
 NB. the code is flexible enough that "trunk" could be any branch, allowing the user to compare across personal branches.
 
@@ -18,7 +18,7 @@ This ought to be a one time thing, but just to remind myself how we got this...
 
 ## Multi-site comparison
 
-Runs both cable executables (trunk and the user's branch) across a suite of FLUXNET sites and plots seasonal cycles. Whilst these plots are generated locally, the results of each repository should be uploaded to
+Runs both cable executables (trunk and the user's branch/integration branch) across a suite of FLUXNET sites and plots seasonal cycles. Whilst these plots are generated locally, the results of each repository should be uploaded to
 [Gab's benchmarking website](https://modelevaluation.org/) for further benchmarking and evaluation.
 
 To run the multi-site comparison, please update the relevant entries (paths, library locations, etc) within **user_options.py**
