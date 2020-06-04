@@ -65,7 +65,7 @@ if not os.path.exists(src_dir):
 
 # Till fixed
 met_dir = "/g/data/w35/mgk576/research/CABLE_runs/met/Ozflux"
-met_subet = ['TumbarumbaOzFlux2.0_met.nc']
+met_subset = ['TumbarumbaOzFlux2.0_met.nc']
 #met_subset = [] # if empty...run all the files in the met_dir
 
 #
