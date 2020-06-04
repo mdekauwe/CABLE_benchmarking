@@ -39,6 +39,7 @@ repos = [repo1, repo2]
 ## user directories ...
 #
 src_dir = "src"
+aux_dir = "src/CABLE-AUX"
 run_dir = "runs"
 log_dir = "logs"
 plot_dir = "plots"
@@ -58,8 +59,9 @@ if not os.path.exists(src_dir):
 #
 ## Met files ...
 #
-met_subset = ['FI-Hyy_1996-2014_FLUXNET2015_Met.nc',\
-              'AU-Tum_2002-2017_OzFlux_Met.nc']
+#met_subset = ['FI-Hyy_1996-2014_FLUXNET2015_Met.nc',\
+#              'AU-Tum_2002-2017_OzFlux_Met.nc']
+met_subset = ['TumbaFluxnet.1.4_met.nc']
 #met_subset = [] # if empty...run all the files in the met_dir
 
 #

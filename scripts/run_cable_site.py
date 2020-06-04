@@ -103,6 +103,7 @@ class RunCable(object):
 
     def worker(self, met_files, url, rev, sci_config, repo_id, sci_id):
         cwd = os.getcwd()
+
         for fname in met_files:
             site = os.path.basename(fname).split(".")[0]
 
@@ -177,7 +178,7 @@ class RunCable(object):
             os.remove(local_exe)
         shutil.copy(self.cable_exe, local_exe)
         self.cable_exe = local_exe
-        print(self.cable_exe)
+
 
         return (met_files, url, rev)
 
@@ -196,18 +197,11 @@ class RunCable(object):
 
     def run_me(self, nml_fname):
 
-        
+
         # run the model
         cmd = './%s %s' % (self.cable_exe, nml_fname)
-        print(cmd)
+        #print(cmd)
 
-        # Capture stdout and stderr in output
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        if self.verbose:
-            print(output)
-
-
-        """
         if self.verbose:
             cmd = './%s %s' % (self.cable_exe, nml_fname)
             error = subprocess.call(cmd, shell=True)
@@ -221,7 +215,7 @@ class RunCable(object):
             if error is 1:
                 print("Job failed to submit")
             print(output)
-        """
+
 
 def merge_two_dicts(x, y):
     """Given two dicts, merge them into a new dict as a shallow copy."""

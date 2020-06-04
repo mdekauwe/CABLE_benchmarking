@@ -35,6 +35,7 @@ parser.add_option("--qsub", action="store_true", default=False,
 
 (options, args) = parser.parse_args()
 
+"""
 if options.qsub == False:
 
     #
@@ -51,25 +52,28 @@ if options.qsub == False:
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
-
+"""
 
 #
 ## Run CABLE for each science config, for each repo
 #
+
 if not os.path.exists(run_dir):
     os.makedirs(run_dir)
 os.chdir(run_dir)
 
+cable_aux = os.path.join("../", aux_dir)
 for repo_id, repo in enumerate(repos):
-    aux_dir = "../src/CABLE-AUX/"
-    cable_src = "../src/%s" % (repo)
+    cable_src = os.path.join(os.path.join("../", src_dir), repo)
     for sci_id, sci_config in enumerate(sci_configs):
         R = RunCable(met_dir=met_dir, log_dir=log_dir,
                      output_dir=output_dir, restart_dir=restart_dir,
-                     aux_dir=aux_dir, namelist_dir=namelist_dir,
+                     aux_dir=cable_aux, namelist_dir=namelist_dir,
                      met_subset=met_subset, cable_src=cable_src, mpi=mpi,
                      num_cores=num_cores)
         R.main(sci_config, repo_id, sci_id)
+
+"""
 os.chdir(cwd)
 
 #
@@ -82,3 +86,4 @@ ofdir = os.path.join(run_dir, output_dir)
 all_files = glob.glob(os.path.join(ofdir, "*.nc"))
 sites = np.unique([os.path.basename(f).split(".")[0].split("_")[0] \
                    for f in all_files])
+"""
