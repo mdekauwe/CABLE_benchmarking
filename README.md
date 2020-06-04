@@ -86,6 +86,16 @@ If you're on the NCI and wish to submit a qsub script instead:
 There are two steps here as the NCI nodes don't have internet access, so we
 need to check out and build CABLE first.
 
+If you've already built the src once and just want to run things again:
+
+    $ ./initialise_qsub_job.py -s
+
+will generate the qsub script and
+
+    $ ./run_comparison.py -s
+
+will run a local benchmarking without trying to download and rebuild src code
+
 ## Global comparison
 
 Coming soon ...
