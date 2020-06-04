@@ -94,14 +94,22 @@ def replace_keys(text, replacements_dict):
 
     return '\n'.join(lines) + '\n'
 
-def get_svn_info(here, there):
+def get_svn_info(here, there, mcmc_tag=None):
     """
     Add SVN info and cable namelist file to the output file
     """
 
+    #print(there)
     os.chdir(there)
-    os.system("svn info > tmp_svn")
-    fname = 'tmp_svn'
+    #print(os.system("svn info"))
+    #print(os.getcwd())
+    if mcmc_tag is not None:
+        os.system("svn info > tmp_svn_%s" % (mcmc_tag))
+        fname = 'tmp_svn_%s' % (mcmc_tag)
+    else:
+        os.system("svn info > tmp_svn")
+        fname = 'tmp_svn'
+
     fp = open(fname, "r")
     svn = fp.readlines()
     fp.close()
@@ -116,16 +124,12 @@ def get_svn_info(here, there):
     return url, rev
 
 
-def add_attributes_to_output_file(nml_fname, fname, sci_config, url, rev):
+def add_attributes_to_output_file(nml_fname, fname, url, rev):
 
     # Add SVN info to output file
     nc = netCDF4.Dataset(fname, 'r+')
     nc.setncattr('cable_branch', url)
     nc.setncattr('svn_revision_number', rev)
-
-    for key, val in sci_config.items():
-        config_name = "%s_%s" % (key, val)
-        nc.setncattr('SCI_CONFIG', config_name)
 
     # Add namelist to output file
     fp = open(nml_fname, "r")
@@ -242,6 +246,36 @@ def change_LAI(met_fname, site, fixed=None, lai_dir=None):
 
     return new_met_fname
 
+def change_params(met_fname, site, param_names, param_values, mcmc_tag=None):
+
+    if mcmc_tag is not None:
+        new_met_fname = "%s_%s_tmp.nc" % (site, mcmc_tag)
+    else:
+        new_met_fname = "%s_tmp.nc" % (site)
+
+    shutil.copyfile(met_fname, new_met_fname)
+
+    nc = netCDF4.Dataset(new_met_fname, 'r+')
+    (nc_attrs, nc_dims, nc_vars) = ncdump(nc)
+
+    for i, name in enumerate(param_names):
+        value = float(param_values[i])
+
+        if name == "g1":
+            g1 = nc.createVariable('g1', 'f8', ('y', 'x'))
+            g1[:] = value
+        elif name == "vcmax":
+            vcmax = nc.createVariable('vcmax', 'f8', ('y', 'x'))
+            vcmax[:] = value * 1e-6
+
+            # Also change Jmax.
+            ejmax = nc.createVariable('ejmax', 'f8', ('y', 'x'))
+            ejmax[:] = value * 1.67 * 1e-6
+
+    nc.close()  # close the new file
+
+    return new_met_fname
+
 def get_years(met_fname, nyear_spinup):
     """
     Figure out the start and end of the met file, the number of times we
@@ -276,41 +310,228 @@ def get_years(met_fname, nyear_spinup):
     return (st_yr, en_yr, st_yr_transient, en_yr_transient,
             st_yr_spin, en_yr_spin)
 
-def check_steady_state(experiment_id, output_dir, num, debug=True):
+def check_steady_state(experiment_id, restart_dir, output_dir, num,
+                       check_npp=False, check_plant=False, check_soil=False,
+                       check_passive=False, debug=False):
     """
-    Check whether the plant (leaves, wood and roots) and soil
-    (fast, slow and active) carbon pools have reached equilibrium. To do
-    this we are checking the state of the last year in the previous spin
-    cycle to the state in the final year of the current spin cycle.
+    Check whether the plant (leaves, wood and roots) carbon pools have reached
+    equilibrium. To do this we are checking the state of the last year in the
+    previous spin cycle to the state in the final year of the current spin
+    cycle.
     """
-    tol = 0.05 # This is quite high, I use 0.005 in GDAY
-    g_2_kg = 0.001
+    tol_npp = 0.005 # delta < 10^-4 g C m-2, Xia et al. 2013
+    tol_plant = 0.01 # delta steady-state carbon (%), Xia et al. 2013
+    tol_soil = 0.01
+    tol_pass = 0.5   # delta passive pool (g C m-2 yr-1), Xia et al. 2013
 
     if num == 1:
+        prev_npp = 99999.9
         prev_cplant = 99999.9
         prev_csoil = 99999.9
+        prev_passive = 99999.9
+        prev_cl = 99999.9
+        prev_cw = 99999.9
+        prev_cr = 99999.9
     else:
-        fname = "%s_out_CASA_ccp%d.nc" % (experiment_id, num-1)
-        fname = os.path.join(output_dir, fname)
-        ds = xr.open_dataset(fname)
-        prev_cplant = ds.cplant[:,:,0].values[-1].sum() * g_2_kg
-        prev_csoil = ds.csoil[:,:,0].values[-1].sum() * g_2_kg
+        casa_rst_ofname = "%s_casa_rst_%d.nc" % (experiment_id, num-1)
+        fname = os.path.join(restart_dir, casa_rst_ofname)
+        ds_casa = xr.open_dataset(fname)
+        prev_cplant = np.sum(ds_casa.cplant.values)
+        prev_cl = ds_casa.cplant.values[0][0]
+        prev_cw = ds_casa.cplant.values[1][0]
+        prev_cr = ds_casa.cplant.values[2][0]
+        prev_csoil = np.sum(ds_casa.csoil.values)
+        prev_passive = ds_casa.csoil.values[2][0]
+        ds_casa.close()
 
-    fname = "%s_out_CASA_ccp%d.nc" % (experiment_id, num)
-    fname = os.path.join(output_dir, fname)
-    ds = xr.open_dataset(fname)
-    new_cplant = ds.cplant[:,:,0].values[-1].sum() * g_2_kg
-    new_csoil = ds.csoil[:,:,0].values[-1].sum() * g_2_kg
+        if check_npp:
+            cable_ofname = "%s_out_cable_spin_%d.nc" % (experiment_id, num-1)
+            fname = os.path.join(output_dir, cable_ofname)
+            ds_cable = xr.open_dataset(fname, decode_times=False)
+            prev_npp = np.mean(ds_cable.NPP.values)
+            ds_cable.close()
 
-    if ( np.fabs(prev_cplant - new_cplant) < tol and
-         np.fabs(prev_csoil - new_csoil) < tol ):
-        not_in_equilibrium = False
+    casa_rst_ofname = "%s_casa_rst_%d.nc" % (experiment_id, num)
+    fname = os.path.join(restart_dir, casa_rst_ofname)
+    ds_casa = xr.open_dataset(fname)
+    new_cplant = np.sum(ds_casa.cplant.values)
+    new_cl = ds_casa.cplant.values[0][0]
+    new_cw = ds_casa.cplant.values[1][0]
+    new_cr = ds_casa.cplant.values[2][0]
+    new_csoil = np.sum(ds_casa.csoil.values)
+    new_passive = ds_casa.csoil.values[2][0]
+    ds_casa.close()
+
+    if check_npp:
+        cable_ofname = "%s_out_cable_spin_%d.nc" % (experiment_id, num)
+        fname = os.path.join(output_dir, cable_ofname)
+        ds_cable = xr.open_dataset(fname, decode_times=False)
+        new_npp = np.mean(ds_cable.NPP.values)
+        ds_cable.close()
+
+    if check_npp:
+        if ( np.fabs(new_npp - prev_npp) < tol_npp ):
+             not_in_equilibrium = False
+        else:
+            not_in_equilibrium = True
+
+        if debug:
+            print("\n===============================================\n")
+            print("*", num, not_in_equilibrium,
+                  "NPP", new_npp, prev_npp,
+                  np.fabs(new_npp - prev_npp), tol_npp )
+            print("\n===============================================\n")
     else:
-        not_in_equilibrium = True
 
-    if debug:
-        print("*", num, not_in_equilibrium,
-              "*cplant", np.fabs(prev_cplant - new_cplant),
-              "*csoil", np.fabs(prev_csoil - new_csoil))
+        if check_plant:
+            delta_cl = np.fabs(new_cl - prev_cl) / new_cl
+            delta_cw = np.fabs(new_cw - prev_cw) / new_cw
+            delta_cr = np.fabs(new_cr - prev_cr) / new_cr
+            if ( delta_cl + delta_cw + delta_cr  < tol_plant ):
+            #if ( np.fabs((new_cplant - prev_cplant) / new_cplant) < tol_plant ):
+                 not_in_equilibrium = False
+            else:
+                not_in_equilibrium = True
 
+            if debug:
+                print("\n===============================================\n")
+                print("*", num, not_in_equilibrium,
+                      "Cplant", new_cplant, prev_cplant,
+                      delta_cl + delta_cw + delta_cr, tol_plant  )
+                print("\n===============================================\n")
+        elif check_soil:
+            if ( np.fabs((new_csoil - prev_csoil) / new_csoil) < tol_soil ):
+                 not_in_equilibrium = False
+            else:
+                not_in_equilibrium = True
+
+            if debug:
+                print("\n===============================================\n")
+                print("*", num, not_in_equilibrium,
+                      "Csoil", new_csoil, prev_csoil,
+                      np.fabs((new_csoil - prev_csoil) / new_csoil), tol_soil,
+                      "Passive", new_passive, prev_passive )
+                print("\n===============================================\n")
+
+        """
+        if check_passive:
+            if ( np.fabs(new_passive - prev_passive) < tol_pass ):
+                 not_in_equilibrium = False
+            else:
+                not_in_equilibrium = True
+
+            if debug:
+                print("\n===============================================\n")
+                print("*", num, not_in_equilibrium,
+                      "Passive", new_passive, prev_passive,
+                      np.fabs(new_passive - prev_passive))
+                print("\n===============================================\n")
+
+        else:
+            if ( np.fabs((new_csoil - prev_csoil) / new_csoil) < tol ):
+                 not_in_equilibrium = False
+            else:
+                not_in_equilibrium = True
+
+            if debug:
+                print("\n===============================================\n")
+                print("*", num, not_in_equilibrium,
+                      "Passive", new_passive, prev_passive,
+                      np.fabs(new_passive - prev_passive))
+                print("*", num, not_in_equilibrium,
+                      "Csoil", new_csoil, prev_csoil,
+                      np.fabs((new_csoil - prev_csoil) / new_csoil))
+                print("\n===============================================\n")
+        """
     return not_in_equilibrium
+
+def generate_spatial_qsub_script(qsub_fname, walltime, mem, ncpus,
+                                 spin_up=False, CNP=False):
+
+    ofname = qsub_fname
+    if os.path.exists(ofname):
+        os.remove(ofname)
+    f = open(ofname, "w")
+
+    print("#!/bin/bash", end="\n", file=f)
+    print(" ", end="\n", file=f)
+
+    print("#PBS -m ae", end="\n", file=f)
+    #print("#PBS -P w35", end="\n", file=f)
+    print("#PBS -P dp72", end="\n", file=f)
+    print("#PBS -q normal", end="\n", file=f)
+    print("#PBS -l walltime=%s" % (walltime), end="\n", file=f)
+    print("#PBS -l mem=%s" % (mem), end="\n", file=f)
+    print("#PBS -l ncpus=%s" % (ncpus), end="\n", file=f)
+    print("#PBS -j oe", end="\n", file=f)
+    print("#PBS -l wd", end="\n", file=f)
+    print("#PBS -l storage=gdata/w35+gdata/wd9", end="\n", file=f)
+    print("#PBS -M mdekauwe@gmail.com", end="\n", file=f)
+    print(" ", end="\n", file=f)
+    print("module load dot", end="\n", file=f)
+    print("module add intel-mpi/2019.6.166", end="\n", file=f)
+    print("module add netcdf/4.7.1", end="\n", file=f)
+    print("source activate sci", end="\n", file=f)
+    print(" ", end="\n", file=f)
+
+    print("cpus=%s" % (ncpus), end="\n", file=f)
+    print("exe=\"./cable-mpi\"", end="\n", file=f)
+    print("nml_fname=\"cable.nml\"", end="\n", file=f)
+    print(" ", end="\n", file=f)
+
+    print("start_yr=$start_yr", end="\n", file=f)
+    print("prev_yr=\"$(($start_yr-1))\"", end="\n", file=f)
+    print("end_yr=$end_yr", end="\n", file=f)
+    print("co2_fname=$co2_fname", end="\n", file=f)
+    print(" ", end="\n", file=f)
+
+    print("year=$start_yr", end="\n", file=f)
+    print("while [ $year -le $end_yr ]", end="\n", file=f)
+    print("do", end="\n", file=f)
+
+    print("    co2_conc=$(gawk -v yr=$year 'NR==yr' $co2_fname)", end="\n", file=f)
+
+    if spin_up:
+        print("    if [ $start_yr == $year ]", end="\n", file=f)
+        print("    then", end="\n", file=f)
+        print("        restart_in='missing'", end="\n", file=f) # i.e. no restart file for the first year
+        print("    else", end="\n", file=f)
+        print("        restart_in=\"restart_$prev_yr.nc\"", end="\n", file=f)
+        print("    fi", end="\n", file=f)
+        print(" ", end="\n", file=f)
+    else:
+        print("    restart_in=\"restart_$prev_yr.nc\"", end="\n", file=f)
+    print("    restart_out=\"restart_$year.nc\"", end="\n", file=f)
+    print("    outfile=\"cable_out_$year.nc\"", end="\n", file=f)
+    print("    logfile=\"cable_log_$year.txt\"", end="\n", file=f)
+    print(" ", end="\n", file=f)
+
+    print("    echo $co2_conc $year $start_yr $prev_yr $end_yr $restart_in $restart_out $nml_fname $outfile", end="\n", file=f)
+
+    if CNP:
+        print("    python ./run_cable_spatial_CNP.py -a -y $year -l $logfile -o $outfile \\", end="\n", file=f)
+        print("                                  -i $restart_in -r $restart_out \\", end="\n", file=f)
+        print("                                  -c $co2_conc -n $nml_fname", end="\n", file=f)
+    else:
+        print("    python ./run_cable_spatial.py -a -y $year -l $logfile -o $outfile \\", end="\n", file=f)
+        print("                                  -i $restart_in -r $restart_out \\", end="\n", file=f)
+        print("                                  -c $co2_conc -n $nml_fname", end="\n", file=f)
+    print(" ", end="\n", file=f)
+    print("    mpirun -n $cpus $exe $nml_fname", end="\n", file=f)
+    print(" ", end="\n", file=f)
+    print("    year=$[$year+1]", end="\n", file=f)
+
+    if spin_up:
+        print("    if [ $start_yr == $year ]", end="\n", file=f)
+        print("    then", end="\n", file=f)
+        print("        prev_yr=$start_yr", end="\n", file=f)
+        print("    else", end="\n", file=f)
+        print("        prev_yr=$[$prev_yr+1]", end="\n", file=f)
+        print("    fi", end="\n", file=f)
+    else:
+        print("    prev_yr=$[$prev_yr+1]", end="\n", file=f)
+    print(" ", end="\n", file=f)
+    print("done", end="\n", file=f)
+    print(" ", end="\n", file=f)
+
+    f.close()
