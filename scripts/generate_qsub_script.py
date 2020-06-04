@@ -29,6 +29,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("#PBS -P %s\n" % (project))
     f.write("#PBS -m ae\n")
     f.write("#PBS -M %s\n" % (email_address))
+    f.write("#PBS -l storage=gdata/w35+gdata/wd9")
     f.write("set -e\n")
     f.write("\n")
     f.write("ulimit -s unlimited")
@@ -36,7 +37,9 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("\n")
     f.write("umask 022\n")
     f.write("\n")
-    f.write("python run_comparison.py --qsub\n")
+    f.write("source activate sci")
+    f.write("module add netcdf/4.7.1")
+    f.write("python ./run_comparison.py --qsub\n")
     f.write("\n")
 
     f.close()
