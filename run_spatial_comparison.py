@@ -49,8 +49,8 @@ if options.qsub == False and options.skipsrc == False:
     #
     ## Build CABLE ...
     #
-    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
+    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FCMPI,
+                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS, mpi=True)
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
 
@@ -63,50 +63,28 @@ if not os.path.exists(run_dir):
     os.makedirs(run_dir)
 os.chdir(run_dir)
 
-cable_aux = os.path.join("../", aux_dir)
-for repo_id, repo in enumerate(repos):
-    cable_src = os.path.join(os.path.join("../", src_dir), repo)
-    for sci_id, sci_config in enumerate(sci_configs):
-        R = RunCable(met_dir=met_dir, log_dir=log_dir,
-                     output_dir=output_dir, restart_dir=restart_dir,
-                     aux_dir=cable_aux, namelist_dir=namelist_dir,
-                     met_subset=met_subset, cable_src=cable_src, mpi=mpi,
-                     num_cores=num_cores)
-        R.main(sci_config, repo_id, sci_id)
-
-
-os.chdir(cwd)
-
-
-
-### NOT INTEGRATED BUT WE NEED THE BELOW
-
 #------------- Change stuff ------------- #
 tmp_ancillary_dir = "global_files" # GSWP3 grid/mask file, temporarily
 
 met_dir = "/g/data/wd9/MetForcing/Global/GSWP3_2017/"
-run_start_yr = 1901
-run_end_yr = 1901
+start_yr = 1901
+end_yr = 1901
 walltime = "0:30:00"
 qsub_fname = "qsub_wrapper_script_simulation.sh"
+#------------- Change stuff ------------- #
 
-(log_fname, out_fname, restart_in_fname,
- restart_out_fname, year, co2_conc,
- nml_fname, spin_up, adjust_nml, sort_restarts) = cmd_line_parser()
+cable_aux = os.path.join("../", aux_dir)
+for repo_id, repo in enumerate(repos):
+    cable_src = os.path.join(os.path.join("../", src_dir), repo)
+    for sci_id, sci_config in enumerate(sci_configs):
 
-C = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
-             restart_dir=restart_dir, aux_dir=aux_dir, spin_up=spin_up,
-             cable_src=cable_src, qsub_fname=qsub_fname, met_data=met_data,
-             nml_fname=nml_fname, walltime=walltime,
-             tmp_ancillary_dir=tmp_ancillary_dir)
+        R = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
+                     restart_dir=restart_dir, aux_dir=aux_dir, spin_up=spin_up,
+                     cable_src=cable_src, qsub_fname=qsub_fname,
+                     met_data=met_data, nml_fname=nml_fname, walltime=walltime,
+                     tmp_ancillary_dir=tmp_ancillary_dir)
+        R.initialise_stuff()
+        R.setup_nml_file()
+        R.run_qsub_script(start_yr, end_yr)
 
-# Setup initial namelist file and submit qsub job
-if adjust_nml == False:
-    C.initialise_stuff()
-    C.setup_nml_file()
-    C.run_qsub_script(start_yr, end_yr)
-
-# qsub script is adjusting namelist file, i.e. for a different year
-else:
-    C.create_new_nml_file(log_fname, out_fname, restart_in_fname,
-                          restart_out_fname, year, co2_conc)
+os.chdir(cwd)
