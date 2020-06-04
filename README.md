@@ -96,6 +96,12 @@ will generate the qsub script and
 
 will run a local benchmarking without trying to download and rebuild src code
 
+If you want to make some quick local benchmark plots:
+
+    $ ./make_seasonal_plots.py
+
+    
+
 ## Global comparison
 
 Coming soon ...
