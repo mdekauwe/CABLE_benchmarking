@@ -35,7 +35,7 @@ def set_paths(nodename):
         cmd = "module load netcdf-c/4.4.1.1-intel"
         cmd = "module load netcdf-f/4.4.4-intel"
         error = subprocess.call(cmd, shell=True)
-        if error is 1:
+        if error == 1:
             raise("Error loading netcdf libs")
 
         #NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
@@ -64,12 +64,12 @@ def set_paths(nodename):
         ver = "4.7.1"
         cmd = "module unload netcdf"
         error = subprocess.call(cmd, shell=True)
-        if error is 1:
+        if error == 1:
             raise("Error unloading netcdf libs")
 
         cmd = "module load netcdf/%s" % (ver)
         error = subprocess.call(cmd, shell=True)
-        if error is 1:
+        if error == 1:
             raise("Error loading netcdf libs")
 
         NCDIR = '/apps/netcdf/%s/lib' % (ver)

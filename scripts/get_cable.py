@@ -69,11 +69,11 @@ class GetCable(object):
                     f.flush()
 
                     output, error = p.communicate()
-                    if error is 1:
+                    if error == 1:
                         raise("Error checking if repo exists")
 
                     #error = subprocess.call(['/bin/bash', f.name])
-                    #if error is 1:
+                    #if error == 1:
                     #    raise("Error checking if repo exists")
                     #f.close()
 
@@ -86,7 +86,7 @@ class GetCable(object):
                         f.flush()
 
                         error = subprocess.call(['/bin/bash', f.name])
-                        if error is 1:
+                        if error == 1:
                             raise("Error checking out repo")
                         f.close()
 
@@ -97,7 +97,7 @@ class GetCable(object):
                     f.flush()
 
                     error = subprocess.call(['/bin/bash', f.name])
-                    if error is 1:
+                    if error == 1:
                         raise("Error downloading repo")
                     f.close()
             else:
@@ -109,20 +109,20 @@ class GetCable(object):
                 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
                 output, error = p.communicate()
-                if error is 1:
+                if error == 1:
                     raise("Error checking if repo exists")
 
                 if "non-existent" in str(output) or "problem" in str(output):
                     cmd = "svn copy %s/trunk %s/branches/Users/%s/%s -m %s" % \
                         (self.root, self.root, self.user, repo_name, self.msg)
                     error = subprocess.call(cmd, shell=True)
-                    if error is 1:
+                    if error == 1:
                         raise("Error checking out repo")
 
                 cmd = "svn checkout %s/branches/Users/%s/%s" % \
                         (self.root, self.user, repo_name)
                 error = subprocess.call(cmd, shell=True)
-                if error is 1:
+                if error == 1:
                     raise("Error downloading repo")
 
         # Checkout named branch ...
@@ -139,7 +139,7 @@ class GetCable(object):
                     f.flush()
 
                     error = subprocess.call(['/bin/bash', f.name])
-                    if error is 1:
+                    if error == 1:
                         raise("Error downloading repo")
                     f.close()
             else:
@@ -147,7 +147,7 @@ class GetCable(object):
                 #        (self.root, self.user, repo_name)
                 cmd = "svn checkout %s/branches/Share/integration" % (self.root)
                 error = subprocess.call(cmd, shell=True)
-                if error is 1:
+                if error == 1:
                     raise("Error downloading repo")
 
         # Checkout CABLE-AUX
@@ -161,7 +161,7 @@ class GetCable(object):
                     f.flush()
 
                     error = subprocess.call(['/bin/bash', f.name])
-                    if error is 1:
+                    if error == 1:
                         raise("Error checking out CABLE-AUX")
                     f.close()
         else:
@@ -169,7 +169,7 @@ class GetCable(object):
                 cmd = "svn checkout %s/branches/Share/%s %s" % \
                         (self.root, self.aux_dir, self.aux_dir)
                 error = subprocess.call(cmd, shell=True)
-                if error is 1:
+                if error == 1:
                     raise("Error checking out CABLE-AUX")
 
         os.chdir(cwd)
