@@ -14,6 +14,7 @@ import os
 import sys
 import subprocess
 import datetime
+import getpass
 
 class GetCable(object):
 
@@ -52,7 +53,7 @@ class GetCable(object):
         except FileNotFoundError:
             pswd = "'" + getpass.getpass('Password:') + "'"
             need_pass = True
-            
+
         # Checkout the head of the trunk ...
         if trunk:
 
