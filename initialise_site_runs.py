@@ -28,7 +28,6 @@ from build_cable import BuildCable
 from generate_qsub_script import create_qsub_script
 
 
-
 # i.e. if on NCI
 if ("Mac" not in nodename or
     "imac" not in nodename or
