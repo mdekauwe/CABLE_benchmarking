@@ -48,7 +48,7 @@ class BuildCable(object):
                              stderr=subprocess.STDOUT)
         host, error = p.communicate()
         host = str(host, 'utf-8').strip()
-        if error is 1:
+        if error == 1:
             raise("Error checking if repo exists")
 
         if self.mpi:
@@ -105,12 +105,12 @@ class BuildCable(object):
 
         cmd = "chmod +x %s" % (ofname)
         error = subprocess.call(cmd, shell=True)
-        if error is 1:
+        if error == 1:
             raise("Error changing file to executable")
 
         cmd = "./%s clean" % (ofname)
         error = subprocess.call(cmd, shell=True)
-        if error is 1:
+        if error == 1:
             raise("Error building executable")
 
         os.remove(ofname)
