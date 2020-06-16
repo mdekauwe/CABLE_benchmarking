@@ -44,11 +44,15 @@ class GetCable(object):
         cwd = os.getcwd()
         os.chdir(self.src_dir)
 
-        where = os.listdir('%s/.subversion/auth/svn.simple/' % (self.home_dir))
-        if len(where) == 0:
+        try:
+            where = os.listdir('%s/.subversion/auth/svn.simple/' % (self.home_dir))
+            if len(where) == 0:
+                pswd = "'" + getpass.getpass('Password:') + "'"
+                need_pass = True
+        except FileNotFoundError:
             pswd = "'" + getpass.getpass('Password:') + "'"
             need_pass = True
-
+            
         # Checkout the head of the trunk ...
         if trunk:
 
