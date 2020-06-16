@@ -53,7 +53,7 @@ if options.skipget == False:
     G.main(repo_name=repos[0], trunk=trunk) # Default is True
     G.main(repo_name=repos[1], trunk=False) # integration branch
 
-elif options.skipbuild == False:
+if options.skipbuild == False:
 
     #
     ## Build CABLE ...
