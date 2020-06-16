@@ -75,6 +75,12 @@ def set_paths(nodename):
         NCDIR = '/apps/netcdf/%s/lib' % (ver)
         NCMOD = '/apps/netcdf/%s/include' % (ver)
 
+
+        cmd = "module load intel-compiler/2019.3.199"
+        error = subprocess.call(cmd, shell=True)
+        if error == 1:
+            raise("Error loading netcdf libs")
+
         FCMPI = 'mpif90'
         FC = 'ifort'
         CFLAGS = '-O2'
