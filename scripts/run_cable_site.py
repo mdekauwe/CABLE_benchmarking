@@ -196,7 +196,7 @@ class RunCable(object):
 
     def run_me(self, nml_fname):
 
-        print(nml_fname)
+
         # run the model
         if self.verbose:
             cmd = './%s %s' % (self.cable_exe, nml_fname)
