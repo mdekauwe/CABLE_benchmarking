@@ -32,7 +32,7 @@ def set_paths(nodename):
         met_dir = "/Users/mdekauwe/research/CABLE_runs/met_data/plumber_met"
 
     elif "unsw" in nodename:
-        #cmd = "module load netcdf/4.1.3-intel"
+        cmd = "module load netcdf-c/4.4.1.1-intel"
         cmd = "module load netcdf-f/4.4.4-intel"
         error = subprocess.call(cmd, shell=True)
         if error is 1:
@@ -40,8 +40,8 @@ def set_paths(nodename):
 
         #NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
         #NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
-        NCDIR = '/share/apps/netcdf-f/4.4.4/lib'
-        NCMOD = '/share/apps/netcdf-f/4.4.4/include'
+        self.NCDIR = '/share/apps/netcdf-f/intel/4.4.4/lib'
+        self.NCMOD = '/share/apps/netcdf-f/intel/4.4.4/include'
 
         FC = 'ifort'
         FCMPI = 'mpif90'
