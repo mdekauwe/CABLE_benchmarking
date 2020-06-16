@@ -21,6 +21,7 @@ def set_paths(nodename):
         NCDIR = '/opt/local/lib/'
         NCMOD = '/opt/local/include/'
         FC = 'gfortran'
+        FCMPI = 'gfortran-mp-9'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
         LDFLAGS = "'-L/opt/local/lib -O2'"
@@ -39,6 +40,7 @@ def set_paths(nodename):
         NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
         NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
         FC = 'ifort'
+        FCMPI = 'mpif90'
         CFLAGS = '-O2'
         LD = "'-lnetcdf -lnetcdff'"
         LDFLAGS = "'-L/opt/local/lib -O2'"
