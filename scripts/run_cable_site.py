@@ -61,11 +61,14 @@ class RunCable(object):
         self.met_subset = met_subset
         self.cable_src = cable_src
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
+        self.setup_exe()
         self.verbose = verbose
         self.mpi = mpi
         self.num_cores = num_cores
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
+
+
 
     def main(self, sci_config, repo_id, sci_id):
 
@@ -80,7 +83,7 @@ class RunCable(object):
                 self.num_cores = len(met_files)
 
             pool = mp.Pool(processes=self.num_cores)
-            processes = []
+            jobs = []
 
             for i in range(self.num_cores):
                 start = chunk_size * i
@@ -92,11 +95,13 @@ class RunCable(object):
                 p = mp.Process(target=self.worker,
                                args=(met_files[start:end], url, rev,
                                      sci_config, repo_id, sci_id, ))
-                processes.append(p)
-
-            # Run processes
-            for p in processes:
                 p.start()
+                jobs.append(p)
+
+            # wait for all multiprocessing processes to finish
+            for j in jobs:
+                j.join()
+
         else:
             self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
 
@@ -147,6 +152,15 @@ class RunCable(object):
             if self.fixed_lai is not None or self.lai_dir is not None:
                 os.remove("%s_tmp.nc" % (site))
 
+    def setup_exe(self):
+        # delete local executable, copy a local copy and use that
+        #local_exe = os.path.join(cwd, "cable")
+        local_exe = "cable"
+        if os.path.isfile(local_exe):
+            os.remove(local_exe)
+        shutil.copy(self.cable_exe, local_exe)
+        self.cable_exe = local_exe
+
     def initialise_stuff(self):
 
         if not os.path.exists(self.restart_dir):
@@ -169,14 +183,6 @@ class RunCable(object):
 
         cwd = os.getcwd()
         (url, rev) = get_svn_info(cwd, self.cable_src)
-
-        # delete local executable, copy a local copy and use that
-        #local_exe = os.path.join(cwd, "cable")
-        local_exe = "cable"
-        if os.path.isfile(local_exe):
-            os.remove(local_exe)
-        shutil.copy(self.cable_exe, local_exe)
-        self.cable_exe = local_exe
 
 
         return (met_files, url, rev)
@@ -210,7 +216,7 @@ class RunCable(object):
             error = subprocess.call(cmd, shell=True)
             if error == 1:
                 print("Job failed to submit")
-            print(output)
+
 
 
 def merge_two_dicts(x, y):
