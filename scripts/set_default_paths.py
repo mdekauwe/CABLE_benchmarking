@@ -29,7 +29,8 @@ def set_paths(nodename):
         #
         ## Met paths ...
         #
-        met_dir = "/Users/mdekauwe/research/CABLE_runs/met_data/plumber_met"
+        #met_dir = "/Users/mdekauwe/research/CABLE_runs/met_data/plumber_met"
+        met_dir = "/Users/mdekauwe/research/plumber_test"
 
     elif "unsw" in nodename:
         cmd = "module load netcdf-c/4.4.1.1-intel"
@@ -80,4 +81,5 @@ def set_paths(nodename):
         #           "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
         met_dir = ("/g/data/w35/Shared_data/Observations/Fluxnet_data/"
                    "Post-processed_PLUMBER2_outputs/Nc_files/Met")
+                   
     return (met_dir, NCDIR, NCMOD, FC, FCMPI, CFLAGS, LD, LDFLAGS)
