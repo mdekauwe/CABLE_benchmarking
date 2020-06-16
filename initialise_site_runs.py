@@ -29,8 +29,9 @@ from generate_qsub_script import create_qsub_script
 
 
 # i.e. if on NCI
-if ("Mac" not in nodename or
-    "imac" not in nodename or
+if ("Mac" not in nodename and
+    "MacBook" not in nodename and
+    "imac" not in nodename and
     "unsw" not in nodename):
 
     create_qsub_script(qsub_fname, ncpus, mem, wall_time, project,
