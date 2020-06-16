@@ -48,11 +48,11 @@ def set_paths(nodename):
         #
         ## Met paths ...
         #
-        #met_dir = ("/srv/ccrc/data04/z3509830/Fluxnet_data/"
-        #           "All_flux_sites_processed/all_sites_no_duplicates/"
-        #           "Nc_files/Met")
-        met_dir = ("/srv/ccrc/data45/z3509830/CABLE_runs/Inputs/"
-                   "PLUMBER_sites/met")
+        #met_dir = ("/srv/ccrc/data45/z3509830/CABLE_runs/Inputs/"
+        #           "PLUMBER_sites/met")
+        met_dir = ("/srv/ccrc/data04/z3509830/Fluxnet_data/"
+                   "All_flux_sites_processed_PLUMBER2/"
+                   "Post-processed_PLUMBER2_outputs/Nc_files/Met")
     else:
 
         # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
