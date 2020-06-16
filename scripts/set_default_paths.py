@@ -40,8 +40,8 @@ def set_paths(nodename):
 
         #NCDIR = '/share/apps/netcdf/intel/4.1.3/lib'
         #NCMOD = '/share/apps/netcdf/intel/4.1.3/include'
-        self.NCDIR = '/share/apps/netcdf-f/intel/4.4.4/lib'
-        self.NCMOD = '/share/apps/netcdf-f/intel/4.4.4/include'
+        NCDIR = '/share/apps/netcdf-f/intel/4.4.4/lib'
+        NCMOD = '/share/apps/netcdf-f/intel/4.4.4/include'
 
         FC = 'ifort'
         FCMPI = 'mpif90'
