@@ -28,13 +28,15 @@ from build_cable import BuildCable
 from generate_qsub_script import create_qsub_script
 
 parser = OptionParser()
-parser.add_option("-s", "--skipsrc", action="store_true", default=False,
+parser.add_option("-s", "--skipbuild", action="store_true", default=False,
                   help="Rebuild src?")
+parser.add_option("-g", "--skipget", action="store_true", default=False,
+                  help="Get src?")
 
 (options, args) = parser.parse_args()
 
-if options.skipsrc == False:
 
+if options.skipget == False:
     #
     ## Get CABLE ...
     #
@@ -42,13 +44,16 @@ if options.skipsrc == False:
     G.main(repo_name=repos[0], trunk=trunk) # Default is True
     G.main(repo_name=repos[1], trunk=False) # integration branch
 
+elif options.skipbuild == False:
+
     #
     ## Build CABLE ...
     #
-    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FCMPI,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS, mpi=True)
+    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
+                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
     B.main(repo_name=repos[0])
     B.main(repo_name=repos[1])
+
 
 
 #------------- Change stuff ------------- #

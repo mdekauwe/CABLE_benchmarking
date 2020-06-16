@@ -37,21 +37,24 @@ if ("Mac" not in nodename or
     create_qsub_script(qsub_fname, ncpus, mem, wall_time, project,
                        email_address)
 
-
 parser = OptionParser()
-parser.add_option("-s", "--skipsrc", action="store_true", default=False,
+parser.add_option("-s", "--skipbuild", action="store_true", default=False,
                   help="Rebuild src?")
+parser.add_option("-g", "--skipget", action="store_true", default=False,
+                  help="Get src?")
 
 (options, args) = parser.parse_args()
 
-if options.skipsrc == False:
 
+if options.skipget == False:
     #
     ## Get CABLE ...
     #
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repos[0], trunk=trunk) # Default is True
     G.main(repo_name=repos[1], trunk=False) # integration branch
+
+elif options.skipbuild == False:
 
     #
     ## Build CABLE ...
