@@ -79,7 +79,12 @@ def set_paths(nodename):
         cmd = "module load intel-compiler/2019.3.199"
         error = subprocess.call(cmd, shell=True)
         if error == 1:
-            raise("Error loading netcdf libs")
+            raise("Error loading ifort")
+
+        cmd = "module load intel-mpi/2019.6.166"
+        error = subprocess.call(cmd, shell=True)
+        if error == 1:
+            raise("Error loading ifort mpi")
 
         FCMPI = 'mpif90'
         FC = 'ifort'
