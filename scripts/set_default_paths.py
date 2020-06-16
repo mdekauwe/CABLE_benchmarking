@@ -58,12 +58,13 @@ def set_paths(nodename):
                    "All_flux_sites_processed_PLUMBER2/"
                    "Post-processed_PLUMBER2_outputs/Nc_files/Met")
     else:
-
-        exec(open('/opt/Modules/v4.3.0/init/python.py').read())
+        sys.path.append("/opt/Modules/v4.3.0/init/")
+        import python as mod
+        #exec(open('/opt/Modules/v4.3.0/init/python.py').read())
         ver = "4.7.1"
-        module('load', 'netcdf/%s' % (ver))
-        module('load', 'intel-compiler/2019.3.199')
-        module('load', 'intel-mpi/2019.6.166')
+        mod.module('load', 'netcdf/%s' % (ver))
+        mod.module('load', 'intel-compiler/2019.3.199')
+        mod.module('load', 'intel-mpi/2019.6.166')
 
         # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
         #elif "raijin" in nodename:
