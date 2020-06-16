@@ -55,6 +55,14 @@ This isn't an issue for other flags, e.g.
         "fixedCO2": "400.0",
     }
 
+On the NCI, if you get an error about your python version:
+
+    "The use of the #!/usr/bin/env python interpreter line in python scripts..."
+
+Then try:
+
+    module load python3-as-python
+
 *Single-site, multi-sites and all-sites ...*
 
 To run a single site, you just need to set which site you wish to run in the python list variable, e.g.
