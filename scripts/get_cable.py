@@ -33,7 +33,7 @@ class GetCable(object):
 
         self.initialise_stuff()
 
-        self.cable(repo_name, trunk)
+        self.get_repo(repo_name, trunk)
 
     def initialise_stuff(self):
 
@@ -63,8 +63,7 @@ class GetCable(object):
                 # write over this, otherwise we will check one out
                 cmd = "svn info %s/branches/Users/%s/%s --password %s" % \
                         (self.root, self.user, repo_name, pswd)
-                print(cmd)
-                sys.exit()
+
                 with tempfile.NamedTemporaryFile(mode='w+t') as f:
                     f.write(cmd)
                     f.flush()
