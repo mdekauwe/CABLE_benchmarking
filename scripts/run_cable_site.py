@@ -63,7 +63,7 @@ class RunCable(object):
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
         self.verbose = verbose
         self.mpi = mpi
-        self.num_cores = num_cores - 1 # save one core for management of tasks
+        self.num_cores = num_cores
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
 
@@ -76,6 +76,9 @@ class RunCable(object):
             if self.num_cores is None: # use them all!
                 self.num_cores = mp.cpu_count()
             chunk_size = int(np.ceil(len(met_files) / float(self.num_cores)))
+            if self.num_cores > len(met_files):
+                self.num_cores = len(met_files)
+
             pool = mp.Pool(processes=self.num_cores)
             processes = []
 
@@ -193,7 +196,7 @@ class RunCable(object):
 
     def run_me(self, nml_fname):
 
-
+        print(nml_fname)
         # run the model
         if self.verbose:
             cmd = './%s %s' % (self.cable_exe, nml_fname)
