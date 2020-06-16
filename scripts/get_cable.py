@@ -68,10 +68,14 @@ class GetCable(object):
                     f.write(cmd)
                     f.flush()
 
-                    error = subprocess.call(['/bin/bash', f.name])
+                    output, error = p.communicate()
                     if error is 1:
                         raise("Error checking if repo exists")
-                    f.close()
+
+                    #error = subprocess.call(['/bin/bash', f.name])
+                    #if error is 1:
+                    #    raise("Error checking if repo exists")
+                    #f.close()
 
                 if "non-existent" in str(output) or "problem" in str(output):
                     cmd = "svn copy %s/trunk %s/branches/Users/%s/%s --password %s -m %s" % \
