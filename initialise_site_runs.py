@@ -28,15 +28,14 @@ from build_cable import BuildCable
 from generate_qsub_script import create_qsub_script
 
 
-def set_paths(nodename):
 
-    # i.e. if on NCI
-    if ("Mac" not in nodename or
-        "imac" not in nodename or
-        "unsw" not in nodename):
+# i.e. if on NCI
+if ("Mac" not in nodename or
+    "imac" not in nodename or
+    "unsw" not in nodename):
 
-        create_qsub_script(qsub_fname, ncpus, mem, wall_time, project,
-                           email_address)
+    create_qsub_script(qsub_fname, ncpus, mem, wall_time, project,
+                       email_address)
 
 
 parser = OptionParser()
