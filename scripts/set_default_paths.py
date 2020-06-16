@@ -79,7 +79,7 @@ def set_paths(nodename):
         #    raise("Error loading netcdf libs")
 
         cmd = "module load netcdf/%s" % (ver)
-        error = subprocess.Popen(["bash", "-c", cmd])
+        error = subprocess.Popen(["bash", "-ci", cmd])
         if error == 1:
             raise("Error loading ifort")
 
@@ -88,12 +88,12 @@ def set_paths(nodename):
         #if error == 1:
         #    raise("Error loading ifort")
         cmd = "module load intel-compiler/2019.3.199"
-        error = subprocess.Popen(["bash", "-c", cmd])
+        error = subprocess.Popen(["bash", "-ci", cmd])
         if error == 1:
             raise("Error loading ifort")
 
         cmd = "module load intel-mpi/2019.6.166"
-        error = subprocess.Popen(["bash", "-c", cmd])
+        error = subprocess.Popen(["bash", "-ci", cmd])
         if error == 1:
             raise("Error loading ifort")
         #error = subprocess.call(cmd, shell=True)
