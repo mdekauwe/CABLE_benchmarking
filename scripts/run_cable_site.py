@@ -10,7 +10,7 @@ in the met directory
 That's all folks.
 """
 __author__ = "Martin De Kauwe"
-__version__ = "1.0 (02.08.2018)"
+__version__ = "1.0 (16.06.2020)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
@@ -77,7 +77,7 @@ class RunCable(object):
                 self.num_cores = mp.cpu_count()
             chunk_size = int(np.ceil(len(met_files) / float(self.num_cores)))
             pool = mp.Pool(processes=self.num_cores)
-            jobs = []
+            processes = []
 
             for i in range(self.num_cores):
                 start = chunk_size * i
@@ -89,15 +89,11 @@ class RunCable(object):
                 p = mp.Process(target=self.worker,
                                args=(met_files[start:end], url, rev,
                                      sci_config, repo_id, sci_id, ))
-                jobs.append(p)
-                p.start()
-
-                #processes.append(p)
-
+                processes.append(p)
 
             # Run processes
-            #for p in processes:
-            #    p.start()
+            for p in processes:
+                p.start()
         else:
             self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
 
@@ -199,9 +195,6 @@ class RunCable(object):
 
 
         # run the model
-        cmd = './%s %s' % (self.cable_exe, nml_fname)
-        #print(cmd)
-
         if self.verbose:
             cmd = './%s %s' % (self.cable_exe, nml_fname)
             error = subprocess.call(cmd, shell=True)
