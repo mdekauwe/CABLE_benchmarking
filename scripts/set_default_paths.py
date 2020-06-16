@@ -58,14 +58,47 @@ def set_paths(nodename):
                    "All_flux_sites_processed_PLUMBER2/"
                    "Post-processed_PLUMBER2_outputs/Nc_files/Met")
     else:
+
+        #exec(open('/opt/Modules/v4.3.0/init/python.py').read())
+        #ver = "4.7.1"
+        #module('load', 'netcdf/%s' % (ver))
+        #module('load', 'intel-compiler/2019.3.199')
+        #module('load', 'intel-mpi/2019.6.166')
+
         # this won't work on qsub as the nodename isn't raijinX, it is r1997 (etc)
         #elif "raijin" in nodename:
-
-        exec(open('/opt/Modules/v4.3.0/init/python.py').read())
         ver = "4.7.1"
-        module('load', 'netcdf/%s' % (ver))
-        module('load', 'intel-compiler/2019.3.199')
-        module('load', 'intel-mpi/2019.6.166')
+        #cmd = "module unload netcdf"
+        #error = subprocess.call(cmd, shell=True)
+        #if error == 1:
+        #    raise("Error unloading netcdf libs")
+
+        #cmd = "module load netcdf/%s" % (ver)
+        #error = subprocess.call(cmd, shell=True)
+        #if error == 1:
+        #    raise("Error loading netcdf libs")
+
+        cmd = "module load netcdf/%s" % (ver)
+        error = subprocess.Popen(["bash", "-c", cmd])
+        if error == 1:
+            raise("Error loading ifort")
+
+        #cmd = "module load intel-compiler/2019.3.199"
+        #error = subprocess.call(cmd, shell=True)
+        #if error == 1:
+        #    raise("Error loading ifort")
+        cmd = "module load intel-compiler/2019.3.199"
+        error = subprocess.Popen(["bash", "-c", cmd])
+        if error == 1:
+            raise("Error loading ifort")
+
+        cmd = "module load intel-mpi/2019.6.166"
+        error = subprocess.Popen(["bash", "-c", cmd])
+        if error == 1:
+            raise("Error loading ifort")
+        #error = subprocess.call(cmd, shell=True)
+        #if error == 1:
+        #    raise("Error loading ifort mpi")
 
         NCDIR = '/apps/netcdf/%s/lib' % (ver)
         NCMOD = '/apps/netcdf/%s/include' % (ver)
