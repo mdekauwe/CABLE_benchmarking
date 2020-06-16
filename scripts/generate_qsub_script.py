@@ -36,7 +36,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("\n")
     f.write("source activate sci\n")
     f.write("module add netcdf/4.7.1\n")
-    f.write("python ./run_comparison.py --qsub\n")
+    f.write("python ./run_site_comparison.py --qsub\n")
     f.write("\n")
 
     f.close()
