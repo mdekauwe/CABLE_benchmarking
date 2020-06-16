@@ -30,8 +30,8 @@ email_address = "mdekauwe@gmail.com"
 #
 user = "mgk576"
 trunk = True
-#repo1 = "Trunk_%s" % (date)
-repo1 = "Trunk"
+repo1 = "Trunk_%s" % (date)
+#repo1 = "Trunk"
 repo2 = "integration"
 repos = [repo1, repo2]
 
