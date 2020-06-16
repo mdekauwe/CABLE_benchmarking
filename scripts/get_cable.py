@@ -15,6 +15,7 @@ import sys
 import subprocess
 import datetime
 import getpass
+import tempfile
 
 class GetCable(object):
 
