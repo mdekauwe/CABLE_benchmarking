@@ -27,7 +27,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
     f.write("#PBS -l walltime=%s\n" % (wall_time))
     f.write("#PBS -q normal\n")
     f.write("#PBS -P %s\n" % (project))
-    f.write("#PBS -m ae\n")
+    f.write("#PBS -j oe\n")
     f.write("#PBS -M %s\n" % (email_address))
     f.write("#PBS -l storage=gdata/w35+gdata/wd9\n")
     f.write("\n")
