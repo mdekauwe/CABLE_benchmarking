@@ -63,6 +63,7 @@ def set_paths(nodename):
         import python as mod
         #exec(open('/opt/Modules/v4.3.0/init/python.py').read())
         ver = "4.7.1"
+        mod.module('unload', 'netcdf')
         mod.module('load', 'netcdf/%s' % (ver))
         mod.module('load', 'intel-compiler/2019.3.199')
         mod.module('load', 'intel-mpi/2019.6.166')
@@ -81,5 +82,5 @@ def set_paths(nodename):
         #           "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
         met_dir = ("/g/data/w35/Shared_data/Observations/Fluxnet_data/"
                    "Post-processed_PLUMBER2_outputs/Nc_files/Met")
-                   
+
     return (met_dir, NCDIR, NCMOD, FC, FCMPI, CFLAGS, LD, LDFLAGS)
