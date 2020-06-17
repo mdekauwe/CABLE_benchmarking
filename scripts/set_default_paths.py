@@ -64,6 +64,7 @@ def set_paths(nodename):
         #exec(open('/opt/Modules/v4.3.0/init/python.py').read())
         ver = "4.7.1"
         mod.module('unload', 'netcdf')
+        mod.module('unload', 'openmpi')
         mod.module('load', 'netcdf/%s' % (ver))
         mod.module('load', 'intel-compiler/2019.3.199')
         mod.module('load', 'intel-mpi/2019.6.166')
