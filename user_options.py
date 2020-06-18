@@ -19,7 +19,7 @@ from set_default_paths import set_paths
 #
 project = "w35"
 qsub_fname = "benchmark_cable_qsub.sh"
-ncpus = 4
+ncpus = 2
 mem = "32GB"
 wall_time = "01:30:00"
 email_address = "mdekauwe@gmail.com"
@@ -115,6 +115,6 @@ sci_configs = [sci1, sci2]
 ## MPI stuff
 #
 mpi = True
-num_cores = 2 #4 # set to a number, if None it will use all cores...!
+num_cores = ncpus # set to a number, if None it will use all cores...!
 
 # ----------------------------------------------------------------------- #
