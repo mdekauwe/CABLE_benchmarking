@@ -99,8 +99,8 @@ class RunCable(object):
                 jobs.append(p)
 
             # wait for all multiprocessing processes to finish
-            #for j in jobs:
-            #    j.join()
+            for j in jobs:
+                j.join()
 
         else:
             self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
