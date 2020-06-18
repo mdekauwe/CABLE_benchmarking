@@ -79,8 +79,8 @@ class RunCable(object):
             if self.num_cores is None: # use them all!
                 self.num_cores = mp.cpu_count()
             chunk_size = int(np.ceil(len(met_files) / float(self.num_cores)))
-            if self.num_cores > len(met_files):
-                self.num_cores = len(met_files)
+            #if self.num_cores > len(met_files):
+            #    self.num_cores = len(met_files)
 
             pool = mp.Pool(processes=self.num_cores)
             jobs = []
@@ -99,8 +99,8 @@ class RunCable(object):
                 jobs.append(p)
 
             # wait for all multiprocessing processes to finish
-            for j in jobs:
-                j.join()
+            #for j in jobs:
+            #    j.join()
 
         else:
             self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
@@ -206,9 +206,10 @@ class RunCable(object):
         # run the model
         if self.verbose:
             cmd = './%s %s' % (self.cable_exe, nml_fname)
-            error = subprocess.call(cmd, shell=True)
-            if error == 1:
-                print("Job failed to submit")
+            try:
+                error = subprocess.call(cmd, shell=True)
+            except:
+                print("Job failed to submit: %s", error)
                 raise
         else:
             # No outputs to the screen: stout and stderr to dev/null
