@@ -115,6 +115,6 @@ sci_configs = [sci1, sci2]
 ## MPI stuff
 #
 mpi = True
-num_cores = None #4 # set to a number, if None it will use all cores...!
+num_cores = 2 #4 # set to a number, if None it will use all cores...!
 
 # ----------------------------------------------------------------------- #
