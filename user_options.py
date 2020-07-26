@@ -33,7 +33,9 @@ trunk = True
 repo1 = "Trunk_%s" % (date)
 #repo1 = "Trunk"
 repo2 = "integration"
+#repo2 = "trunk_remove_trans"
 repos = [repo1, repo2]
+
 
 #
 ## user directories ...

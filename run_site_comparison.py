@@ -44,7 +44,13 @@ if options.qsub == False and options.skipsrc == False:
     #
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repos[0], trunk=trunk) # Default is True
-    G.main(repo_name=repos[1], trunk=False) # integration branch
+
+    # Run on a users branch, not integration
+    if repos[1] != "integration":
+        get_user_branch = True
+    else:
+        get_user_branch = False
+    G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch) # integration branch
 
     #
     ## Build CABLE ...

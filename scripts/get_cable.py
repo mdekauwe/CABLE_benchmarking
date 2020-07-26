@@ -29,18 +29,18 @@ class GetCable(object):
         self.aux_dir = "CABLE-AUX"
         self.home_dir = os.environ['HOME']
 
-    def main(self, repo_name=None, trunk=False):
+    def main(self, repo_name=None, trunk=False, user_branch=False):
 
         self.initialise_stuff()
 
-        self.get_repo(repo_name, trunk)
+        self.get_repo(repo_name, trunk, user_branch)
 
     def initialise_stuff(self):
 
         if not os.path.exists(self.src_dir):
             os.makedirs(self.src_dir)
 
-    def get_repo(self, repo_name, trunk=False):
+    def get_repo(self, repo_name, trunk, user_branch):
 
         need_pass = False
         cwd = os.getcwd()
@@ -129,10 +129,13 @@ class GetCable(object):
         else:
 
             if need_pass:
-                #cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % \
-                #        (self.root, self.user, repo_name, pswd)
-                cmd = "svn checkout %s/branches/Share/integration --password %s" % \
-                    (self.root, pswd)
+
+                if user_branch:
+                    cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % \
+                            (self.root, self.user, repo_name, pswd)
+                else:
+                    cmd = "svn checkout %s/branches/Share/integration --password %s" % \
+                        (self.root, pswd)
 
                 with tempfile.NamedTemporaryFile(mode='w+t') as f:
                     f.write(cmd)
@@ -143,9 +146,11 @@ class GetCable(object):
                         raise("Error downloading repo")
                     f.close()
             else:
-                #cmd = "svn checkout %s/branches/Users/%s/%s" % \
-                #        (self.root, self.user, repo_name)
-                cmd = "svn checkout %s/branches/Share/integration" % (self.root)
+                if user_branch:
+                    cmd = "svn checkout %s/branches/Users/%s/%s" % \
+                            (self.root, self.user, repo_name)
+                else:
+                    cmd = "svn checkout %s/branches/Share/integration" % (self.root)
                 error = subprocess.call(cmd, shell=True)
                 if error == 1:
                     raise("Error downloading repo")
@@ -191,4 +196,4 @@ if __name__ == "__main__":
 
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repo1, trunk=True)
-    G.main(repo_name=repo2, trunk=False)
+    G.main(repo_name=repo2, trunk=False, user_branch=True)
