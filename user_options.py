@@ -32,8 +32,10 @@ user = "mgk576"
 trunk = True
 repo1 = "Trunk_%s" % (date)
 #repo1 = "Trunk"
+share_branch = False
 repo2 = "integration"
-#repo2 = "trunk_remove_trans"
+#share_branch = True
+#repo2 = "CABLE3.0/ReStructured4JAC.1"
 repos = [repo1, repo2]
 
 

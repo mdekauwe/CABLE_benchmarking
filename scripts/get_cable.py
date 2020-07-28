@@ -29,18 +29,19 @@ class GetCable(object):
         self.aux_dir = "CABLE-AUX"
         self.home_dir = os.environ['HOME']
 
-    def main(self, repo_name=None, trunk=False, user_branch=False):
+    def main(self, repo_name=None, trunk=False, user_branch=False,
+             share_branch=False):
 
         self.initialise_stuff()
 
-        self.get_repo(repo_name, trunk, user_branch)
+        self.get_repo(repo_name, trunk, user_branch, share_branch)
 
     def initialise_stuff(self):
 
         if not os.path.exists(self.src_dir):
             os.makedirs(self.src_dir)
 
-    def get_repo(self, repo_name, trunk, user_branch):
+    def get_repo(self, repo_name, trunk, user_branch, share_branch):
 
         need_pass = False
         cwd = os.getcwd()
@@ -133,6 +134,9 @@ class GetCable(object):
                 if user_branch:
                     cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % \
                             (self.root, self.user, repo_name, pswd)
+                elif share_branch:
+                    cmd = "svn checkout %s/branches/Share/%s --password %s" % \
+                        (self.root, repo_name, pswd)
                 else:
                     cmd = "svn checkout %s/branches/Share/integration --password %s" % \
                         (self.root, pswd)
@@ -149,6 +153,9 @@ class GetCable(object):
                 if user_branch:
                     cmd = "svn checkout %s/branches/Users/%s/%s" % \
                             (self.root, self.user, repo_name)
+                elif share_branch:
+                    cmd = "svn checkout %s/branches/Share/%s" % \
+                        (self.root, repo_name)
                 else:
                     cmd = "svn checkout %s/branches/Share/integration" % (self.root)
                 error = subprocess.call(cmd, shell=True)
@@ -191,9 +198,9 @@ if __name__ == "__main__":
     src_dir = "src"
     user = "mgk576"
     repo1 = "Trunk_%s" % (date)
-    repo2 = "CMIP6-MOSRS"
+    repo2 = "CABLE3.0/ReStructured4JAC.1"
     # ------------------------------------------- #
 
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repo1, trunk=True)
-    G.main(repo_name=repo2, trunk=False, user_branch=True)
+    G.main(repo_name=repo2, trunk=False, user_branch=False, share_branch=True)

@@ -50,7 +50,12 @@ if options.qsub == False and options.skipsrc == False:
         get_user_branch = True
     else:
         get_user_branch = False
-    G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch) # integration branch
+
+    if share_branch:
+        get_user_branch = False
+
+    G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch,
+           share_branch=share_branch) # integration branch
 
     #
     ## Build CABLE ...
