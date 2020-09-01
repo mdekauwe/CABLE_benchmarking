@@ -53,7 +53,7 @@ if options.qsub == False and options.skipsrc == False:
 
     if share_branch:
         get_user_branch = False
-        
+
     G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch,
            share_branch=share_branch) # integration branch
 
@@ -62,13 +62,15 @@ if options.qsub == False and options.skipsrc == False:
     #
     B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
-    B.main(repo_name=repos[0])
+    #B.main(repo_name=repos[0])
 
     if share_branch:
+        print(os.path.basename(repos[1]))
         B.main(repo_name=os.path.basename(repos[1]))
     else:
         B.main(repo_name=repos[1])
 
+    sys.exit()
 
 
 #

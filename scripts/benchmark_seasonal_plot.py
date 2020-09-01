@@ -9,7 +9,7 @@ __author__ = "Martin De Kauwe"
 __version__ = "1.0 (18.10.2017)"
 __email__ = "mdekauwe@gmail.com"
 
-import netCDF4 as nc
+import xarray as xr
 import matplotlib.pyplot as plt
 import sys
 import datetime as dt
