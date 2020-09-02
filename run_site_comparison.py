@@ -70,8 +70,6 @@ if options.qsub == False and options.skipsrc == False:
     else:
         B.main(repo_name=repos[1])
 
-    sys.exit()
-
 
 #
 
