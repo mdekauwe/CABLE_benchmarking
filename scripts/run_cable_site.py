@@ -136,6 +136,7 @@ class RunCable(object):
                             "fixedCO2": "%.2f" % (self.co2_conc),
                             "casafile%phen": "'%s'" % (self.phen_fname),
                             "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
+                            "spinup": ".FALSE.",
             }
 
             # Make sure the dict isn't empty
