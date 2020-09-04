@@ -47,12 +47,24 @@ parser.add_option("-g", "--skipget", action="store_true", default=False,
 
 
 if options.skipget == False:
+
     #
     ## Get CABLE ...
     #
     G = GetCable(src_dir=src_dir, user=user)
     G.main(repo_name=repos[0], trunk=trunk) # Default is True
-    G.main(repo_name=repos[1], trunk=False) # integration branch
+
+    # Run on a users branch, not integration
+    if repos[1] != "integration":
+        get_user_branch = True
+    else:
+        get_user_branch = False
+
+    if share_branch:
+        get_user_branch = False
+
+    G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch,
+           share_branch=share_branch) # integration branch
 
 if options.skipbuild == False:
 
@@ -62,4 +74,9 @@ if options.skipbuild == False:
     B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
                    CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
     B.main(repo_name=repos[0])
-    B.main(repo_name=repos[1])
+
+    if share_branch:
+        #print(os.path.basename(repos[1]))
+        B.main(repo_name=os.path.basename(repos[1]))
+    else:
+        B.main(repo_name=repos[1])

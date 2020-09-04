@@ -32,10 +32,10 @@ user = "mgk576"
 trunk = True
 #repo1 = "Trunk_%s" % (date)
 repo1 = "Trunk"
-share_branch = False
-repo2 = "integration"
-#share_branch = True
-#repo2 = "CABLE3.0/ReStructured4JAC.1"
+#share_branch = False
+#repo2 = "integration"
+share_branch = True
+repo2 = "test_jxs599"
 repos = [repo1, repo2]
 
 
