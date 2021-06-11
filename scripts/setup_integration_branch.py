@@ -21,5 +21,5 @@ msg = "\"setup integration branch\""
 cmd = "svn copy %s/trunk %s/branches/Share/integration -m %s" % \
         (root, root, msg)
 error = subprocess.call(cmd, shell=True)
-if error is 1:
+if error == 1:
     raise("Error copying repo")
