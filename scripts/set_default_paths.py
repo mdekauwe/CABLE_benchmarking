@@ -14,8 +14,29 @@ import os
 import sys
 import subprocess
 import datetime
+import shlex
+from pathlib import Path
 
-def set_paths(nodename):
+from scripts.config import *
+
+def return_machine_name(nodename:str, default_envfiles:dict):
+    '''Return the key in default_envfiles that correspond to nodename if any'''
+    machine_name=""
+    for key in default_envfiles.keys():
+        if key in nodename:
+            machine_name=key
+    
+    return machine_name
+
+def set_paths(nodename, envfile=""):
+
+    # Get name of the machine if listed in default_envfiles
+    # default_envfiles is a dictionary stored in config.py
+    machine_name=return_machine_name(nodename,default_envfiles)
+
+    # Set envfile using the nodename if not given at call
+    if not envfile and machine_name:
+        envfile=default_envfiles[machine_name]
 
     if "Mac" in nodename or "imac" in nodename:
         NCDIR = '/opt/local/lib/'
@@ -58,6 +79,34 @@ def set_paths(nodename):
         met_dir = ("/srv/ccrc/data04/z3509830/Fluxnet_data/"
                    "All_flux_sites_processed_PLUMBER2/"
                    "Post-processed_PLUMBER2_outputs/Nc_files/Met")
+
+    elif ("gadi" in nodename):
+        # Load modules
+        MODULESHOME=Path(os.environ["MODULESHOME"])
+        sys.path.append(str(MODULESHOME/"init"))
+        import python as mod 
+
+        with open(f"./{envfile}") as rfile:
+            ModToLoad = rfile.readlines()
+        
+        mod.module('purge')
+        for modname in ModToLoad:
+            mod.module('load',modname.rstrip())
+
+        # Setup variables for compilation
+        # FC is setup by the modules
+        NCBASE = Path(os.environ["NETCDF"])  # Set when loading the netcdf module
+        NCDIR = NCBASE/'lib'
+        NCMOD = NCBASE/'include'
+        FCMPI = 'mpif90'
+        FC = os.environ['FC']
+        CFLAGS = '-O2'
+        LD = "'-lnetcdf -lnetcdff'"
+        LDFLAGS = "'-L'$NCDIR' -O0'"
+        met_dir = Path("/g/data/w35/Shared_data/Observations/Fluxnet_data/"
+                "Post-processed_PLUMBER2_outputs/Nc_files/Met")
+
+
     else:
         sys.path.append("/opt/Modules/v4.3.0/init/")
         import python as mod
@@ -82,6 +131,6 @@ def set_paths(nodename):
         #met_dir = ("/g/data1/w35/Shared_data/Observations/Fluxnet_data/"
         #           "FLUXNET2015/Processed_data/Missing_10%_Gapfill_20%/Daily")
         met_dir = ("/g/data/w35/Shared_data/Observations/Fluxnet_data/"
-                   "Post-processed_PLUMBER2_outputs/Nc_files/Met")
+                "Post-processed_PLUMBER2_outputs/Nc_files/Met")
 
     return (met_dir, NCDIR, NCMOD, FC, FCMPI, CFLAGS, LD, LDFLAGS)
