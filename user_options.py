@@ -2,14 +2,13 @@ import datetime
 import os
 import sys
 import shutil
+from scripts.set_default_paths import set_paths
 
 now = datetime.datetime.now()
 date = now.strftime("%d_%m_%Y")
 cwd = os.getcwd()
 (sysname, nodename, release, version, machine) = os.uname()
 
-sys.path.append("scripts")
-from set_default_paths import set_paths
 
 
 #------------- User set stuff ------------- #

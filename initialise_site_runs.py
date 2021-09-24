@@ -22,10 +22,9 @@ from optparse import OptionParser
 
 from user_options import *
 
-sys.path.append("scripts")
-from get_cable import GetCable
-from build_cable import BuildCable
-from generate_qsub_script import create_qsub_script
+from scripts.get_cable import GetCable
+from scripts.build_cable import BuildCable
+from scripts.generate_qsub_script import create_qsub_script
 
 
 # i.e. if on NCI
