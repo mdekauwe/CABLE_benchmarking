@@ -14,11 +14,24 @@ import os
 import sys
 import subprocess
 import datetime
+from pathlib import Path
+
+import config
+
 
 class BuildCable(object):
-
-    def __init__(self, src_dir=None, NCDIR=None, NCMOD=None, FC=None,
-                 CFLAGS=None, LD=None, LDFLAGS=None, debug=False, mpi=False):
+    def __init__(
+        self,
+        src_dir=None,
+        NCDIR=None,
+        NCMOD=None,
+        FC=None,
+        CFLAGS=None,
+        LD=None,
+        LDFLAGS=None,
+        debug=False,
+        mpi=False,
+    ):
 
         self.src_dir = src_dir
         self.NCDIR = NCDIR
@@ -29,6 +42,134 @@ class BuildCable(object):
         self.LDFLAGS = LDFLAGS
         self.debug = debug
         self.mpi = mpi
+
+    def find_purge_line(filelines, filename=""):
+        """Find the line with module purge in the list of file lines.
+        Check there is only 1 such line. Return the index of the line.
+
+        filelines: list of strings such as returned by readlines()
+        filename: name of input file"""
+
+        purge_line = [
+            purge_ind for purge_ind, ll in enumerate(filelines) if "module purge" in ll
+        ]
+        # Check we found only 1 module purge line.
+        assert (
+            len(purge_line) == 1
+        ), f"{filename} should contain exactly one line with 'module purge'"
+        purge_line = purge_line[0]
+
+        return purge_line
+
+    def add_module_load(lines, nindent):
+        """Read in the environment file using config data.
+        Add lines to load each module listed in environment file
+        at the end of the list of strings, lines
+
+        lines: list of strings
+        nindent: integer, number of indent spaces to add for each line"""
+
+        loclines = lines.copy()
+
+        # Read environment file
+        cwd_path = Path(os.getcwd())
+        config_path = cwd_path.parents[2]  # Need to go back 3 up.
+        config_path = config_path / config.default_envfiles["gadi"]
+        with config_path.open() as rfile:
+            ModToLoad = rfile.readlines()
+
+        # Append new lines to the list of lines for each module
+        for mod in ModToLoad:
+            # Add newline if not in "mod"
+            if "\n" not in mod:
+                mod = mod + "\n"
+            toadd = "".join([" " * nindent, "module load ", mod])
+            loclines.append(toadd)
+
+        return loclines
+
+    def change_build_lines(filelines, filename=""):
+        """Get the lines from the build script and modify them:
+            - remove all the module load and module add lines
+            - read in the environment file for Gadi
+            - insert the module load lines for the modules in the env. file
+        filelines: list of strings such as returned by readlines()
+        filename: name of input file"""
+
+        # Remove any line loading a module
+        nomodulelines = [
+            ll
+            for ll in filelines
+            if all([substring not in ll for substring in ["module load", "module add"]])
+        ]
+
+        # Find the line with "module purge"
+        purge_line = BuildCable.find_purge_line(nomodulelines, filename=filename)
+
+        # Get the indentation right: copy the indentation from the module purge line
+        nindent = nomodulelines[purge_line].find("module purge")
+
+        outlines = nomodulelines[: purge_line + 1]  # Take all lines until module purge
+
+        # append lines to load the correct modules
+        outlines = BuildCable.add_module_load(outlines, nindent)
+
+        # add the end of the file as in the original file
+        outlines.extend(nomodulelines[purge_line + 1 :])
+
+        return outlines
+
+    def adjust_build_script(self):
+
+        cmd = "echo `uname -n | cut -c 1-4`"
+        p = subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
+        host, error = p.communicate()
+        host = str(host, "utf-8").strip()
+        if error == 1:
+            raise ("Error checking if repo exists")
+
+        # Need to customise the build script with the modules
+        # we want to use.
+        fname = "build3.sh"
+        f = open(fname, "r")
+        lines = f.readlines()
+        f.close()
+
+        if self.mpi:
+            ofname = "my_build_mpi.ksh"
+        else:
+            ofname = "my_build.ksh"
+        of = open(ofname, "w")
+
+        # check_host = "host_%s()" % (host)
+
+        # We find all the "module load" lines and remove them from
+        # the list of lines.
+        # Then after the line "module purge", we add a line for
+        # each module listed in gadi_env.sh
+        outlines = BuildCable.change_build_lines(lines, filename=fname)
+
+        of.writelines(outlines)
+        of.close()
+
+        return ofname
+
+    def build_cable(self, ofname):
+
+        cmd = "chmod +x %s" % (ofname)
+        error = subprocess.call(cmd, shell=True)
+        if error == 1:
+            raise ("Error changing file to executable")
+
+        # cmd = "./%s clean" % (ofname)
+        cmd = "./%s" % (ofname)
+        error = subprocess.call(cmd, shell=True)
+        if error == 1:
+            raise ("Error building executable")
+
+        os.remove(ofname)
 
     def main(self, repo_name=None, trunk=False):
 
@@ -41,104 +182,38 @@ class BuildCable(object):
 
         os.chdir(cwd)
 
-    def adjust_build_script(self):
-
-        cmd = "echo `uname -n | cut -c 1-4`"
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        host, error = p.communicate()
-        host = str(host, 'utf-8').strip()
-        if error == 1:
-            raise("Error checking if repo exists")
-
-        if self.mpi:
-            fname = "build_mpi.ksh"
-        else:
-            fname = "build.ksh"
-        f = open(fname, "r")
-        lines = f.readlines()
-        f.close()
-
-        if self.mpi:
-            ofname = "my_build_mpi.ksh"
-        else:
-            ofname = "my_build.ksh"
-        of = open(ofname, "w")
-
-        check_host = "host_%s()" % (host)
-        i = 0
-        while i < len(lines):
-            line = lines[i]
-            if 'known_hosts()' in line and i < 10:
-                print("known_hosts()", end="\n", file=of)
-                print("{", end="\n", file=of)
-                print("  set -A kh  pear jigg nXXX raij ces2 ccrc mael %s" %\
-                      (str(host)), end="\n", file=of)
-                print("}", end="\n\n", file=of)
-                print("host_%s (){" % (host), end="\n", file=of)
-                print("    export NCDIR=%s" % (self.NCDIR), end="\n", file=of)
-                print("    export NCMOD=%s" % (self.NCMOD), end="\n", file=of)
-                print("    export FC=%s" % (self.FC), end="\n", file=of)
-                print("    export CFLAGS=%s" % (self.CFLAGS), end="\n", file=of)
-                print("    export LD=%s" % (self.LD), end="\n", file=of)
-                print("    export LDFLAGS=%s" % (self.LDFLAGS), end="\n", file=of)
-                print("    build_build", end="\n", file=of)
-                print("    cd ../", end="\n", file=of)
-                print("    build_status", end="\n", file=of)
-
-                print("}", end="\n\n", file=of)
-
-                i += 5
-            elif ('known_hosts()' not in line) and (check_host in line):
-                # rename duplicate host, i.e. stud
-                fudge_host = "host_%s()" % ("XXXX")
-                print("%s" % (fudge_host), end="\n", file=of)
-            else:
-                print(line, end="", file=of)
-            i += 1
-
-        of.close()
-
-        return (ofname)
-
-    def build_cable(self, ofname):
-
-        cmd = "chmod +x %s" % (ofname)
-        error = subprocess.call(cmd, shell=True)
-        if error == 1:
-            raise("Error changing file to executable")
-
-        #cmd = "./%s clean" % (ofname)
-        cmd = "./%s" % (ofname)
-        error = subprocess.call(cmd, shell=True)
-        if error == 1:
-            raise("Error building executable")
-
-        os.remove(ofname)
 
 if __name__ == "__main__":
 
     now = datetime.datetime.now()
     date = now.strftime("%d_%m_%Y")
     mpi = False
-    #------------- Change stuff ------------- #
+    # ------------- Change stuff ------------- #
     ver = "4.7.1"
     src_dir = "src"
-    NCDIR = '/apps/netcdf/%s/lib' % (ver)
-    NCMOD = '/apps/netcdf/%s/include' % (ver)
+    NCDIR = "/apps/netcdf/%s/lib" % (ver)
+    NCMOD = "/apps/netcdf/%s/include" % (ver)
 
     if mpi:
-        FC = 'mpif90'
+        FC = "mpif90"
     else:
-        FC = 'ifort'
-    CFLAGS = '-O2'
+        FC = "ifort"
+    CFLAGS = "-O2"
     LD = "'-lnetcdf -lnetcdff'"
     LDFLAGS = "'-L/opt/local/lib -O2'"
     repo1 = "Trunk"
     repo2 = "integration"
     # ------------------------------------------- #
 
-    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS, mpi=mpi)
+    B = BuildCable(
+        src_dir=src_dir,
+        NCDIR=NCDIR,
+        NCMOD=NCMOD,
+        FC=FC,
+        CFLAGS=CFLAGS,
+        LD=LD,
+        LDFLAGS=LDFLAGS,
+        mpi=mpi,
+    )
     B.main(repo_name=repo1)
     B.main(repo_name=repo2)
