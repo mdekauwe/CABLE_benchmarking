@@ -18,7 +18,7 @@ import os
 import sys
 import datetime
 import subprocess
-from optparse import OptionParser
+import argparse 
 
 from user_options import *
 
@@ -36,16 +36,16 @@ if ("Mac" not in nodename and
     create_qsub_script(qsub_fname, ncpus, mem, wall_time, project,
                        email_address)
 
-parser = OptionParser()
+parser = argparse.ArgumentParser()
 parser.add_option("-s", "--skipbuild", action="store_true", default=False,
                   help="Rebuild src?")
 parser.add_option("-g", "--skipget", action="store_true", default=False,
                   help="Get src?")
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
 
-if options.skipget == False:
+if args.skipget == False:
 
     #
     ## Get CABLE ...
@@ -65,7 +65,7 @@ if options.skipget == False:
     G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch,
            share_branch=share_branch) # integration branch
 
-if options.skipbuild == False:
+if args.skipbuild == False:
 
     #
     ## Build CABLE ...
