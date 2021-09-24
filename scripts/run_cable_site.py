@@ -207,17 +207,17 @@ class RunCable(object):
         # run the model
         if self.verbose:
             cmd = './%s %s' % (self.cable_exe, nml_fname)
-            try:
-                error = subprocess.call(cmd, shell=True)
-            except:
-                print("Job failed to submit: %s", error)
+            error = subprocess.call(cmd, shell=True)
+            if error != 0:
+                print("Job failed to submit: %s"%error)
                 raise
         else:
             # No outputs to the screen: stout and stderr to dev/null
             cmd = './%s %s > /dev/null 2>&1' % (self.cable_exe, nml_fname)
             error = subprocess.call(cmd, shell=True)
-            if error == 1:
-                print("Job failed to submit")
+            if error != 0:
+                print("Job failed to submit: %s"%error)
+                raise
 
 
 
