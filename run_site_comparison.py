@@ -81,11 +81,22 @@ os.chdir(run_dir)
 cable_aux = os.path.join("../", aux_dir)
 for repo_id, repo in enumerate(repos):
     cable_src = os.path.join(os.path.join("../", src_dir), repo)
-    R = RunCable(met_dir=met_dir, log_dir=log_dir,
-                 output_dir=output_dir, restart_dir=restart_dir,
-                 aux_dir=cable_aux, namelist_dir=namelist_dir,
-                 met_subset=met_subset, cable_src=cable_src, mpi=mpi,
-                 num_cores=num_cores)
+
+    # Define the name for the executable: cable for serial, cable-mpi for mpi runs
+    cable_exe = f"cable{'-mpi'*mpi}"
+    R = RunCable(
+        met_dir=met_dir,
+        log_dir=log_dir,
+        output_dir=output_dir,
+        restart_dir=restart_dir,
+        aux_dir=cable_aux,
+        namelist_dir=namelist_dir,
+        met_subset=met_subset,
+        cable_src=cable_src,
+        mpi=mpi,
+        num_cores=num_cores,
+        cable_exe=cable_exe,
+    )
     for sci_id, sci_config in enumerate(sci_configs):
         R.main(sci_config, repo_id, sci_id)
 
