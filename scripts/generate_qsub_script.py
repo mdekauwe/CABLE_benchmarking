@@ -15,6 +15,7 @@ import sys
 import subprocess
 import datetime
 
+
 def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
 
     f = open(ofname, "w")
@@ -46,7 +47,7 @@ def create_qsub_script(ofname, ncpus, mem, wall_time, project, email_address):
 
 if __name__ == "__main__":
 
-    #------------- Change stuff ------------- #
+    # ------------- Change stuff ------------- #
     project = "w35"
     ofname = "benchmark_cable_qsub.sh"
     ncpus = 2

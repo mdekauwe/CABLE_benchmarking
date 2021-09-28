@@ -20,6 +20,7 @@ import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def adjust_nml_file(fname, replacements):
     """
     Adjust the params/flags in the CABLE namelise file. Note this writes
@@ -30,7 +31,7 @@ def adjust_nml_file(fname, replacements):
     replacements : dictionary
         dictionary of replacement values.
     """
-    f = open(fname, 'r')
+    f = open(fname, "r")
     param_str = f.read()
     f.close()
     new_str = replace_keys(param_str, replacements)
@@ -40,8 +41,9 @@ def adjust_nml_file(fname, replacements):
     shutil.copy(path, fname)
     os.remove(path)
 
+
 def replace_keys(text, replacements_dict):
-    """ Function expects to find CABLE namelist file formatted key = value.
+    """Function expects to find CABLE namelist file formatted key = value.
 
     Parameters:
     ----------
@@ -55,7 +57,7 @@ def replace_keys(text, replacements_dict):
     new_text : string
         input file with replacement values
     """
-    keys = [] # save our keys
+    keys = []  # save our keys
     lines = text.splitlines()
     for i, row in enumerate(lines):
         # skip blank lines
@@ -67,9 +69,9 @@ def replace_keys(text, replacements_dict):
         elif not row.startswith("&"):
             key = row.split("=")[0]
             val = row.split("=")[1]
-            lines[i] = " ".join((key.rstrip(), "=",
-                                 replacements_dict.get(key.strip(),
-                                 val.lstrip())))
+            lines[i] = " ".join(
+                (key.rstrip(), "=", replacements_dict.get(key.strip(), val.lstrip()))
+            )
             keys.append(key.strip())
 
     # Make sure our replacements were in the namelist to begin with, it is
@@ -92,7 +94,8 @@ def replace_keys(text, replacements_dict):
     if fix_end_statement:
         lines[i] = "&end"
 
-    return '\n'.join(lines) + '\n'
+    return "\n".join(lines) + "\n"
+
 
 def get_svn_info(here, there):
     """
@@ -101,16 +104,14 @@ def get_svn_info(here, there):
 
     os.chdir(there)
     os.system("svn info > tmp_svn")
-    fname = 'tmp_svn'
+    fname = "tmp_svn"
     fp = open(fname, "r")
     svn = fp.readlines()
     fp.close()
     os.remove(fname)
 
-    url = [i.split(":", 1)[1].strip() \
-            for i in svn if i.startswith('URL')]
-    rev = [i.split(":", 1)[1].strip() \
-            for i in svn if i.startswith('Revision')]
+    url = [i.split(":", 1)[1].strip() for i in svn if i.startswith("URL")]
+    rev = [i.split(":", 1)[1].strip() for i in svn if i.startswith("Revision")]
     os.chdir(here)
 
     return url, rev
@@ -119,13 +120,13 @@ def get_svn_info(here, there):
 def add_attributes_to_output_file(nml_fname, fname, sci_config, url, rev):
 
     # Add SVN info to output file
-    nc = netCDF4.Dataset(fname, 'r+')
-    nc.setncattr('cable_branch', url)
-    nc.setncattr('svn_revision_number', rev)
+    nc = netCDF4.Dataset(fname, "r+")
+    nc.setncattr("cable_branch", url)
+    nc.setncattr("svn_revision_number", rev)
 
     for key, val in sci_config.items():
         config_name = "%s_%s" % (key, val)
-        nc.setncattr('SCI_CONFIG', config_name)
+        nc.setncattr("SCI_CONFIG", config_name)
 
     # Add namelist to output file
     fp = open(nml_fname, "r")
@@ -150,8 +151,9 @@ def add_attributes_to_output_file(nml_fname, fname, sci_config, url, rev):
 
     nc.close()
 
+
 def ncdump(nc_fid):
-    '''
+    """
     ncdump outputs dimensions, variables and their attribute information.
 
     Parameters
@@ -167,7 +169,7 @@ def ncdump(nc_fid):
         A Python list of the NetCDF file dimensions
     nc_vars : list
         A Python list of the NetCDF file variables
-    '''
+    """
 
     # NetCDF global attributes
     nc_attrs = nc_fid.ncattrs()
@@ -177,6 +179,7 @@ def ncdump(nc_fid):
     nc_vars = [var for var in nc_fid.variables]  # list of nc variables
 
     return nc_attrs, nc_dims, nc_vars
+
 
 def change_LAI(met_fname, site, fixed=None, lai_dir=None):
 
@@ -191,17 +194,18 @@ def change_LAI(met_fname, site, fixed=None, lai_dir=None):
         if lai_dir is not None:
             ds = xr.open_dataset(met_fname)
 
-            vars_to_keep = ['Tair']
-            dfx = ds[vars_to_keep].squeeze(dim=["x","y","z"],
-                                          drop=True).to_dataframe()
+            vars_to_keep = ["Tair"]
+            dfx = (
+                ds[vars_to_keep].squeeze(dim=["x", "y", "z"], drop=True).to_dataframe()
+            )
 
             out_length = len(dfx.Tair)
             time_idx = dfx.index
             dfx = dfx.reindex(time_idx)
-            dfx['year'] = dfx.index.year
-            dfx['doy'] = dfx.index.dayofyear
+            dfx["year"] = dfx.index.year
+            dfx["doy"] = dfx.index.dayofyear
 
-            df_lai_out = pd.DataFrame(columns=['LAI'], index=range(out_length))
+            df_lai_out = pd.DataFrame(columns=["LAI"], index=range(out_length))
 
             df_non_leap = df_lai.copy()
             df_leap = df_lai.copy()
@@ -210,10 +214,9 @@ def change_LAI(met_fname, site, fixed=None, lai_dir=None):
             df_leap = df_leap.append(extra)
             df_leap = df_leap.reset_index(drop=True)
 
-
             idx = 0
             for yr in np.unique(dfx.index.year):
-                #print(yr)
+                # print(yr)
                 ndays = int(len(dfx[dfx.index.year == yr]) / 48)
 
                 if ndays == 366:
@@ -225,22 +228,27 @@ def change_LAI(met_fname, site, fixed=None, lai_dir=None):
                     en = idx + (365 * 48)
                     df_lai_out.LAI[st:en] = np.repeat(df_non_leap.values, 48)
 
-                idx += (ndays * 48)
+                idx += ndays * 48
 
     shutil.copyfile(met_fname, new_met_fname)
 
-    nc = netCDF4.Dataset(new_met_fname, 'r+')
+    nc = netCDF4.Dataset(new_met_fname, "r+")
     (nc_attrs, nc_dims, nc_vars) = ncdump(nc)
 
-    nc_var = nc.createVariable('LAI', 'f4', ('time', 'y', 'x'))
-    nc.setncatts({'long_name': u"Leaf Area Index",})
+    nc_var = nc.createVariable("LAI", "f4", ("time", "y", "x"))
+    nc.setncatts(
+        {
+            "long_name": u"Leaf Area Index",
+        }
+    )
     if lai_dir is not None:
-        nc.variables['LAI'][:,0,0] = df_lai_out.LAI.values.reshape(out_length, 1, 1)
+        nc.variables["LAI"][:, 0, 0] = df_lai_out.LAI.values.reshape(out_length, 1, 1)
     else:
-        nc.variables['LAI'][:,0,0] = lai
+        nc.variables["LAI"][:, 0, 0] = lai
     nc.close()  # close the new file
 
     return new_met_fname
+
 
 def get_years(met_fname, nyear_spinup):
     """
@@ -273,8 +281,8 @@ def get_years(met_fname, nyear_spinup):
     en_yr_spin = st_yr_transient - 1
     st_yr_spin = en_yr_spin - nloop_spin * nrec + 1
 
-    return (st_yr, en_yr, st_yr_transient, en_yr_transient,
-            st_yr_spin, en_yr_spin)
+    return (st_yr, en_yr, st_yr_transient, en_yr_transient, st_yr_spin, en_yr_spin)
+
 
 def check_steady_state(experiment_id, output_dir, num, debug=True):
     """
@@ -283,34 +291,42 @@ def check_steady_state(experiment_id, output_dir, num, debug=True):
     this we are checking the state of the last year in the previous spin
     cycle to the state in the final year of the current spin cycle.
     """
-    tol = 0.05 # This is quite high, I use 0.005 in GDAY
+    tol = 0.05  # This is quite high, I use 0.005 in GDAY
     g_2_kg = 0.001
 
     if num == 1:
         prev_cplant = 99999.9
         prev_csoil = 99999.9
     else:
-        fname = "%s_out_CASA_ccp%d.nc" % (experiment_id, num-1)
+        fname = "%s_out_CASA_ccp%d.nc" % (experiment_id, num - 1)
         fname = os.path.join(output_dir, fname)
         ds = xr.open_dataset(fname)
-        prev_cplant = ds.cplant[:,:,0].values[-1].sum() * g_2_kg
-        prev_csoil = ds.csoil[:,:,0].values[-1].sum() * g_2_kg
+        prev_cplant = ds.cplant[:, :, 0].values[-1].sum() * g_2_kg
+        prev_csoil = ds.csoil[:, :, 0].values[-1].sum() * g_2_kg
 
     fname = "%s_out_CASA_ccp%d.nc" % (experiment_id, num)
     fname = os.path.join(output_dir, fname)
     ds = xr.open_dataset(fname)
-    new_cplant = ds.cplant[:,:,0].values[-1].sum() * g_2_kg
-    new_csoil = ds.csoil[:,:,0].values[-1].sum() * g_2_kg
+    new_cplant = ds.cplant[:, :, 0].values[-1].sum() * g_2_kg
+    new_csoil = ds.csoil[:, :, 0].values[-1].sum() * g_2_kg
 
-    if ( np.fabs(prev_cplant - new_cplant) < tol and
-         np.fabs(prev_csoil - new_csoil) < tol ):
+    if (
+        np.fabs(prev_cplant - new_cplant) < tol
+        and np.fabs(prev_csoil - new_csoil) < tol
+    ):
         not_in_equilibrium = False
     else:
         not_in_equilibrium = True
 
     if debug:
-        print("*", num, not_in_equilibrium,
-              "*cplant", np.fabs(prev_cplant - new_cplant),
-              "*csoil", np.fabs(prev_csoil - new_csoil))
+        print(
+            "*",
+            num,
+            not_in_equilibrium,
+            "*cplant",
+            np.fabs(prev_cplant - new_cplant),
+            "*csoil",
+            np.fabs(prev_csoil - new_csoil),
+        )
 
     return not_in_equilibrium

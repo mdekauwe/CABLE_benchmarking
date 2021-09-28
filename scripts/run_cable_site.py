@@ -26,20 +26,33 @@ from scripts.cable_utils import get_svn_info
 from scripts.cable_utils import change_LAI
 from scripts.cable_utils import add_attributes_to_output_file
 
-class RunCable(object):
 
-    def __init__(self, met_dir=None, log_dir=None, output_dir=None,
-                 restart_dir=None, aux_dir=None, namelist_dir=None,
-                 nml_fname="cable.nml",
-                 veg_fname="def_veg_params_zr_clitt_albedo_fix.txt",
-                 soil_fname="def_soil_params.txt",
-                 grid_fname="gridinfo_CSIRO_1x1.nc",
-                 phen_fname="modis_phenology_csiro.txt",
-                 cnpbiome_fname="pftlookup_csiro_v16_17tiles.csv",
-                 elev_fname="GSWP3_gwmodel_parameters.nc",
-                 lai_dir=None, fixed_lai=None, co2_conc=400.0,
-                 met_subset=[], cable_src=None, cable_exe="cable", mpi=True,
-                 num_cores=None, verbose=True):
+class RunCable(object):
+    def __init__(
+        self,
+        met_dir=None,
+        log_dir=None,
+        output_dir=None,
+        restart_dir=None,
+        aux_dir=None,
+        namelist_dir=None,
+        nml_fname="cable.nml",
+        veg_fname="def_veg_params_zr_clitt_albedo_fix.txt",
+        soil_fname="def_soil_params.txt",
+        grid_fname="gridinfo_CSIRO_1x1.nc",
+        phen_fname="modis_phenology_csiro.txt",
+        cnpbiome_fname="pftlookup_csiro_v16_17tiles.csv",
+        elev_fname="GSWP3_gwmodel_parameters.nc",
+        lai_dir=None,
+        fixed_lai=None,
+        co2_conc=400.0,
+        met_subset=[],
+        cable_src=None,
+        cable_exe="cable",
+        mpi=True,
+        num_cores=None,
+        verbose=True,
+    ):
 
         self.met_dir = met_dir
         self.log_dir = log_dir
@@ -68,18 +81,16 @@ class RunCable(object):
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
 
-
-
     def main(self, sci_config, repo_id, sci_id):
 
         (met_files, url, rev) = self.initialise_stuff()
 
         # Setup multi-processor jobs
         if self.mpi:
-            if self.num_cores is None: # use them all!
+            if self.num_cores is None:  # use them all!
                 self.num_cores = mp.cpu_count()
             chunk_size = int(np.ceil(len(met_files) / float(self.num_cores)))
-            #if self.num_cores > len(met_files):
+            # if self.num_cores > len(met_files):
             #    self.num_cores = len(met_files)
 
             pool = mp.Pool(processes=self.num_cores)
@@ -92,9 +103,17 @@ class RunCable(object):
                     end = len(met_files)
 
                 # setup a list of processes that we want to run
-                p = mp.Process(target=self.worker,
-                               args=(met_files[start:end], url, rev,
-                                     sci_config, repo_id, sci_id, ))
+                p = mp.Process(
+                    target=self.worker,
+                    args=(
+                        met_files[start:end],
+                        url,
+                        rev,
+                        sci_config,
+                        repo_id,
+                        sci_id,
+                    ),
+                )
                 p.start()
                 jobs.append(p)
 
@@ -103,7 +122,14 @@ class RunCable(object):
                 j.join()
 
         else:
-            self.worker(met_files, url, rev, sci_config, repo_id, sci_id,)
+            self.worker(
+                met_files,
+                url,
+                rev,
+                sci_config,
+                repo_id,
+                sci_id,
+            )
 
     def worker(self, met_files, url, rev, sci_config, repo_id, sci_id):
         cwd = os.getcwd()
@@ -114,29 +140,29 @@ class RunCable(object):
             base_nml_fn = os.path.join(self.grid_dir, "%s" % (self.nml_fname))
             nml_fname = "cable_%s_R%s_S%s.nml" % (site, repo_id, sci_id)
             shutil.copy(base_nml_fn, nml_fname)
-            #nml_fname = os.path.join(cwd, nml_fname)
+            # nml_fname = os.path.join(cwd, nml_fname)
 
-            (out_fname,
-             out_log_fname) = self.clean_up_old_files(site, repo_id, sci_id)
+            (out_fname, out_log_fname) = self.clean_up_old_files(site, repo_id, sci_id)
 
             # Add LAI to met file?
             if self.fixed_lai is not None or self.lai_dir is not None:
-                fname = change_LAI(fname, site, fixed=self.fixed_lai,
-                                   lai_dir=self.lai_dir)
+                fname = change_LAI(
+                    fname, site, fixed=self.fixed_lai, lai_dir=self.lai_dir
+                )
 
             replace_dict = {
-                            "filename%met": "'%s'" % (fname),
-                            "filename%out": "'%s'" % (out_fname),
-                            "filename%log": "'%s'" % (out_log_fname),
-                            "filename%restart_out": "' '",
-                            "filename%type": "'%s'" % (self.grid_fname),
-                            "filename%veg": "'%s'" % (self.veg_fname),
-                            "filename%soil": "'%s'" % (self.soil_fname),
-                            "output%restart": ".FALSE.",
-                            "fixedCO2": "%.2f" % (self.co2_conc),
-                            "casafile%phen": "'%s'" % (self.phen_fname),
-                            "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
-                            "spinup": ".FALSE.",
+                "filename%met": "'%s'" % (fname),
+                "filename%out": "'%s'" % (out_fname),
+                "filename%log": "'%s'" % (out_log_fname),
+                "filename%restart_out": "' '",
+                "filename%type": "'%s'" % (self.grid_fname),
+                "filename%veg": "'%s'" % (self.veg_fname),
+                "filename%soil": "'%s'" % (self.soil_fname),
+                "output%restart": ".FALSE.",
+                "fixedCO2": "%.2f" % (self.co2_conc),
+                "casafile%phen": "'%s'" % (self.phen_fname),
+                "casafile%cnpbiome": "'%s'" % (self.cnpbiome_fname),
+                "spinup": ".FALSE.",
             }
 
             # Make sure the dict isn't empty
@@ -146,8 +172,7 @@ class RunCable(object):
 
             self.run_me(nml_fname)
 
-            add_attributes_to_output_file(nml_fname, out_fname, sci_config,
-                                          url, rev)
+            add_attributes_to_output_file(nml_fname, out_fname, sci_config, url, rev)
             shutil.move(nml_fname, os.path.join(self.namelist_dir, nml_fname))
 
             if self.fixed_lai is not None or self.lai_dir is not None:
@@ -155,7 +180,7 @@ class RunCable(object):
 
     def setup_exe(self):
         # delete local executable, copy a local copy and use that
-        #local_exe = os.path.join(cwd, "cable")
+        # local_exe = os.path.join(cwd, "cable")
         local_exe = "cable"
         if os.path.isfile(local_exe):
             os.remove(local_exe)
@@ -185,17 +210,18 @@ class RunCable(object):
         cwd = os.getcwd()
         (url, rev) = get_svn_info(cwd, self.cable_src)
 
-
         return (met_files, url, rev)
 
     def clean_up_old_files(self, site, repo_id, sci_id):
-        out_fname = os.path.join(self.output_dir, "%s_R%s_S%s_out.nc" % \
-                                 (site, repo_id, sci_id))
+        out_fname = os.path.join(
+            self.output_dir, "%s_R%s_S%s_out.nc" % (site, repo_id, sci_id)
+        )
         if os.path.isfile(out_fname):
             os.remove(out_fname)
 
-        out_log_fname = os.path.join(self.log_dir, "%s_R%s_S%s_log.txt" % \
-                                     (site, repo_id, sci_id))
+        out_log_fname = os.path.join(
+            self.log_dir, "%s_R%s_S%s_log.txt" % (site, repo_id, sci_id)
+        )
         if os.path.isfile(out_log_fname):
             os.remove(out_log_fname)
 
@@ -203,23 +229,21 @@ class RunCable(object):
 
     def run_me(self, nml_fname):
 
-
         # run the model
         if self.verbose:
-            cmd = './%s %s' % (self.cable_exe, nml_fname)
+            cmd = "./%s %s" % (self.cable_exe, nml_fname)
             try:
-                subprocess.run(cmd, shell=True,check=True)
+                subprocess.run(cmd, shell=True, check=True)
             except subprocess.CalledProcessError as e:
-                print("Job failed to submit: ",e.cmd)
-                
+                print("Job failed to submit: ", e.cmd)
+
         else:
             # No outputs to the screen: stout and stderr to dev/null
-            cmd = './%s %s > /dev/null 2>&1' % (self.cable_exe, nml_fname)
+            cmd = "./%s %s > /dev/null 2>&1" % (self.cable_exe, nml_fname)
             try:
-                subprocess.run(cmd, shell=True,check=True)
+                subprocess.run(cmd, shell=True, check=True)
             except subprocess.CalledProcessError as e:
-                print("Job failed to submit: ",e.cmd)
-
+                print("Job failed to submit: ", e.cmd)
 
 
 def merge_two_dicts(x, y):
@@ -228,9 +252,10 @@ def merge_two_dicts(x, y):
     z.update(y)
     return z
 
+
 if __name__ == "__main__":
 
-    #------------- Change stuff ------------- #
+    # ------------- Change stuff ------------- #
     met_dir = "../../met_data/plumber_met"
     log_dir = "logs"
     output_dir = "outputs"
@@ -239,14 +264,22 @@ if __name__ == "__main__":
     aux_dir = "../../src/CMIP6-MOSRS/CABLE-AUX/"
     cable_src = "../../src/CMIP6-MOSRS/CMIP6-MOSRS"
     mpi = False
-    num_cores = 4 # set to a number, if None it will use all cores...!
+    num_cores = 4  # set to a number, if None it will use all cores...!
     # if empty...run all the files in the met_dir
-    met_subset = ['TumbaFluxnet.1.4_met.nc']
+    met_subset = ["TumbaFluxnet.1.4_met.nc"]
     sci_config = {}
     # ------------------------------------------- #
 
-    C = RunCable(met_dir=met_dir, log_dir=log_dir, output_dir=output_dir,
-                 restart_dir=restart_dir, aux_dir=aux_dir,
-                 namelist_dir=namelist_dir, met_subset=met_subset,
-                 cable_src=cable_src, mpi=mpi, num_cores=num_cores)
+    C = RunCable(
+        met_dir=met_dir,
+        log_dir=log_dir,
+        output_dir=output_dir,
+        restart_dir=restart_dir,
+        aux_dir=aux_dir,
+        namelist_dir=namelist_dir,
+        met_subset=met_subset,
+        cable_src=cable_src,
+        mpi=mpi,
+        num_cores=num_cores,
+    )
     C.main(sci_config)

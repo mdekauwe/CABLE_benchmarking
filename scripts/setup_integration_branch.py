@@ -16,10 +16,14 @@ import subprocess
 import datetime
 
 root = "https://trac.nci.org.au/svn/cable"
-msg = "\"setup integration branch\""
+msg = '"setup integration branch"'
 
-cmd = "svn copy %s/trunk %s/branches/Share/integration -m %s" % \
-        (root, root, msg)
+cmd = "svn copy %s/branches/Users/ccc561/Metvar-lookup1 %s/branches/Share/integration -m %s" % (
+    root,
+    root,
+    msg,
+)
+print(cmd)
 error = subprocess.call(cmd, shell=True)
 if error == 1:
-    raise("Error copying repo")
+    raise ("Error copying repo")

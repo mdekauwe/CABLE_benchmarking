@@ -18,7 +18,7 @@ import os
 import sys
 import datetime
 import subprocess
-import argparse 
+import argparse
 
 from user_options import *
 
@@ -28,20 +28,21 @@ from scripts.generate_qsub_script import create_qsub_script
 
 
 # i.e. if on NCI
-if ("nci" in nodename):
-#if ("Mac" not in nodename and
-#    "MacBook" not in nodename and
-#    "imac" not in nodename and
-#     "unsw" not in nodename):
+if "nci" in nodename:
+    # if ("Mac" not in nodename and
+    #    "MacBook" not in nodename and
+    #    "imac" not in nodename and
+    #     "unsw" not in nodename):
 
-    create_qsub_script(qsub_fname, ncpus, mem, wall_time, project,
-                       email_address)
+    create_qsub_script(qsub_fname, ncpus, mem, wall_time, project, email_address)
 
 parser = argparse.ArgumentParser()
-parser.add_option("-s", "--skipbuild", action="store_true", default=False,
-                  help="Rebuild src?")
-parser.add_option("-g", "--skipget", action="store_true", default=False,
-                  help="Get src?")
+parser.add_argument(
+    "-s", "--skipbuild", action="store_true", default=False, help="Rebuild src?"
+)
+parser.add_argument(
+    "-g", "--skipget", action="store_true", default=False, help="Get src?"
+)
 
 args = parser.parse_args()
 
@@ -52,7 +53,7 @@ if args.skipget == False:
     ## Get CABLE ...
     #
     G = GetCable(src_dir=src_dir, user=user)
-    G.main(repo_name=repos[0], trunk=trunk) # Default is True
+    G.main(repo_name=repos[0], trunk=trunk)  # Default is True
 
     # Run on a users branch, not integration
     if repos[1] != "integration":
@@ -63,20 +64,31 @@ if args.skipget == False:
     if share_branch:
         get_user_branch = False
 
-    G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch,
-           share_branch=share_branch) # integration branch
+    G.main(
+        repo_name=repos[1],
+        trunk=False,
+        user_branch=get_user_branch,
+        share_branch=share_branch,
+    )  # integration branch
 
 if args.skipbuild == False:
 
     #
     ## Build CABLE ...
     #
-    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
+    B = BuildCable(
+        src_dir=src_dir,
+        NCDIR=NCDIR,
+        NCMOD=NCMOD,
+        FC=FC,
+        CFLAGS=CFLAGS,
+        LD=LD,
+        LDFLAGS=LDFLAGS,
+    )
     B.main(repo_name=repos[0])
 
     if share_branch:
-        #print(os.path.basename(repos[1]))
+        # print(os.path.basename(repos[1]))
         B.main(repo_name=os.path.basename(repos[1]))
     else:
         B.main(repo_name=repos[1])

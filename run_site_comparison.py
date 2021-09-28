@@ -26,10 +26,12 @@ from scripts.run_cable_site import RunCable
 
 
 parser = argparse.ArgumentParser()
-parser.add_option("--qsub", action="store_true", default=False,
-                  help="Run qsub script?")
-parser.add_option("-s", "--skipsrc", action="store_true", default=False,
-                  help="Rebuild src?")
+parser.add_argument(
+    "--qsub", action="store_true", default=False, help="Run qsub script?"
+)
+parser.add_argument(
+    "-s", "--skipsrc", action="store_true", default=False, help="Rebuild src?"
+)
 
 args = parser.parse_args()
 
@@ -39,7 +41,7 @@ if args.qsub == False and args.skipsrc == False:
     ## Get CABLE ...
     #
     G = GetCable(src_dir=src_dir, user=user)
-    G.main(repo_name=repos[0], trunk=trunk) # Default is True
+    G.main(repo_name=repos[0], trunk=trunk)  # Default is True
 
     # Run on a users branch, not integration
     if repos[1] != "integration":
@@ -50,8 +52,12 @@ if args.qsub == False and args.skipsrc == False:
     if share_branch:
         get_user_branch = False
 
-    G.main(repo_name=repos[1], trunk=False, user_branch=get_user_branch,
-           share_branch=share_branch) # integration branch
+    G.main(
+        repo_name=repos[1],
+        trunk=False,
+        user_branch=get_user_branch,
+        share_branch=share_branch,
+    )  # integration branch
 
     #
     ## Build CABLE ...
@@ -69,7 +75,7 @@ if args.qsub == False and args.skipsrc == False:
     B.main(repo_name=repos[0])
 
     if share_branch:
-        #print(os.path.basename(repos[1]))
+        # print(os.path.basename(repos[1]))
         B.main(repo_name=os.path.basename(repos[1]))
     else:
         B.main(repo_name=repos[1])
