@@ -23,10 +23,11 @@ from argparse import ArgumentParser
 
 from user_options import *
 
-sys.path.append("scripts")
-from get_cable import GetCable
-from build_cable import BuildCable
-from run_cable_site import RunCable
+from scripts.get_cable import GetCable
+from scripts.build_cable import BuildCable
+
+# Shouldn't this import run_cable_spatial?
+from scripts.run_cable_site import RunCable
 
 
 parser = ArgumentParser()

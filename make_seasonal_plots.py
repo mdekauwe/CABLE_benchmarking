@@ -20,8 +20,7 @@ import datetime
 import numpy as np
 from user_options import *
 
-sys.path.append("scripts")
-from benchmark_seasonal_plot import main as seas_plot
+from scripts.benchmark_seasonal_plot import main as seas_plot
 
 #
 ## Make seasonal plots ...
