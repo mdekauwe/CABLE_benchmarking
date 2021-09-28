@@ -18,7 +18,7 @@ import glob
 import datetime
 import subprocess
 import numpy as np
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 
 from user_options import *
@@ -29,15 +29,17 @@ from build_cable import BuildCable
 from run_cable_site import RunCable
 
 
-parser = OptionParser()
-parser.add_option("--qsub", action="store_true", default=False, help="Run qsub script?")
-parser.add_option(
+parser = ArgumentParser()
+parser.add_argument(
+    "--qsub", action="store_true", default=False, help="Run qsub script?"
+)
+parser.add_argument(
     "-s", "--skipsrc", action="store_true", default=False, help="Rebuild src?"
 )
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
-if options.qsub == False and options.skipsrc == False:
+if args.qsub == False and args.skipsrc == False:
 
     #
     ## Get CABLE ...

@@ -128,10 +128,10 @@ def resample_to_seasonal_cycle(df, OBS=False):
 
 if __name__ == "__main__":
 
-    from optparse import OptionParser
+    from argparse import ArgumentParser
 
-    parser = OptionParser()
-    parser.add_option(
+    parser = ArgumentParser()
+    parser.add_argument(
         "-o",
         "--old_fname",
         dest="old_fname",
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         help="Old CABLE output filename",
         type="string",
     )
-    parser.add_option(
+    parser.add_argument(
         "-n",
         "--new_fname",
         dest="new_fname",
@@ -147,7 +147,7 @@ if __name__ == "__main__":
         help="New CABLE output filename",
         type="string",
     )
-    parser.add_option(
+    parser.add_argument(
         "-p",
         "--plot_fname",
         dest="plot_fname",
@@ -155,6 +155,6 @@ if __name__ == "__main__":
         help="Benchmark plot filename",
         type="string",
     )
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    main(options.old_fname, options.new_fname, options.plot_fname)
+    main(args.old_fname, args.new_fname, args.plot_fname)

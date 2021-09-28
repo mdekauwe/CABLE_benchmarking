@@ -18,7 +18,7 @@ import os
 import sys
 import datetime
 import subprocess
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 from user_options import *
 
@@ -27,18 +27,18 @@ from get_cable import GetCable
 from build_cable import BuildCable
 from generate_qsub_script import create_qsub_script
 
-parser = OptionParser()
-parser.add_option(
+parser = ArgumentParser()
+parser.add_argument(
     "-s", "--skipbuild", action="store_true", default=False, help="Rebuild src?"
 )
-parser.add_option(
+parser.add_argument(
     "-g", "--skipget", action="store_true", default=False, help="Get src?"
 )
 
-(options, args) = parser.parse_args()
+args = parser.parse_args()
 
 
-if options.skipget == False:
+if args.skipget == False:
     #
     ## Get CABLE ...
     #
@@ -46,7 +46,7 @@ if options.skipget == False:
     G.main(repo_name=repos[0], trunk=trunk)  # Default is True
     G.main(repo_name=repos[1], trunk=False)  # integration branch
 
-elif options.skipbuild == False:
+elif args.skipbuild == False:
 
     #
     ## Build CABLE ...

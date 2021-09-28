@@ -28,7 +28,7 @@ import os
 import glob
 import shutil
 import tempfile
-import optparse
+import argparse
 
 from cable_utils import adjust_nml_file
 from cable_utils import generate_spatial_qsub_script
@@ -36,30 +36,32 @@ from cable_utils import generate_spatial_qsub_script
 
 def cmd_line_parser():
 
-    p = optparse.OptionParser()
-    p.add_option("-s", action="store_true", default=False, help="Spinup model")
-    p.add_option("-a", action="store_true", default=False, help="Adjust namelist file")
-    p.add_option("-t", action="store_true", default=False, help="Sort restart files")
-    p.add_option("-y", default="1900", help="year")
-    p.add_option("-l", default="", help="log filename")
-    p.add_option("-o", default="", help="out filename")
-    p.add_option("-i", default="", help="restart in filename")
-    p.add_option("-r", default="", help="restart out filename")
-    p.add_option("-c", default="400.0", help="CO2 concentration")
-    p.add_option("-n", default=None, help="nml_fname")
-    options, args = p.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("-s", action="store_true", default=False, help="Spinup model")
+    p.add_argument(
+        "-a", action="store_true", default=False, help="Adjust namelist file"
+    )
+    p.add_argument("-t", action="store_true", default=False, help="Sort restart files")
+    p.add_argument("-y", default="1900", help="year")
+    p.add_argument("-l", default="", help="log filename")
+    p.add_argument("-o", default="", help="out filename")
+    p.add_argument("-i", default="", help="restart in filename")
+    p.add_argument("-r", default="", help="restart out filename")
+    p.add_argument("-c", default="400.0", help="CO2 concentration")
+    p.add_argument("-n", default=None, help="nml_fname")
+    args = p.parse_args()
 
     return (
-        options.l,
-        options.o,
-        options.i,
-        options.r,
-        int(options.y),
-        float(options.c),
-        options.n,
-        options.s,
-        options.a,
-        options.t,
+        args.l,
+        args.o,
+        args.i,
+        args.r,
+        int(args.y),
+        float(args.c),
+        args.n,
+        args.s,
+        args.a,
+        args.t,
     )
 
 
