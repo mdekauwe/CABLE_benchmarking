@@ -56,8 +56,16 @@ if args.qsub == False and args.skipsrc == False:
     #
     ## Build CABLE ...
     #
-    B = BuildCable(src_dir=src_dir, NCDIR=NCDIR, NCMOD=NCMOD, FC=FC,
-                   CFLAGS=CFLAGS, LD=LD, LDFLAGS=LDFLAGS)
+    B = BuildCable(
+        src_dir=src_dir,
+        NCDIR=NCDIR,
+        NCMOD=NCMOD,
+        FC=FC,
+        CFLAGS=CFLAGS,
+        LD=LD,
+        LDFLAGS=LDFLAGS,
+        mpi=mpi,
+    )
     B.main(repo_name=repos[0])
 
     if share_branch:
@@ -65,7 +73,6 @@ if args.qsub == False and args.skipsrc == False:
         B.main(repo_name=os.path.basename(repos[1]))
     else:
         B.main(repo_name=repos[1])
-
 
 
 #
@@ -99,7 +106,6 @@ for repo_id, repo in enumerate(repos):
     )
     for sci_id, sci_config in enumerate(sci_configs):
         R.main(sci_config, repo_id, sci_id)
-
 
 
 os.chdir(cwd)

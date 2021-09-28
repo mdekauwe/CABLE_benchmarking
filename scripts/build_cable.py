@@ -16,7 +16,7 @@ import subprocess
 import datetime
 from pathlib import Path
 
-import config
+from scripts.config import default_envfiles
 
 
 class BuildCable(object):
@@ -74,7 +74,7 @@ class BuildCable(object):
         # Read environment file
         cwd_path = Path(os.getcwd())
         config_path = cwd_path.parents[2]  # Need to go back 3 up.
-        config_path = config_path / config.default_envfiles["gadi"]
+        config_path = config_path / default_envfiles["gadi"]
         with config_path.open() as rfile:
             ModToLoad = rfile.readlines()
 
@@ -164,7 +164,9 @@ class BuildCable(object):
             raise ("Error changing file to executable")
 
         # cmd = "./%s clean" % (ofname)
-        cmd = "./%s" % (ofname)
+        # The following add the "mpi" option to the build if we want to compile with MPI
+        # cmd = "./%s" % (ofname)
+        cmd = f"./{ofname} {'mpi'*self.mpi}"
         error = subprocess.call(cmd, shell=True)
         if error == 1:
             raise ("Error building executable")
