@@ -115,7 +115,7 @@ sci_configs = [sci1, sci2]
 #
 ## MPI stuff
 #
-mpi = True
+mpi = False
 num_cores = ncpus  # set to a number, if None it will use all cores...!
 
 # ----------------------------------------------------------------------- #
