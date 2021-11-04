@@ -52,6 +52,7 @@ class RunCable(object):
         mpi=True,
         num_cores=None,
         verbose=True,
+        multiprocess=False,
     ):
 
         self.met_dir = met_dir
@@ -80,13 +81,14 @@ class RunCable(object):
         self.num_cores = num_cores
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
+        self.multiprocess = multiprocess
 
     def main(self, sci_config, repo_id, sci_id):
 
         (met_files, url, rev) = self.initialise_stuff()
 
         # Setup multi-processor jobs
-        if self.mpi:
+        if self.multiprocess:
             if self.num_cores is None:  # use them all!
                 self.num_cores = mp.cpu_count()
             chunk_size = int(np.ceil(len(met_files) / float(self.num_cores)))

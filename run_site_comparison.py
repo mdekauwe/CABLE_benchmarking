@@ -109,6 +109,7 @@ for repo_id, repo in enumerate(repos):
         mpi=mpi,
         num_cores=num_cores,
         cable_exe=cable_exe,
+        multiprocess=multiprocess,
     )
     for sci_id, sci_config in enumerate(sci_configs):
         R.main(sci_config, repo_id, sci_id)
