@@ -25,7 +25,12 @@ The program needs to know your user login name and the project you want to use t
 Give the name of your branch in the `repo2` variable.
  
 ## Run the benchmarking
-Once you have updated `user_options.py`, you simply need to run on the command line:
+Once you have updated `user_options.py`, you need to load the modules for Python:
+```
+module use /g/data/hh5/public/modules
+module load conda
+```
+Then you simply need to run on the command line:
 ```
 ./run_site_comparison.py 
 ```
