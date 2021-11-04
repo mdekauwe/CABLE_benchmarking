@@ -16,13 +16,12 @@ Clone the directory to your preferred location:
     $ git clone https://github.com/ccarouge/CABLE_benchmarking.git
 
 ## Setup the benchmarking
-### Update user_options.py
-You will need to update the following entries in this file:
+You will need to update the following entries in `user_options.py`:
 * user information
 * name of the user branch
-#### **user information**
+### user information
 The program needs to know your user login name and the project you want to use to run the benchmarking
-### **Name of the user branch**
+### Name of the user branch
 Give the name of your branch in the `repo2` variable.
  
 ## Run the benchmarking
