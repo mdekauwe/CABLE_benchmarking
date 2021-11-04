@@ -11,28 +11,25 @@ cwd = os.getcwd()
 
 
 # ------------- User set stuff ------------- #
-
-#
-## Qsub stuff ... ignore this block if not running a qsub script
-#
 project = "w35"
+user = "ccc561"
+repo2 = "v3.0-YP-changes"
+# ------------------------------------------ #
+
+# DON'T CHANGE BELOW
 qsub_fname = "benchmark_cable_qsub.sh"
-ncpus = 2
-mem = "8GB"
-wall_time = "01:30:00"
+ncpus = 16
+mem = "15GB"
+wall_time = "1:30:00"
 email_address = "ccc561@nci.org.au"
 
 #
 ## Repositories to test, default is head of the trunk against personal repo.
 ## But if trunk is false, repo1 could be anything
 #
-user = "ccc561"
-trunk = False
-# repo1 = "Trunk_%s" % (date)
-repo1 = "integration"
-# repo2 = "integration"
+trunk = True
+repo1 = f"Trunk_{date}"
 share_branch = False
-repo2 = "v3.0-YP-changes"
 repos = [repo1, repo2]
 
 
@@ -66,8 +63,8 @@ if not os.path.exists(src_dir):
 
 # Till fixed
 # met_dir = "/g/data/w35/mgk576/research/CABLE_runs/met/Ozflux"
-met_subset = ["AU-Tum_2002-2017_OzFlux_Met.nc", "AU-How_2003-2017_OzFlux_Met.nc"]
-# met_subset = [] # if empty...run all the files in the met_dir
+# met_subset = ["AU-Tum_2002-2017_OzFlux_Met.nc", "AU-How_2003-2017_OzFlux_Met.nc"]
+met_subset = []  # if empty...run all the files in the met_dir
 
 #
 ## science configs
@@ -111,11 +108,12 @@ sci8 = {
 
 
 # sci_configs = [sci1, sci2, sci3, sci4, sci5, sci6, sci7, sci8]
-sci_configs = [sci1, sci2]
+sci_configs = [sci1]
 #
 ## MPI stuff
 #
 mpi = False
 num_cores = ncpus  # set to a number, if None it will use all cores...!
+multiprocess = True
 
 # ----------------------------------------------------------------------- #
