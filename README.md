@@ -30,11 +30,16 @@ Once you have updated `user_options.py`, you need to load the modules for Python
 module use /g/data/hh5/public/modules
 module load conda
 ```
-Then you simply need to run on the command line:
+Then you need to initialise the runs:
 ```
-./run_site_comparison.py 
+./initialise_site_runs.py 
 ```
+This will get the source for both the trunk and your branch. Then, it will compile both codes and prepare a script to submit to the PBS scheduler.
 
+Once it is finished, you should have a new file `benchmark_cable_qsub.sh`. You then need to run:
+```
+qsub benchmark_cable_qsub.sh
+```
 ## Contacts
 Preferably enter your questions as issues or discussions on the Github repository.
 * [Martin De Kauwe](http://mdekauwe.github.io/).
