@@ -20,6 +20,12 @@ import subprocess
 import numpy as np
 import argparse
 from user_options import *
+from setup.machine_inits import *
+from setup.pbs_fluxsites import *
+from setup.repo_init import *
+from setup.directory_structure import *
+from setup.cases_fluxsites import *
+
 from scripts.get_cable import GetCable
 from scripts.build_cable import BuildCable
 from scripts.run_cable_site import RunCable

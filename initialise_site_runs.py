@@ -21,6 +21,10 @@ import subprocess
 import argparse
 
 from user_options import *
+from setup.machine_inits import *
+from setup.pbs_fluxsites import *
+from setup.repo_init import *
+from setup.directory_structure import *
 
 from scripts.get_cable import GetCable
 from scripts.build_cable import BuildCable
