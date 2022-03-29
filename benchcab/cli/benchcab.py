@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 from benchcab.scripts.benchtree import BenchTree
+from benchcab.scripts.bench_config import read_config
 
 def parse_args(arglist):
     """
@@ -31,6 +32,8 @@ def parse_args(arglist):
 
 def main(args):
 
+    # Read config file
+    opt = read_config(args.config)
     # Setup the minimal benchmarking directory tree
     myworkdir=Path.cwd()
     benchdirs=BenchTree(myworkdir)
