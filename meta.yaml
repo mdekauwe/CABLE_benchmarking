@@ -1,0 +1,22 @@
+{% set version = "0.1" %}
+
+package:
+  name: benchcab
+  version: {{ version }}
+
+source:
+    path: .
+
+
+build:
+    script: "{{ PYTHON }} -m pip install . --no-deps"
+    noarch: python
+    number: {{ GIT_DESCRIBE_NUMBER }}
+
+
+requirements:
+    host:
+        - python >=3.9
+        - pip
+    run:
+        - python >=3.9
