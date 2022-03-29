@@ -10,8 +10,9 @@ def parse_args(arglist):
     parser = argparse.ArgumentParser(description="Run the benchmarking for CABLE")
     parser.add_argument("-c","--config", help="Config filename", default="config.yaml")
     parser.add_argument("-f","--fluxnet", help="Runs the tests for the Fluxnet sites only", action="store_true")
-    parser.add_argument("-s","--spatial", help="Runs the spatial tests only",action="store_true")
+    parser.add_argument("-w","--world", help="Runs the global tests only",action="store_true")
     parser.add_argument("-b","--bitrepro", help="Check bit reproducibility, not implemented yet",action="store_true")
+    parser.add_argument("-s", "--skipsrc", action="store_true", default=False, help="Rebuild src?")
 
     args = parser.parse_args(arglist)
 
@@ -19,12 +20,17 @@ def parse_args(arglist):
         print("Bit reproducibility not implemented yet")
         sys.exit()
 
+    if args.fluxnet and args.world:
+        print("You can not specify -f and -g together.")
+        print("To run all the tests, do not specify any of those 2 options.")
+        sys.exit()
+
     return args
 
 def main(args):
 
     # Identify cases to run
-    run_flux    = not args.spatial
+    run_flux    = not args.world
     run_spatial = not args.fluxnet
 
     mess=""
