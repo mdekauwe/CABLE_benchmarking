@@ -2,6 +2,8 @@
 
 import argparse
 import sys
+from pathlib import Path
+from benchcab.scripts.benchtree import BenchTree
 
 def parse_args(arglist):
     """
@@ -19,7 +21,7 @@ def parse_args(arglist):
     if args.bitrepro:
         print("Bit reproducibility not implemented yet")
         sys.exit()
-
+    
     if args.fluxnet and args.world:
         print("You can not specify -f and -g together.")
         print("To run all the tests, do not specify any of those 2 options.")
@@ -28,6 +30,14 @@ def parse_args(arglist):
     return args
 
 def main(args):
+
+    # Setup the minimal benchmarking directory tree
+    myworkdir=Path.cwd()
+    benchdirs=BenchTree(myworkdir)
+    benchdirs.create_minbenchtree()
+
+    # Get the source code for both branches
+
 
     # Identify cases to run
     run_flux    = not args.world
