@@ -16,10 +16,8 @@ import subprocess
 from pathlib import Path
 
 
-def set_paths(nodename, envfile=""):
+def set_paths(nodename, ModToLoad:list):
 
-    print(Path.cwd())
-    assert Path(envfile).is_file(), f"Environment file {envfile} is not found."
 
     if "Mac" in nodename or "imac" in nodename:
         NCDIR = "/opt/local/lib/"
@@ -60,13 +58,12 @@ def set_paths(nodename, envfile=""):
         )
 
     elif "gadi" in nodename:
-        # Load modules
+        assert len(ModToLoad) > 0,  \
+        "Please add the modules you want to use to the configuration file"
+    # Load modules
         MODULESHOME = Path(os.environ["MODULESHOME"])
         sys.path.append(str(MODULESHOME / "init"))
         import python as mod
-
-        with Path(envfile).open() as rfile:
-            ModToLoad = rfile.readlines()
 
         mod.module("purge")
         for modname in ModToLoad:

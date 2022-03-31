@@ -10,11 +10,9 @@ from benchcab import get_cable
 def checkout_branch(branch_type:str, locdir:str):
 
     os.chdir(locdir)
-    tb = benchtree.BenchTree(Path(locdir))
-    tb.create_minbenchtree()
-
+    TestSetup=bench_config.BenchSetup("config.yaml")
     # Get the branch information from the testconfig
-    opt = bench_config.read_config("config.yaml")
+    opt, _, tb = TestSetup.setup_bench()
 
     # Check if the branch_type exists in file?
     locbranch = opt[branch_type]
@@ -44,7 +42,9 @@ def test_create_minbenchtree(create_testconfig):
 def test_read_config(create_testconfig, testconfig):
     
     os.chdir(create_testconfig)
-    opt = bench_config.read_config("config.yaml")
+    TestSetup=bench_config.BenchSetup("config.yaml")
+    # Get the branch information from the testconfig
+    opt = TestSetup.read_config()
 
     assert opt == testconfig
 

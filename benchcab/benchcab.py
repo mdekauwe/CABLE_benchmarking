@@ -3,8 +3,7 @@
 import argparse
 import sys
 from pathlib import Path
-from benchcab.benchtree import BenchTree
-from benchcab.bench_config import read_config, compilation_setup
+from benchcab.bench_config import BenchSetup
 from benchcab.get_cable import GetCable
 
 def parse_args(arglist):
@@ -36,19 +35,11 @@ def main(args):
     # Setup of the benchmark:
     #------------------------
     # - read config file
-    # - read environment file and define compilation variables
+    # - define compilation variables
     # - create minimal work directory tree.
 
-    # Read config file
-    opt = read_config(args.config)
-    
-    # Define compilation variables
-    compilation_opt=compilation_setup(opt["envfile"])
-
-    # Setup the minimal benchmarking directory tree
-    myworkdir=Path.cwd()
-    benchdirs=BenchTree(myworkdir)
-    benchdirs.create_minbenchtree()
+    mysetup = BenchSetup(args.config)
+    opt, compilation_opt, benchdirs = mysetup.setup_bench()
 
     # Aliases to branches to use:
     branch_alias = opt["use_branches"]

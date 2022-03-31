@@ -25,7 +25,11 @@ def testconfig():
             },
         "user":os.environ["USER"],
         "project":os.environ["PROJECT"],
-        "envfile":"gadi_env.sh",
+        "modules":[
+            "intel-compiler/2021.1.1",
+            "openmpi/4.1.0",
+            "netcdf/4.7.4",
+        ],
         }
     return conf
 
