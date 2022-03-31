@@ -3,8 +3,9 @@
 import argparse
 import sys
 from pathlib import Path
-from benchcab.scripts.benchtree import BenchTree
-from benchcab.scripts.bench_config import read_config
+from benchcab.benchtree import BenchTree
+from benchcab.bench_config import read_config
+from benchcab.get_cable import GetCable
 
 def parse_args(arglist):
     """
@@ -34,12 +35,22 @@ def main(args):
 
     # Read config file
     opt = read_config(args.config)
+    
+    # Aliases to branches to use:
+    branch_alias = opt["use_branches"]
+    branch1 = opt[branch_alias[0]]
+    branch2 = opt[branch_alias[1]]
+
     # Setup the minimal benchmarking directory tree
     myworkdir=Path.cwd()
     benchdirs=BenchTree(myworkdir)
     benchdirs.create_minbenchtree()
 
     # Get the source code for both branches
+    print("Retrieving the source code from both branches in the src/ directory")
+    G = GetCable(src_dir=benchdirs.src_dir, user=opt["user"])
+    G.main(**branch1)
+    G.main(**branch2)
 
 
     # Identify cases to run

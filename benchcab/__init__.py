@@ -1,1 +1,1 @@
-import benchcab.cli.benchcab as benchcab
+import benchcab.benchcab as benchcab
