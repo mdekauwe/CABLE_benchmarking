@@ -3,8 +3,26 @@ import tempfile
 import os
 import yaml
 
-from benchcab.scripts import benchtree
-from benchcab.scripts import bench_config
+from benchcab import benchtree
+from benchcab import bench_config
+from benchcab import get_cable
+
+def checkout_branch(branch_type:str, locdir:str):
+
+    os.chdir(locdir)
+    tb = benchtree.BenchTree(Path(locdir))
+    tb.create_minbenchtree()
+
+    # Get the branch information from the testconfig
+    opt = bench_config.read_config("config.yaml")
+
+    # Check if the branch_type exists in file?
+    locbranch = opt[branch_type]
+    tr = get_cable.GetCable(src_dir=tb.src_dir, user=opt["user"])
+    tr.main(**locbranch)
+
+    assert Path(f"src/{locbranch['name']}").is_dir(), "Directory does not exist"
+    assert len(list(Path(f"src/{locbranch['name']}").iterdir())) > 0, "Directory is empty"
 
 
 def test_create_minbenchtree(create_testconfig):
@@ -29,3 +47,17 @@ def test_read_config(create_testconfig, testconfig):
     opt = bench_config.read_config("config.yaml")
 
     assert opt == testconfig
+
+def test_checkout_trunk(create_testconfig):
+
+    checkout_branch("trunk", create_testconfig)
+
+def test_checkout_user(create_testconfig):
+
+    checkout_branch("user_branch", create_testconfig)
+ 
+def test_checkout_share(create_testconfig):
+
+    checkout_branch("share", create_testconfig)
+
+

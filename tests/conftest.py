@@ -1,22 +1,29 @@
 import pytest
+import os
 import yaml
 
 @pytest.fixture
 def testconfig():
     # Test config
     conf = {
-        "branches":{ 
-            "branch1":{
-                "name": "v3.0-YP-changes",
-                "trunk": False,
-                "share_branch": False
-                },
-            "branch2":{
-                "name": "trunk",
-                "trunk": True,
-                "share_branch": False
-                },
-            }
+        "use_branches":["user_branch","trunk"],
+        "user_branch":{
+            "name": "v3.0-YP-changes",
+            "trunk": False,
+            "share_branch": False,
+            },
+        "trunk":{
+            "name": "trunk",
+            "trunk": True,
+            "share_branch": False,
+            },
+        "share":{
+            "name": "integration",
+            "trunk": False,
+            "share_branch": True,
+            },
+        "user":os.environ["USER"],
+        "project":os.environ["PROJECT"],
         }
     return conf
 

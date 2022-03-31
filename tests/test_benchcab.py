@@ -5,7 +5,7 @@ import tempfile
 import os
 import pytest
 
-from benchcab.cli import benchcab
+from benchcab import benchcab
 
 mydir = Path.cwd()
 
