@@ -1,5 +1,7 @@
 import yaml
 from pathlib import Path
+import os
+from benchcab.set_default_paths import set_paths
 
 def check_config(opt:dict):
     """Run some checks on the config file to ensure the data is coherent.
@@ -23,3 +25,16 @@ def read_config(myconfig:str):
     
     check_config(opt)
     return opt
+
+def compilation_setup(envfile:str):
+    """Read the environment file and load the modules and define the paths to libraries 
+    depending on the machine name as needed for CABLE compilation.
+    
+    envfile: str, path to the environment file defining the modules to use"""
+
+    (_, nodename, _, _, _) = os.uname()
+
+    compilation_opt = set_paths(nodename, envfile)
+
+    return compilation_opt
+

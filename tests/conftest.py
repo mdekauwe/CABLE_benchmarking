@@ -1,6 +1,7 @@
 import pytest
 import os
 import yaml
+from pathlib import Path
 
 @pytest.fixture
 def testconfig():
@@ -24,6 +25,7 @@ def testconfig():
             },
         "user":os.environ["USER"],
         "project":os.environ["PROJECT"],
+        "envfile":"gadi_env.sh",
         }
     return conf
 
