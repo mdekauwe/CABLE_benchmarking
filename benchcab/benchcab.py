@@ -3,7 +3,10 @@
 import argparse
 import sys
 from pathlib import Path
+
 from benchcab.bench_config import BenchSetup
+from benchcab.benchtree import BenchTree
+from benchcab.build_cable import BuildCable
 from benchcab.get_cable import GetCable
 
 def parse_args(arglist):
@@ -30,29 +33,67 @@ def parse_args(arglist):
 
     return args
 
-def main(args):
-
-    # Setup of the benchmark:
-    #------------------------
-    # - read config file
-    # - define compilation variables
-    # - create minimal work directory tree.
-
-    mysetup = BenchSetup(args.config)
-    opt, compilation_opt, benchdirs = mysetup.setup_bench()
+def retrieve_cable_code(benchdirs:BenchTree, opt:dict):
+    """Checkout the 2 branches of CABLE from the svn repository in the 
+    source directory created at setup.
+    benchdir: BenchTree, contains path information for paths in the working directory
+    opt: dict, contains the branch information we want to use"""
 
     # Aliases to branches to use:
     branch_alias = opt["use_branches"]
     branch1 = opt[branch_alias[0]]
     branch2 = opt[branch_alias[1]]
 
-
-    # Get the source code for both branches
-    print("Retrieving the source code from both branches in the src/ directory")
     G = GetCable(src_dir=benchdirs.src_dir, user=opt["user"])
     G.main(**branch1)
     G.main(**branch2)
 
+def build_cable_code(benchdirs:BenchTree, compilation_opt:dict, opt:dict):
+
+    # Aliases to branches to use:
+    branch_alias = opt["use_branches"]
+    branch1 = opt[branch_alias[0]]
+    branch2 = opt[branch_alias[1]]
+
+    B = BuildCable(
+        src_dir=benchdirs.src_dir,
+        ModToLoad=opt["modules"],
+        NCDIR=compilation_opt["NCDIR"],
+        NCMOD=compilation_opt["NCMOD"],
+        FC=compilation_opt["FC"],
+        CFLAGS=compilation_opt["CFLAGS"],
+        LD=compilation_opt["LD"],
+        LDFLAGS=compilation_opt["LDFLAGS"],
+        mpi=True,
+        )
+    B.main(repo_name=branch1["name"])
+    B.main(repo_name=branch2["name"])
+
+
+def main(args):
+
+    # Setup of the benchmark:
+    #------------------------
+    # - read config file.
+    # - define compilation variables.
+    # - create minimal work directory tree.
+    # - checkout the CABLE source codes.
+    # - compile the CABLE source codes.
+
+    mysetup = BenchSetup(args.config)
+    opt, compilation_opt, benchdirs = mysetup.setup_bench()
+
+    # Get the source code for both branches
+    print("Retrieving the source code from both branches in the src/ directory")
+    retrieve_cable_code(benchdirs, opt)
+
+    # Build the source codes
+    build_cable_code(benchdirs, compilation_opt, opt)
+
+    # Run the benchmark:
+    # We run both at single sites and spatial runs unless otherwise specified
+    # by command line arguments
+    #------------------------------------------------------------------------
     # Identify cases to run
     run_flux    = not args.world
     run_spatial = not args.fluxnet

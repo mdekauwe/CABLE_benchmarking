@@ -7,26 +7,22 @@ from benchcab import benchtree
 from benchcab import bench_config
 from benchcab import get_cable
 
-def checkout_branch(branch_type:str, locdir:str):
 
-    os.chdir(locdir)
-    TestSetup=bench_config.BenchSetup("config.yaml")
-    # Get the branch information from the testconfig
-    opt, _, tb = TestSetup.setup_bench()
+def checkout_branch(branch_type:str, opt:dict,tb:benchtree.BenchTree):
 
     # Check if the branch_type exists in file?
     locbranch = opt[branch_type]
     tr = get_cable.GetCable(src_dir=tb.src_dir, user=opt["user"])
     tr.main(**locbranch)
 
+    print(Path.cwd())
     assert Path(f"src/{locbranch['name']}").is_dir(), "Directory does not exist"
     assert len(list(Path(f"src/{locbranch['name']}").iterdir())) > 0, "Directory is empty"
-
 
 def test_create_minbenchtree(create_testconfig):
     """Test the min. directory tree is created"""
 
-    td = create_testconfig
+    td = create_testconfig[0]
     # Get into the temporary directory to test creating the directory structure
     os.chdir(td)
 
@@ -38,10 +34,11 @@ def test_create_minbenchtree(create_testconfig):
         (td/"runs").is_dir(),
     ]
     assert all(paths_to_create)
+
     
 def test_read_config(create_testconfig, testconfig):
     
-    os.chdir(create_testconfig)
+    os.chdir(create_testconfig[0])
     TestSetup=bench_config.BenchSetup("config.yaml")
     # Get the branch information from the testconfig
     opt = TestSetup.read_config()
@@ -50,14 +47,19 @@ def test_read_config(create_testconfig, testconfig):
 
 def test_checkout_trunk(create_testconfig):
 
-    checkout_branch("trunk", create_testconfig)
+    td = create_testconfig[0]
+    os.chdir(td)
+    # Setup the benchmarking
+    opt, _, tb = create_testconfig[1:]
 
-def test_checkout_user(create_testconfig):
+    checkout_branch("trunk", opt, tb)
 
-    checkout_branch("user_branch", create_testconfig)
+# def test_checkout_user(create_testconfig, checkout_branch):
+
+#     checkout_branch("user_branch", create_testconfig)
  
-def test_checkout_share(create_testconfig):
+# def test_checkout_share(create_testconfig, checkout_branch):
 
-    checkout_branch("share", create_testconfig)
+#     checkout_branch("share", create_testconfig)
 
 

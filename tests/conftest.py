@@ -3,6 +3,9 @@ import os
 import yaml
 from pathlib import Path
 
+from benchcab import bench_config
+from benchcab import get_cable
+
 @pytest.fixture
 def testconfig():
     # Test config
@@ -36,7 +39,13 @@ def testconfig():
 @pytest.fixture
 def create_testconfig(testconfig, tmp_path):
 
-    with open(tmp_path/"config.yaml", "w") as fout:
+    os.chdir(tmp_path)
+    with open("config.yaml", "w") as fout:
         yaml.dump(testconfig,fout)
 
-    return tmp_path
+    TestSetup=bench_config.BenchSetup("config.yaml")
+    # return the config options, compilation options and directory tree:
+    # opt, compilation_opt, benchdirs
+    opt, compilation_opt, benchdirs = TestSetup.setup_bench()
+
+    return tmp_path, opt, compilation_opt, benchdirs
