@@ -1,48 +1,37 @@
 # CABLE benchmarking
 
-Repository to benchmark a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
+Repository to benchmark CABLE. The benchmark will run the exact same configurations on two CABLE branches specified by the user, e.g. a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
 
-The code will: (i) check out; (ii) build; and (iii) run both the head of the trunk and the user's personal branch across N standard science configurations. It is possible to produce some plots locally. But the outputs should be uploaded to [the modelevaluation website](https://modelevaluation.org/) for further benchmarking and evaluation.
+The code will: (i) check out; (ii) build; and (iii) run branches across N standard science configurations. It is possible to produce some plots locally. But the outputs should be uploaded to [the modelevaluation website](https://modelevaluation.org/) for further benchmarking and evaluation.
 
 ## Permissions
 To run the benchmarking, you will need access to the following projects at NCI:
-* w35
+* ua8
 * wd9
 * hh5
 
-You can request access via [my.nci.org.au](https://my.nci.org.au/mancini/login?next=/mancini/)
-## Get the benchmarking code and run directory
-Clone the directory to your preferred location:
+You can request access via [my.nci.org.au](https://my.nci.org.au/mancini/login?next=/mancini/). All of those projects accept all requests by default.
 
-    $ git clone https://github.com/ccarouge/CABLE_benchmarking.git
+## Create a run directory.
+1. **Choose a run directory.** 
+You can run the benchmark from any directory you want. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary until you upload them to [modelevaluation.org](https://modelevaluation.org/).
 
-## Setup the benchmarking
-You will need to update the following entries in `user_options.py`:
-* user information
-* name of the user branch
-### user information
-The program needs to know your user login name and the project you want to use to run the benchmarking
-### Name of the user branch
-Give the name of your branch in the `repo2` variable.
- 
+1. **Create a config file in this directory.** The default name is `config.yaml` but any name can be specified at run time. This file follows the YAML format. You can find an example configuration file [here](https://github.com/CABLE-LSM/bench_example.git) 
+
 ## Run the benchmarking
-Once you have updated `user_options.py`, you need to load the modules for Python:
+Once you have a configuration file, you need to load the modules for Python:
 ```
 module use /g/data/hh5/public/modules
 module load conda
 ```
-Then you need to initialise the runs:
+Then you simply launch the benchmarking:
 ```
-./initialise_site_runs.py 
+benchcab
 ```
-This will get the source for both the trunk and your branch. Then, it will compile both codes and prepare a script to submit to the PBS scheduler.
-
-Once it is finished, you should have a new file `benchmark_cable_qsub.sh`. You then need to run:
+For help on the available options for the benchmarking:
 ```
-qsub benchmark_cable_qsub.sh
+benchcab -h
 ```
 ## Contacts
-Preferably enter your questions as issues or discussions on the Github repository.
-* [Martin De Kauwe](http://mdekauwe.github.io/).
-* [Gab Abramowitz](http://web.science.unsw.edu.au/~gabrielabramowitz/UNSW_homepage/Gab_Abramowitz_home_page.html).
+Please enter your questions as issues or discussions on the Github repository.
 
