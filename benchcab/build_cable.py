@@ -137,8 +137,6 @@ class BuildCable(object):
             ofname = "my_build.ksh"
         of = open(ofname, "w")
 
-        # check_host = "host_%s()" % (host)
-
         # We find all the "module load" lines and remove them from
         # the list of lines.
         # Then after the line "module purge", we add a line for
@@ -167,12 +165,33 @@ class BuildCable(object):
 
         os.remove(ofname)
 
+    def clean_if_needed(self):
+        """Clean a previous compilation if latest executable doesn't have the name we want."""
+
+        wanted_exe = f"cable{'-mpi'*self.mpi}"
+
+        exe_list=[Path("cable-mpi"), Path("cable") ]
+        exe_found = [ this_exe for this_exe in exe_list if this_exe.is_file() ]
+
+        clean_compil = False
+        if len(exe_found) > 0:
+            newest_exe = max( exe_found, key=lambda x: x.stat().st_mtime )
+            clean_compil = newest_exe != wanted_exe
+        
+        # Clean compilation if needed
+        if clean_compil:
+            cmd = f"rm -fr .tmp"
+            error = subprocess.call(cmd, shell=True)
+            if error == 1:
+                raise ("Error cleaning previous compilation")
+
     def main(self, repo_name=None):
 
         build_dir = "%s/%s" % (repo_name, "offline")
         cwd = os.getcwd()
         os.chdir(os.path.join(self.src_dir, build_dir))
 
+        self.clean_if_needed()
         ofname = self.adjust_build_script()
         self.build_cable(ofname)
 

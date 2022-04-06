@@ -48,7 +48,7 @@ def retrieve_cable_code(benchdirs:BenchTree, opt:dict):
     G.main(**branch1)
     G.main(**branch2)
 
-def build_cable_code(benchdirs:BenchTree, compilation_opt:dict, opt:dict):
+def build_cable_code(benchdirs:BenchTree, compilation_opt:dict, opt:dict, mpi:False):
 
     # Aliases to branches to use:
     branch_alias = opt["use_branches"]
@@ -64,7 +64,7 @@ def build_cable_code(benchdirs:BenchTree, compilation_opt:dict, opt:dict):
         CFLAGS=compilation_opt["CFLAGS"],
         LD=compilation_opt["LD"],
         LDFLAGS=compilation_opt["LDFLAGS"],
-        mpi=True,
+        mpi=mpi,
         )
     B.main(repo_name=branch1["name"])
     B.main(repo_name=branch2["name"])
@@ -87,8 +87,6 @@ def main(args):
     print("Retrieving the source code from both branches in the src/ directory")
     retrieve_cable_code(benchdirs, opt)
 
-    # Build the source codes
-    build_cable_code(benchdirs, compilation_opt, opt)
 
     # Run the benchmark:
     # We run both at single sites and spatial runs unless otherwise specified
@@ -103,6 +101,11 @@ def main(args):
         mess=mess+"Running the single sites tests "
         print("Running the single sites tests ")
 
+        mpi = False
+        multiprocess = True
+
+        # Build the source codes
+        build_cable_code(benchdirs, compilation_opt, opt, mpi)
     if run_spatial:
         mess=mess+"Running the spatial tests "
         print("Running the spatial tests ")
