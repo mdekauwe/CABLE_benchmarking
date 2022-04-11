@@ -80,8 +80,7 @@ def set_paths(nodename, ModToLoad:list):
         LD = "'-lnetcdf -lnetcdff'"
         LDFLAGS = "'-L'$NCDIR' -O0'"
         met_dir = Path(
-            "/g/data/w97/W35_GDATA_MOVED/Shared_data/Observations/Fluxnet_data/"
-            "Post-processed_PLUMBER2_outputs/Nc_files/Met"
+            "/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/"
         )
 
     else:
