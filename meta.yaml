@@ -18,5 +18,11 @@ requirements:
     host:
         - python >=3.9
         - pip
+        - pbr
     run:
         - python >=3.9
+        - xarray
+        - numpy
+        - pandas
+        - matplotlib
+        - netCDF4
