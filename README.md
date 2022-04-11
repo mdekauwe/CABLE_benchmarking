@@ -4,6 +4,7 @@ Repository to benchmark CABLE. The benchmark will run the exact same configurati
 
 The code will: (i) check out; (ii) build; and (iii) run branches across N standard science configurations. It is possible to produce some plots locally. But the outputs should be uploaded to [the modelevaluation website](https://modelevaluation.org/) for further benchmarking and evaluation.
 
+For the moment, the benchmarking only works on NCI supercomputer.
 ## Permissions
 To run the benchmarking, you will need access to the following projects at NCI:
 * ua8
@@ -14,9 +15,10 @@ You can request access via [my.nci.org.au](https://my.nci.org.au/mancini/login?n
 
 ## Create a run directory.
 1. **Choose a run directory.** 
-You can run the benchmark from any directory you want. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary until you upload them to [modelevaluation.org](https://modelevaluation.org/).
+You can run the benchmark from any directory you want. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary until you upload them to [modelevaluation.org](https://modelevaluation.org/). You will need about 70GB.
 
-1. **Create a config file in this directory.** The default name is `config.yaml` but any name can be specified at run time. This file follows the YAML format. You can find an example configuration file [here](https://github.com/CABLE-LSM/bench_example.git) 
+1. **Create a config file in this directory.** 
+   The default name is `config.yaml` but any name can be specified at run time. This file follows the YAML format. You can find an example configuration file [here](https://github.com/CABLE-LSM/bench_example.git) 
 
 ## Run the benchmarking
 Once you have a configuration file, you need to load the modules for Python:
