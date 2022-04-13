@@ -1,7 +1,7 @@
 qsub_fname = "benchmark_cable_qsub.sh"
-ncpus = 96
-mem = "384GB"
-wall_time = "3:00:00"
+ncpus = 18
+mem = "30GB"
+wall_time = "6:00:00"
 
 #
 ## MPI stuff
