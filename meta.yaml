@@ -26,4 +26,4 @@ requirements:
         - pandas
         - matplotlib
         - netCDF4
-        - yaml
+        - PyYAML
