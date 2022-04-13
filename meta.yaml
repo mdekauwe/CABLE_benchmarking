@@ -1,0 +1,29 @@
+{% set version = "0.1.2" %}
+
+package:
+  name: benchcab
+  version: {{ version }}
+
+source:
+    path: .
+
+
+build:
+    script: "{{ PYTHON }} -m pip install . --no-deps"
+    noarch: python
+    number: {{ GIT_DESCRIBE_NUMBER }}
+
+
+requirements:
+    host:
+        - python >=3.9
+        - pip
+        - pbr
+    run:
+        - python >=3.9
+        - xarray
+        - numpy
+        - pandas
+        - matplotlib
+        - netCDF4
+        - PyYAML

@@ -15,13 +15,12 @@ import sys
 import subprocess
 import datetime
 from pathlib import Path
-
-from scripts.config import default_envfiles
-
+from typing import Iterable
 
 class BuildCable(object):
     def __init__(
         self,
+        ModToLoad:Iterable,
         src_dir=None,
         NCDIR=None,
         NCMOD=None,
@@ -42,7 +41,9 @@ class BuildCable(object):
         self.LDFLAGS = LDFLAGS
         self.debug = debug
         self.mpi = mpi
+        self.ModToLoad = ModToLoad
 
+    @staticmethod
     def find_purge_line(filelines, filename=""):
         """Find the line with module purge in the list of file lines.
         Check there is only 1 such line. Return the index of the line.
@@ -61,7 +62,7 @@ class BuildCable(object):
 
         return purge_line
 
-    def add_module_load(lines, nindent):
+    def add_module_load(self,lines, nindent):
         """Read in the environment file using config data.
         Add lines to load each module listed in environment file
         at the end of the list of strings, lines
@@ -71,15 +72,8 @@ class BuildCable(object):
 
         loclines = lines.copy()
 
-        # Read environment file
-        cwd_path = Path(os.getcwd())
-        config_path = cwd_path.parents[2]  # Need to go back 3 up.
-        config_path = config_path / default_envfiles["gadi"]
-        with config_path.open() as rfile:
-            ModToLoad = rfile.readlines()
-
         # Append new lines to the list of lines for each module
-        for mod in ModToLoad:
+        for mod in self.ModToLoad:
             # Add newline if not in "mod"
             if "\n" not in mod:
                 mod = mod + "\n"
@@ -88,7 +82,7 @@ class BuildCable(object):
 
         return loclines
 
-    def change_build_lines(filelines, filename=""):
+    def change_build_lines(self,filelines, filename=""):
         """Get the lines from the build script and modify them:
             - remove all the module load and module add lines
             - read in the environment file for Gadi
@@ -104,7 +98,7 @@ class BuildCable(object):
         ]
 
         # Find the line with "module purge"
-        purge_line = BuildCable.find_purge_line(nomodulelines, filename=filename)
+        purge_line = self.find_purge_line(nomodulelines, filename=filename)
 
         # Get the indentation right: copy the indentation from the module purge line
         nindent = nomodulelines[purge_line].find("module purge")
@@ -112,7 +106,7 @@ class BuildCable(object):
         outlines = nomodulelines[: purge_line + 1]  # Take all lines until module purge
 
         # append lines to load the correct modules
-        outlines = BuildCable.add_module_load(outlines, nindent)
+        outlines = self.add_module_load(outlines, nindent)
 
         # add the end of the file as in the original file
         outlines.extend(nomodulelines[purge_line + 1 :])
@@ -143,13 +137,11 @@ class BuildCable(object):
             ofname = "my_build.ksh"
         of = open(ofname, "w")
 
-        # check_host = "host_%s()" % (host)
-
         # We find all the "module load" lines and remove them from
         # the list of lines.
         # Then after the line "module purge", we add a line for
         # each module listed in gadi_env.sh
-        outlines = BuildCable.change_build_lines(lines, filename=fname)
+        outlines = self.change_build_lines(lines, filename=fname)
 
         of.writelines(outlines)
         of.close()
@@ -173,12 +165,33 @@ class BuildCable(object):
 
         os.remove(ofname)
 
-    def main(self, repo_name=None, trunk=False):
+    def clean_if_needed(self):
+        """Clean a previous compilation if latest executable doesn't have the name we want."""
+
+        wanted_exe = f"cable{'-mpi'*self.mpi}"
+
+        exe_list=[Path("cable-mpi"), Path("cable") ]
+        exe_found = [ this_exe for this_exe in exe_list if this_exe.is_file() ]
+
+        clean_compil = False
+        if len(exe_found) > 0:
+            newest_exe = max( exe_found, key=lambda x: x.stat().st_mtime )
+            clean_compil = newest_exe != wanted_exe
+        
+        # Clean compilation if needed
+        if clean_compil:
+            cmd = f"rm -fr .tmp"
+            error = subprocess.call(cmd, shell=True)
+            if error == 1:
+                raise ("Error cleaning previous compilation")
+
+    def main(self, repo_name=None):
 
         build_dir = "%s/%s" % (repo_name, "offline")
         cwd = os.getcwd()
         os.chdir(os.path.join(self.src_dir, build_dir))
 
+        self.clean_if_needed()
         ofname = self.adjust_build_script()
         self.build_cable(ofname)
 

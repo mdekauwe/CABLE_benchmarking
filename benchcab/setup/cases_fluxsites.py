@@ -1,17 +1,4 @@
 #
-## Met files ...
-#
-# met_subset = ['FI-Hyy_1996-2014_FLUXNET2015_Met.nc',\
-#              'AU-Tum_2002-2017_OzFlux_Met.nc']
-# met_subset = ['TumbaFluxnet.1.4_met.nc']
-
-# Till fixed
-# met_dir = "/g/data/w35/mgk576/research/CABLE_runs/met/Ozflux"
-# met_subset = ["AU-Tum_2002-2017_OzFlux_Met.nc", "AU-How_2003-2017_OzFlux_Met.nc"]
-met_subset = []  # if empty...run all the files in the met_dir
-
-
-#
 ## science configs
 #
 sci1 = {

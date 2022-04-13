@@ -1,0 +1,257 @@
+CHANGES
+=======
+
+* Update README
+* Use site data published in ks32
+* Add running the configurations
+* .gitignore files from install
+* Fix: re-building source code
+* Add building CABLE
+* Fix setup with setup.cfg
+* Moved all setup phases into a class
+* Add setup for compilation
+* Fix issue with configuration file format
+* simplify the file structure
+* Attempt to build for command line
+* Define input config in yaml
+* Create min. work directory tree
+* Modify command line args
+* Add simple command line
+* Clean start
+* Update .gitignore
+* Add LICENSE
+* separate inputs by type of input
+* Update README.md
+* Update README.md
+* Forgotten loading the python module
+* To run on multi-processors
+* Some typos in the README file
+* More docs updates to make things simpler for users
+* Updated documentation
+* Use hh5 environments in qsub script
+* Load hh5 conda environment in qsub script
+
+v0.1
+----
+
+* Serial runs only work for now
+* Fix imports
+* update all from optparse to argparse
+* Black formatting
+* A few missing things for mpi exe. name
+* Add "-mpi" to exe name if compiled with mpi
+* "Fix" error handling for subprocess. To update
+* Import submodules properly
+* Update to argparse. Remove append to path for imports
+* To work with updated build script for CABLE
+* Update how to find compilation options for Gadi
+* Simplify check for NCI machine
+* Update to Argparse from optparse
+* Don't append to path for imports
+* replace "is" with "=="
+* fixes for jhan
+* removed date
+* fixed sys exit
+* Added xarray
+* fixed dates issue
+* fixed for jhan
+* fixed for share branch
+* fixed option to pass user branch
+* test more cores
+* test more cores
+* Changed call
+* test
+* test
+* reduced core calls
+* added unload openmpi
+* changed logging options
+* Added netcdf unload cmd
+* fixed filename
+* fixed seasonal plot wrapper
+* Fixed logic for qsub
+* fixed mpi
+* fix for unused cores
+* fix for unused cores
+* changed default mpi
+* removed clean
+* fixed cmd line parser
+* matched other run script
+* matched other run script
+* Added flag to build sep of get
+* fixed literals
+* removed qsub
+* Changed tests
+* Added NCI hint
+* fixed literals issue
+* fix for gadi modules
+* fix for ifort
+* fix for ifort
+* fix for ifort
+* fix for ifort
+* fix for ifort
+* fix for ifort
+* fix for ifort
+* added debug
+* added debug
+* fixed literal issue?
+* test for gadi fi
+* fixed storm server paths
+* fixed storm server paths
+* Added missing lib
+* Added missing lib
+* Added catch for anna
+* fixed typo
+* Changed storm paths
+* clean up
+* filename cleanup
+* Added plumber path for storm
+* changed trunk name
+* blah
+* added unplumbed spatial
+* Added spatial file, needs editing
+* fixed new name
+* renamed file
+* Added -s flag
+* Added -s flag
+* fixed met path
+* fixed met path
+* fixed met path
+* fixed met path
+* fixed to get it working again
+* fixed paths
+* fixed typos
+* changed pbs options
+* updated met files
+* rolled back update utils
+* updated utils
+* updated text to include mention of integration
+* fixed paths for gadi
+* changed nc path
+* changed paths for gadi
+* changed paths for gadi
+* changed paths for gadi
+* Added note on integration branch
+* Commented out old ver
+* Added newline
+* Changed subprocess call to one that automatically raises exception with error
+* Tweaked multiprocessing code
+* Tweaked multiprocessing code
+* Fixed met flag
+* Tweaked options
+* Added sci config
+* Added sci config
+* Added further sci configs
+* tweaked usage request
+* Removed removal of src
+* Removed file
+* Fixed ignore
+* Fixed ignore
+* Changed path
+* Fixed stupid logic
+* Changed qsub options
+* Added comment
+* Turned on MPI
+* Removed date from Trunk
+* Made integration the default
+* Made integration the default
+* Added script to gen integration branch
+* Added missing numpy
+* Fixed home bug
+* Added password SVN option
+* Added missing dict check
+* Added missing dict check
+* Put back missings args
+* Fixed options typo
+* Added additional check
+* Further edits
+* Further edits
+* Further edits
+* Fixed readme
+* removed wrapper script
+* Split and reorganised files to work on PBS
+* Renamed file
+* Renamed file
+* Removed correct command for non empty dir
+* Removed debug stuff
+* Added initial clean up of src dir
+* Fixed netcdf load
+* Fixed netcdf load
+* Fixed netcdf load
+* added debug statements
+* added debug statements
+* added debug statements
+* added pbs wd
+* added pbs wd
+* added pbs wd
+* added pbs wd
+* various fixes to nci script
+* changed raijin testing
+* changed raijin testing
+* Added qsub script
+* Changed raijin met path
+* Fixed raijin netcdf libs
+* Changed paths on storm server to match old plumber files
+* Changed paths for storm server
+* Changed paths for storm server
+* Changed paths for storm server
+* Changed paths for storm server
+* Added case for imac
+* Added repo id and site id, for MPI stuff
+* Fixed Matplotlib Deprecation Warning
+* Moved paths bit to reduce immediate options
+* Moved paths bit to reduce immediate options
+* Added different NC paths
+* Added different met paths
+* Added different met paths
+* Added functionality to not use the trunk
+* Added options for rajin storm
+* Added options for rajin storm
+* Added options for rajin storm
+* Added options for rajin storm
+* updated ignore
+* Removed stats stuff
+* Tweaked comment layout
+* Tweaked comment layout
+* Removed change path bug
+* Removed change path bug
+* Fixed mis-step when it changes to run dir
+* Fixed plot fname
+* swapped png  for pdf
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme
+* Updated readme info
+* Updated readme info
+* Updated readme info
+* Updated readme info
+* Updated readme info
+* Updated readme info
+* plugged in plots
+* Added plot script
+* Moved logic to wrapper
+* removed duplicate file
+* removed duplicate file
+* Removed debug statement
+* passing repo id
+* passing repo id
+* moved sci configs
+* Removed default clean option
+* Remved old thing
+* Added sci config changes
+* Big reorganisation
+* Added script to build executables
+* Added script to build executables
+* Added funcs to get different branch
+* Added funcs to get repos
+* Added bones
+* updated readme
+* updated readme
+* updated readme
+* updated readme
+* first commit

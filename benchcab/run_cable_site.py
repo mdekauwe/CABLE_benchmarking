@@ -20,22 +20,24 @@ import shutil
 import subprocess
 import multiprocessing as mp
 import numpy as np
+from pathlib import Path
 
-from scripts.cable_utils import adjust_nml_file
-from scripts.cable_utils import get_svn_info
-from scripts.cable_utils import change_LAI
-from scripts.cable_utils import add_attributes_to_output_file
+from benchcab.cable_utils import adjust_nml_file
+from benchcab.cable_utils import get_svn_info
+from benchcab.cable_utils import change_LAI
+from benchcab.cable_utils import add_attributes_to_output_file
+from benchcab.setup.pbs_fluxsites import *
 
 
-class RunCable(object):
+class RunCableSite(object):
     def __init__(
         self,
-        met_dir=None,
-        log_dir=None,
-        output_dir=None,
-        restart_dir=None,
-        aux_dir=None,
-        namelist_dir=None,
+        met_dir="",
+        log_dir="",
+        output_dir="",
+        restart_dir="",
+        aux_dir="",
+        namelist_dir="",
         nml_fname="cable.nml",
         veg_fname="def_veg_params_zr_clitt_albedo_fix.txt",
         soil_fname="def_soil_params.txt",
@@ -43,17 +45,16 @@ class RunCable(object):
         phen_fname="modis_phenology_csiro.txt",
         cnpbiome_fname="pftlookup_csiro_v16_17tiles.csv",
         elev_fname="GSWP3_gwmodel_parameters.nc",
-        lai_dir=None,
+        lai_dir="",
         fixed_lai=None,
         co2_conc=400.0,
         met_subset=[],
-        cable_src=None,
+        cable_src="",
         cable_exe="cable",
-        mpi=True,
         num_cores=None,
-        verbose=True,
         multiprocess=False,
-    ):
+        verbose=False,
+    ):        
 
         self.met_dir = met_dir
         self.log_dir = log_dir
@@ -77,10 +78,9 @@ class RunCable(object):
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
         self.setup_exe()
         self.verbose = verbose
-        self.mpi = mpi
-        self.num_cores = num_cores
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
+        self.num_cores = num_cores
         self.multiprocess = multiprocess
 
     def main(self, sci_config, repo_id, sci_id):
@@ -147,7 +147,7 @@ class RunCable(object):
             (out_fname, out_log_fname) = self.clean_up_old_files(site, repo_id, sci_id)
 
             # Add LAI to met file?
-            if self.fixed_lai is not None or self.lai_dir is not None:
+            if self.fixed_lai is not None or self.lai_dir is not "":
                 fname = change_LAI(
                     fname, site, fixed=self.fixed_lai, lai_dir=self.lai_dir
                 )
@@ -177,7 +177,7 @@ class RunCable(object):
             add_attributes_to_output_file(nml_fname, out_fname, sci_config, url, rev)
             shutil.move(nml_fname, os.path.join(self.namelist_dir, nml_fname))
 
-            if self.fixed_lai is not None or self.lai_dir is not None:
+            if self.fixed_lai is not None or self.lai_dir is not "":
                 os.remove("%s_tmp.nc" % (site))
 
     def setup_exe(self):
@@ -186,7 +186,8 @@ class RunCable(object):
         local_exe = "cable"
         if os.path.isfile(local_exe):
             os.remove(local_exe)
-        shutil.copy(self.cable_exe, local_exe)
+        if os.path.isfile(self.cable_exe):
+            shutil.copy(self.cable_exe, local_exe)
         self.cable_exe = local_exe
 
     def initialise_stuff(self):
@@ -247,6 +248,51 @@ class RunCable(object):
             except subprocess.CalledProcessError as e:
                 print("Job failed to submit: ", e.cmd)
 
+    @staticmethod
+    def create_qsub_script(project, user, config, science_config):
+
+        email_address = f"{user}@nci.org.au"
+
+        # Add the local directory to the storage flag for PBS
+        curdir=Path.cwd().parts
+        if ("scratch" in curdir):
+            curdir_root="scratch"
+            curdir_proj = curdir[2]
+        elif ("g" in curdir and "data" in curdir):
+            curdir_root="gdata"
+            curdir_proj = curdir[3]
+        else:
+            print("Current directory structure unknown on Gadi")
+            sys.exit(1)
+
+        f = open(qsub_fname, "w")
+
+        f.write("#!/bin/bash\n")
+        f.write("\n")
+        f.write("#PBS -l wd\n")
+        f.write("#PBS -l ncpus=%d\n" % (ncpus))
+        f.write("#PBS -l mem=%s\n" % (mem))
+        f.write("#PBS -l walltime=%s\n" % (wall_time))
+        f.write("#PBS -q normal\n")
+        f.write("#PBS -P %s\n" % (project))
+        f.write("#PBS -j oe\n")
+        f.write("#PBS -M %s\n" % (email_address))
+        f.write(f"#PBS -l storage=gdata/ks32+gdata/wd9+gdata/hh5+gdata/{project}+{curdir_root}/{curdir_proj}\n")
+        f.write("\n")
+        f.write("\n")
+        f.write("\n")
+        f.write("\n")
+        f.write("module purge\n")
+        f.write("module use /g/data/hh5/public/modules\n")
+        f.write("module load conda/analysis3-unstable\n")
+        f.write("module add netcdf/4.7.1\n")
+        f.write(f"benchsiterun --config={config} --science_config={science_config}\n")
+        f.write("\n")
+
+        f.close()
+
+        os.chmod(qsub_fname, 0o755)        
+
 
 def merge_two_dicts(x, y):
     """Given two dicts, merge them into a new dict as a shallow copy."""
@@ -272,7 +318,7 @@ if __name__ == "__main__":
     sci_config = {}
     # ------------------------------------------- #
 
-    C = RunCable(
+    C = RunCableSite(
         met_dir=met_dir,
         log_dir=log_dir,
         output_dir=output_dir,

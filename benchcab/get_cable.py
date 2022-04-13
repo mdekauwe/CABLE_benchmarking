@@ -11,7 +11,6 @@ __version__ = "1.0 (09.03.2019)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
-import sys
 import subprocess
 import datetime
 import getpass
@@ -30,18 +29,18 @@ class GetCable(object):
         self.aux_dir = "CABLE-AUX"
         self.home_dir = os.environ["HOME"]
 
-    def main(self, repo_name=None, trunk=False, user_branch=False, share_branch=False):
+    def main(self, name=None, trunk=False, share_branch=False):
 
         self.initialise_stuff()
 
-        self.get_repo(repo_name, trunk, user_branch, share_branch)
+        self.get_repo(name, trunk, share_branch)
 
     def initialise_stuff(self):
 
         if not os.path.exists(self.src_dir):
             os.makedirs(self.src_dir)
 
-    def get_repo(self, repo_name, trunk, user_branch, share_branch):
+    def get_repo(self, repo_name, trunk, share_branch):
 
         need_pass = False
         cwd = os.getcwd()
@@ -153,22 +152,17 @@ class GetCable(object):
 
             if need_pass:
 
-                if user_branch:
-                    cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % (
-                        self.root,
-                        self.user,
-                        repo_name,
-                        pswd,
-                    )
-                elif share_branch:
+                if share_branch:
                     cmd = "svn checkout %s/branches/Share/%s --password %s" % (
                         self.root,
                         repo_name,
                         pswd,
                     )
                 else:
-                    cmd = "svn checkout %s/branches/Share/integration --password %s" % (
+                    cmd = "svn checkout %s/branches/Users/%s/%s --password %s" % (
                         self.root,
+                        self.user,
+                        repo_name,
                         pswd,
                     )
 
@@ -181,16 +175,14 @@ class GetCable(object):
                         raise ("Error downloading repo")
                     f.close()
             else:
-                if user_branch:
+                if share_branch:
+                    cmd = "svn checkout %s/branches/Share/%s" % (self.root, repo_name)
+                else:
                     cmd = "svn checkout %s/branches/Users/%s/%s" % (
                         self.root,
                         self.user,
                         repo_name,
                     )
-                elif share_branch:
-                    cmd = "svn checkout %s/branches/Share/%s" % (self.root, repo_name)
-                else:
-                    cmd = "svn checkout %s/branches/Share/integration" % (self.root)
                 error = subprocess.call(cmd, shell=True)
                 if error == 1:
                     raise ("Error downloading repo")
@@ -240,5 +232,5 @@ if __name__ == "__main__":
     # ------------------------------------------- #
 
     G = GetCable(src_dir=src_dir, user=user)
-    G.main(repo_name=repo1, trunk=True)
-    G.main(repo_name=repo2, trunk=False, user_branch=False, share_branch=True)
+    G.main(name=repo1, trunk=True)
+    G.main(name=repo2, trunk=False, user_branch=False, share_branch=True)

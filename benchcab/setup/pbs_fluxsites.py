@@ -1,10 +1,7 @@
-from user_options import user
-
 qsub_fname = "benchmark_cable_qsub.sh"
-ncpus = 16
-mem = "15GB"
-wall_time = "1:30:00"
-email_address = f"{user}@nci.org.au"
+ncpus = 18
+mem = "30GB"
+wall_time = "6:00:00"
 
 #
 ## MPI stuff
