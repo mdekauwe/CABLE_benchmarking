@@ -7,7 +7,7 @@ The code will: (i) check out; (ii) build; and (iii) run branches across N standa
 For the moment, the benchmarking only works on NCI supercomputer.
 ## Permissions
 To run the benchmarking, you will need access to the following projects at NCI:
-* ua8
+* ks32
 * wd9
 * hh5
 
