@@ -24,6 +24,7 @@ You can run the benchmark from any directory you want. The code will create sub-
    The default name is `site_configs.yaml` but any name can be specified at run time. This file follows the YAML format. You can find an example science configuration file [here](https://github.com/CABLE-LSM/bench_example.git)
 
 ## Run the benchmarking
+### Start the benchmarking process
 Once you have a configuration file, you need to load the modules for Python:
 ```
 module use /g/data/hh5/public/modules
@@ -43,6 +44,19 @@ Note: This line
 module use /g/data/hh5/public/modules
 ```
 can be safely added anywhere in your $HOME/.bashrc file. You then need to log out and back in for it to take effect. If you do so, you can simply load the Python module with `module load` and you do not have to type the `module use` line everytime. It is not recommended to put any `module load` lines in your $HOME/.bashrc file however.
+
+### Check the status
+The benchmarking will follow the steps:
+1. Checkout both branches. The codes will be stored under `src/` directory in your work directory. The directories are created automatically.
+1. Compile the source code from both branches
+1. Setup and launch a PBS job to run the simulations in parallel. The simulation inputs and outputs are stored under `runs/site/`. The directories are created automatically.
+
+When the benchmarking will launch the PBS job, it will print out the job id to screen. You can check the status of the job with `qstat`.
+## Use modelevaluation.org
+Once the benchmarking has finished running all the simulations, you need to upload the output files to modelevaluation.org. The output files can be found under `runs/site/outputs`.
+
+**Process still to be documented**
+
 ## Contacts
 Please enter your questions as issues or discussions on the Github repository.
 
