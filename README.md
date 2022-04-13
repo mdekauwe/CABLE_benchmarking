@@ -27,7 +27,7 @@ You can run the benchmark from any directory you want. The code will create sub-
 Once you have a configuration file, you need to load the modules for Python:
 ```
 module use /g/data/hh5/public/modules
-module load conda
+module load conda/analysis3-unstable
 ```
 Then you simply launch the benchmarking:
 ```
