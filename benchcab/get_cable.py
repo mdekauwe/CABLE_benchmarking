@@ -72,6 +72,10 @@ class GetCable(object):
                     f.write(cmd)
                     f.flush()
 
+                    p = subprocess.Popen(
+                            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+                        )
+
                     output, error = p.communicate()
                     if error == 1:
                         raise ("Error checking if repo exists")
