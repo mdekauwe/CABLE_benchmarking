@@ -15,7 +15,7 @@ You can request access via [my.nci.org.au](https://my.nci.org.au/mancini/login?n
 
 ## Create a work directory.
 1. **Choose a work directory.** 
-You can run the benchmark from any directory you want. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary until you upload them to [modelevaluation.org](https://modelevaluation.org/). You will need about 70GB.
+You can run the benchmark from any directory you want under /scratch or /g/data. /scratch is preferred as the data in the run directory does not need to be preserved for the long run. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary until you upload them to [modelevaluation.org](https://modelevaluation.org/). You will need about 70GB.
 
 1. **Create a config file in the work directory.** 
    The default name is `config.yaml` but any name can be specified at run time. This file follows the YAML format. You can find an example configuration file [here](https://github.com/CABLE-LSM/bench_example.git) 
