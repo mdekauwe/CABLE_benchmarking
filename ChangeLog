@@ -1,6 +1,30 @@
 CHANGES
 =======
 
+* Update version
+* Get the pft\_params.nml file in run directory
+* Clarify instructions for run directory
+
+v0.1.3
+------
+
+* Update version
+* Fixes issue #1: missing line to subprocess
+
+v0.1.2
+------
+
+* Update README.md
+* Update README.md
+* Update README.md
+* Update README.md
+* Add file auto-created
+* Revised job size for better CPU utilisation
+* Correct PyYAML dependency for conda
+* Update version
+* Add yaml dependency for conda
+* Add dependencies for conda
+* Change to README
 * Update README
 * Use site data published in ks32
 * Add running the configurations
