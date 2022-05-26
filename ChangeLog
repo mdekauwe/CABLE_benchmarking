@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Changelog
 * Update version
 * Get the pft\_params.nml file in run directory
 * Clarify instructions for run directory

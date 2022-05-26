@@ -40,6 +40,7 @@ class RunCableSite(object):
         namelist_dir="",
         nml_fname="cable.nml",
         veg_nml="pft_params.nml",
+        soil_nml="cable_soilparm.nml",
         veg_fname="def_veg_params_zr_clitt_albedo_fix.txt",
         soil_fname="def_soil_params.txt",
         grid_fname="gridinfo_CSIRO_1x1.nc",
@@ -78,6 +79,7 @@ class RunCableSite(object):
         self.cable_src = cable_src
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
         self.veg_nml = Path(cable_src, f"offline/{veg_nml}")
+        self.soil_nml = Path(cable_src, f"offline/{soil_nml}")
         self.verbose = verbose
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
@@ -183,23 +185,26 @@ class RunCableSite(object):
             if self.fixed_lai is not None or self.lai_dir != "":
                 os.remove("%s_tmp.nc" % (site))
 
-    def setup_from_source(self):
-        # delete local executable, copy a local copy and use that
-        # Copy the pft params namelist from source code too.
-        # local_exe = os.path.join(cwd, "cable")
-        local_exe = "cable"
-        if os.path.isfile(local_exe):
-            os.remove(local_exe)
-        if os.path.isfile(self.cable_exe):
-            shutil.copy(self.cable_exe, local_exe)
+    @staticmethod
+    def copy_files(copies):
+        # Copy file src to dst if src exist
+        # copies: Dict, mapping from source path to dest. path
+        for src, dst in copies.items():
+            if Path(src).is_file():
+                shutil.copy(src, dst)
 
-        local_nml = Path(self.veg_nml).name
-        if Path(local_nml).is_file():
-            os.remove(local_nml)
-        if Path(self.veg_nml).is_file():
-            shutil.copy(self.veg_nml, local_nml)
-        
-        self.cable_exe = local_exe
+    def setup_from_source(self):
+        # copy files needed to run cable in the run directory:
+        # - cable executable
+        # - veg. parameters namelist
+        # - soil parameters namelist
+        copies={
+            self.cable_exe:"cable",
+            self.veg_nml:Path(self.veg_nml).name,
+            self.soil_nml:Path(self.soil_nml).name,
+        }
+        self.copy_files(copies)
+        self.cable_exe = copies[self.cable_exe]
 
     def initialise_stuff(self):
 
