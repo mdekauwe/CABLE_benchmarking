@@ -39,6 +39,8 @@ class RunCableSite(object):
         aux_dir="",
         namelist_dir="",
         nml_fname="cable.nml",
+        veg_nml="pft_params.nml",
+        soil_nml="cable_soilparm.nml",
         veg_fname="def_veg_params_zr_clitt_albedo_fix.txt",
         soil_fname="def_soil_params.txt",
         grid_fname="gridinfo_CSIRO_1x1.nc",
@@ -76,12 +78,15 @@ class RunCableSite(object):
         self.met_subset = met_subset
         self.cable_src = cable_src
         self.cable_exe = os.path.join(cable_src, "offline/%s" % (cable_exe))
-        self.setup_exe()
+        self.veg_nml = Path(cable_src, f"offline/{veg_nml}")
+        self.soil_nml = Path(cable_src, f"offline/{soil_nml}")
         self.verbose = verbose
         self.lai_dir = lai_dir
         self.fixed_lai = fixed_lai
         self.num_cores = num_cores
         self.multiprocess = multiprocess
+
+        self.setup_from_source()
 
     def main(self, sci_config, repo_id, sci_id):
 
@@ -147,7 +152,7 @@ class RunCableSite(object):
             (out_fname, out_log_fname) = self.clean_up_old_files(site, repo_id, sci_id)
 
             # Add LAI to met file?
-            if self.fixed_lai is not None or self.lai_dir is not "":
+            if self.fixed_lai is not None or self.lai_dir != "":
                 fname = change_LAI(
                     fname, site, fixed=self.fixed_lai, lai_dir=self.lai_dir
                 )
@@ -173,22 +178,33 @@ class RunCableSite(object):
             adjust_nml_file(nml_fname, replace_dict)
 
             self.run_me(nml_fname)
-
+            
             add_attributes_to_output_file(nml_fname, out_fname, sci_config, url, rev)
             shutil.move(nml_fname, os.path.join(self.namelist_dir, nml_fname))
 
-            if self.fixed_lai is not None or self.lai_dir is not "":
+            if self.fixed_lai is not None or self.lai_dir != "":
                 os.remove("%s_tmp.nc" % (site))
 
-    def setup_exe(self):
-        # delete local executable, copy a local copy and use that
-        # local_exe = os.path.join(cwd, "cable")
-        local_exe = "cable"
-        if os.path.isfile(local_exe):
-            os.remove(local_exe)
-        if os.path.isfile(self.cable_exe):
-            shutil.copy(self.cable_exe, local_exe)
-        self.cable_exe = local_exe
+    @staticmethod
+    def copy_files(copies):
+        # Copy file src to dst if src exist
+        # copies: Dict, mapping from source path to dest. path
+        for src, dst in copies.items():
+            if Path(src).is_file():
+                shutil.copy(src, dst)
+
+    def setup_from_source(self):
+        # copy files needed to run cable in the run directory:
+        # - cable executable
+        # - veg. parameters namelist
+        # - soil parameters namelist
+        copies={
+            self.cable_exe:"cable",
+            self.veg_nml:Path(self.veg_nml).name,
+            self.soil_nml:Path(self.soil_nml).name,
+        }
+        self.copy_files(copies)
+        self.cable_exe = copies[self.cable_exe]
 
     def initialise_stuff(self):
 
