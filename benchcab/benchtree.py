@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shutil
 class BenchTree(object):
     """Manage the directory tree to run the benchmarking for CABLE"""
 
@@ -11,6 +12,7 @@ class BenchTree(object):
         # Run directory and its sub-directories
         self.runroot_dir = curdir/"runs"
         self.site_run = {
+            "site_dir": self.runroot_dir/"site",
             "log_dir": self.runroot_dir/"site/logs",
             "output_dir": self.runroot_dir/"site/outputs",
             "restart_dir": self.runroot_dir/"site/restart_files",
@@ -41,4 +43,13 @@ class BenchTree(object):
         for mydir in self.site_run.values():
             if not mydir.is_dir():
                 os.makedirs(mydir)
+
+        # Copy namelists from the namelists/ directory
+        nml_dir = Path.cwd()/"namelists"
+        try:
+            shutil.copytree(nml_dir,self.site_run["site_dir"],dirs_exist_ok=True)
+        except:
+            raise
+
+
     
