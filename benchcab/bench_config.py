@@ -4,6 +4,8 @@ import os
 from benchcab.set_default_paths import set_paths
 from benchcab.benchtree import BenchTree
 
+def read_config(config_path: str) -> dict:
+    pass
 
 class BenchSetup(object):
     def __init__(self, myconfig: str):

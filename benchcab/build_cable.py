@@ -17,6 +17,9 @@ import datetime
 from pathlib import Path
 from typing import Iterable
 
+def build_cable_offline(branch_name: str, modules: list):
+    pass
+
 class BuildCable(object):
     def __init__(
         self,

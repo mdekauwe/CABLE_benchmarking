@@ -1,6 +1,10 @@
 from pathlib import Path
 import os
 import shutil
+
+def setup_directory_tree():
+    pass
+
 class BenchTree(object):
     """Manage the directory tree to run the benchmarking for CABLE"""
 

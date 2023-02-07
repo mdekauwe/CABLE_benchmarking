@@ -2,21 +2,12 @@
 
 import argparse
 import sys
-from pathlib import Path
-import os
-import shlex
-import subprocess
 
-from benchcab.bench_config import BenchSetup
-from benchcab.benchtree import BenchTree
-from benchcab.build_cable import BuildCable
-from benchcab.get_cable import GetCable
-
-# Site runs
-from benchcab.run_cable_site import RunCableSite
-from benchcab.setup.cases_fluxsites import *
-from benchcab.setup.pbs_fluxsites import qsub_fname
-import benchcab.benchsiterun as benchsiterun
+from benchcab.job_script import create_job_script, submit_job
+from benchcab.bench_config import read_config
+from benchcab.benchtree import setup_directory_tree
+from benchcab.build_cable import build_cable_offline
+from benchcab.get_cable import checkout_cable
 
 
 def parse_args(arglist):
@@ -44,141 +35,33 @@ def parse_args(arglist):
 
     return args
 
-def retrieve_cable_code(benchdirs:BenchTree, opt:dict):
-    """Checkout the 2 branches of CABLE from the svn repository in the 
-    source directory created at setup.
-    benchdir: BenchTree, contains path information for paths in the working directory
-    opt: dict, contains the branch information we want to use"""
-
-    # Aliases to branches to use:
-    branch_alias = opt["use_branches"]
-    branch1 = opt[branch_alias[0]]
-    branch2 = opt[branch_alias[1]]
-
-    G = GetCable(src_dir=benchdirs.src_dir, user=opt["user"])
-    G.main(**branch1)
-    G.main(**branch2)
-
-def build_cable_code(benchdirs:BenchTree, compilation_opt:dict, opt:dict, mpi:False):
-
-    # Aliases to branches to use:
-    branch_alias = opt["use_branches"]
-    branch1 = opt[branch_alias[0]]
-    branch2 = opt[branch_alias[1]]
-
-    B = BuildCable(
-        src_dir=benchdirs.src_dir,
-        ModToLoad=opt["modules"],
-        NCDIR=compilation_opt["NCDIR"],
-        NCMOD=compilation_opt["NCMOD"],
-        FC=compilation_opt["FC"],
-        CFLAGS=compilation_opt["CFLAGS"],
-        LD=compilation_opt["LD"],
-        LDFLAGS=compilation_opt["LDFLAGS"],
-        mpi=mpi,
-        )
-    B.main(repo_name=branch1["name"])
-    B.main(repo_name=branch2["name"])
-
-def setup_site_runs(opt, compilation_opt, benchdirs, sci_configs, mpi, multiprocess):
-    """Ssetup specific to site simulations"""
-
-    # Aliases to branches to use:
-    branch_alias = opt["use_branches"]
-    run_branches=[opt[branch_alias[0]],]
-    run_branches.append(opt[branch_alias[1]])
-
-    start_dir=Path.cwd()
-    os.chdir(benchdirs.runroot_dir/"site")
-    for branchid, branch in enumerate(run_branches):
-        branch_name = branch["name"]
-        cable_src = benchdirs.src_dir/branch_name
-
-        # Define the name for the executable: cable for serial, cable-mpi for mpi runs
-        cable_exe = f"cable{'-mpi'*mpi}"
-
-        R = RunCableSite(
-            met_dir=compilation_opt["met_dir"],
-            log_dir=benchdirs.site_run["log_dir"],
-            output_dir=benchdirs.site_run["output_dir"],
-            restart_dir=benchdirs.site_run["restart_dir"],
-            aux_dir=benchdirs.aux_dir,
-            namelist_dir=benchdirs.site_run["namelist_dir"],
-            met_subset=[],
-            cable_src=cable_src,
-            num_cores=None,
-            cable_exe=cable_exe,
-            multiprocess=multiprocess,
-        )
-
-        for sci_id, sci_config in enumerate(sci_configs.values()):
-            R.main(sci_config, branchid, sci_id)
-
-    os.chdir(start_dir)
-
-
 def main(args):
 
-    # Setup of the benchmark:
-    #------------------------
-    # - read config file.
-    # - define compilation variables.
-    # - create minimal work directory tree.
-    # - checkout the CABLE source codes.
-    # - compile the CABLE source codes.
+    config = read_config(args.config)
 
-    mysetup = BenchSetup(args.config)
-    opt, compilation_opt, benchdirs = mysetup.setup_bench()
+    setup_directory_tree()
 
-    # Get the source code for both branches
-    print("Retrieving the source code from both branches in the src/ directory")
-    retrieve_cable_code(benchdirs, opt)
+    for branch_name in config['use_branches']:
+        checkout_cable(branch_config=config[branch_name], user=config['user'])
 
-
-    # Run the benchmark:
-    # We run both at single sites and spatial runs unless otherwise specified
-    # by command line arguments
-    #------------------------------------------------------------------------
-    # Identify cases to run
-    run_flux    = not args.world
-    run_spatial = not args.fluxnet
-
-    mess=""
-    if run_flux:
-        mess=mess+"Running the single sites tests "
+    if args.fluxnet:
         print("Running the single sites tests ")
 
-        mpi = False
-        multiprocess = True
+        for branch_name in config['use_branches']:
+            build_cable_offline(branch_name, config['modules'])
 
-        # Build the source codes
-        build_cable_code(benchdirs, compilation_opt, opt, mpi)
+        create_job_script(
+            project=config['project'],
+            user=config['user'],
+            config_path=args.config,
+            sci_config_path=args.science_config
+        )
 
-        # Create directory tree for site runs
-        benchdirs.create_sitebenchtree()
-        
-        # Create the qsub script for NCI if needed
-        (_, nodename, _, _, _) = os.uname()
-        if "nci" in nodename:
-            benchsiterun.main(qsub=True, config=args.config, science_config=args.science_config)
+        submit_job()
 
-            cmd = shlex.split(f"qsub {qsub_fname}")
-            sb=subprocess.run(cmd, capture_output=True)
-            if (sb.returncode != 0):
-                print("Error when submitting job to NCI queue")
-                print(sb.stderr)
-                sys.exit(1)
-            else:
-                print(f"Benchmark submitted in PBS job: {sb.stdout}")
-        
-        else:
-            print("Only running on NCI is implemented at the moment.")
-
-    if run_spatial:
-        mess=mess+"Running the spatial tests "
+    if args.world:
         print("Running the spatial tests ")
-
-    return mess
+        print("Warning: spatial tests not yet implemented")
 
 def main_parse_args(arglist):
     """
@@ -192,7 +75,7 @@ def main_argv():
     """
     Call main and pass command line arguments. This is required for setup.py entry_points
     """
-    mess = main_parse_args(sys.argv[1:])
+    main_parse_args(sys.argv[1:])
 
 if __name__ == "__main__":
 
