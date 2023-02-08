@@ -2,9 +2,73 @@ from pathlib import Path
 import os
 import shutil
 
+import benchcab.internal as internal
 
-def setup_directory_tree():
-    pass
+
+def next_path(path_pattern, sep="-"):
+    """Finds the next free path in a sequentially named list of
+    files with the following pattern:
+
+    path_pattern = 'file{sep}*.suf':
+
+    file-1.txt
+    file-2.txt
+    file-3.txt
+    """
+
+    loc_pattern = Path(path_pattern)
+    new_file_index = 1
+    common_filename, _ = loc_pattern.stem.split(sep)
+
+    pattern_files_sorted = sorted(Path('.').glob(path_pattern))
+    if len(pattern_files_sorted):
+        common_filename, last_file_index = pattern_files_sorted[-1].stem.split(sep)
+        new_file_index = int(last_file_index) + 1
+
+    return f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}"
+
+
+def clean_previous():
+    """Clean previous benchmarking runs as needed. 
+    Archives previous rev_number.log"""
+
+    revision_file = Path("rev_number.log")
+    if revision_file.exists():
+        revision_file.replace(next_path("rev_number-*.log"))
+
+
+def setup_directory_tree(fluxnet: bool, world: bool):
+    # TODO(Sean) add an argument: if 'clean' then remove
+    # all existing files and directories, else fail if
+    # existing directory structure does not match
+
+    # TODO(Sean) why do we do this?
+    clean_previous()
+
+    if not internal.SRC_DIR.exists():
+        os.makedirs(internal.SRC_DIR)
+
+    if not internal.RUN_DIR.exists():
+        os.makedirs(internal.RUN_DIR)
+
+    if fluxnet:
+        if not internal.SITE_RUN_DIR.exists():
+            os.makedirs(internal.SITE_RUN_DIR)
+
+        if not internal.SITE_LOG_DIR.exists():
+            os.makedirs(internal.SITE_LOG_DIR)
+
+        if not internal.SITE_OUTPUT_DIR.exists():
+            os.makedirs(internal.SITE_OUTPUT_DIR)
+
+        if not internal.SITE_RESTART_DIR.exists():
+            os.makedirs(internal.SITE_RESTART_DIR)
+
+        if not internal.SITE_NAMELIST_DIR.exists():
+            os.makedirs(internal.SITE_NAMELIST_DIR)
+
+    if world:
+        pass
 
 
 class BenchTree(object):

@@ -2,12 +2,14 @@
 
 import argparse
 import sys
+import shutil
 
 from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_directory_tree
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable
+from benchcab.internal import NAMELIST_DIR, SITE_RUN_DIR
 
 
 def parse_args(arglist):
@@ -40,13 +42,16 @@ def main(args):
 
     config = read_config(args.config)
 
-    setup_directory_tree()
+    setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
 
     for branch_name in config['use_branches']:
         checkout_cable(branch_config=config[branch_name], user=config['user'])
 
     if args.fluxnet:
         print("Running the single sites tests ")
+
+        # Copy contents of 'namelists' directory to 'runs/site' directory:
+        shutil.copytree(NAMELIST_DIR, SITE_RUN_DIR, dirs_exist_ok=True)
 
         for branch_name in config['use_branches']:
             build_cable_offline(branch_name, config['modules'])
