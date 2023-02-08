@@ -17,8 +17,10 @@ import datetime
 import getpass
 import tempfile
 
+
 def checkout_cable(branch_config: dict, user: str):
     pass
+
 
 class GetCable(object):
     def __init__(

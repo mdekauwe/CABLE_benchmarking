@@ -17,13 +17,15 @@ import datetime
 from pathlib import Path
 from typing import Iterable
 
+
 def build_cable_offline(branch_name: str, modules: list):
     pass
+
 
 class BuildCable(object):
     def __init__(
         self,
-        ModToLoad:Iterable,
+        ModToLoad: Iterable,
         src_dir=None,
         NCDIR=None,
         NCMOD=None,
@@ -65,7 +67,7 @@ class BuildCable(object):
 
         return purge_line
 
-    def add_module_load(self,lines, nindent):
+    def add_module_load(self, lines, nindent):
         """Read in the environment file using config data.
         Add lines to load each module listed in environment file
         at the end of the list of strings, lines
@@ -85,7 +87,7 @@ class BuildCable(object):
 
         return loclines
 
-    def change_build_lines(self,filelines, filename=""):
+    def change_build_lines(self, filelines, filename=""):
         """Get the lines from the build script and modify them:
             - remove all the module load and module add lines
             - read in the environment file for Gadi
@@ -112,7 +114,7 @@ class BuildCable(object):
         outlines = self.add_module_load(outlines, nindent)
 
         # add the end of the file as in the original file
-        outlines.extend(nomodulelines[purge_line + 1 :])
+        outlines.extend(nomodulelines[purge_line + 1:])
 
         return outlines
 
@@ -173,14 +175,14 @@ class BuildCable(object):
 
         wanted_exe = f"cable{'-mpi'*self.mpi}"
 
-        exe_list=[Path("cable-mpi"), Path("cable") ]
-        exe_found = [ this_exe for this_exe in exe_list if this_exe.is_file() ]
+        exe_list = [Path("cable-mpi"), Path("cable")]
+        exe_found = [this_exe for this_exe in exe_list if this_exe.is_file()]
 
         clean_compil = False
         if len(exe_found) > 0:
-            newest_exe = max( exe_found, key=lambda x: x.stat().st_mtime )
+            newest_exe = max(exe_found, key=lambda x: x.stat().st_mtime)
             clean_compil = newest_exe != wanted_exe
-        
+
         # Clean compilation if needed
         if clean_compil:
             cmd = f"rm -fr .tmp"

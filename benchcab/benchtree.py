@@ -2,14 +2,16 @@ from pathlib import Path
 import os
 import shutil
 
+
 def setup_directory_tree():
     pass
+
 
 class BenchTree(object):
     """Manage the directory tree to run the benchmarking for CABLE"""
 
-    def __init__(self, curdir:Path):
-        
+    def __init__(self, curdir: Path):
+
         self.src_dir = curdir/"src"
         self.aux_dir = curdir/"src/CABLE-AUX"
         self.plot_dir = curdir/"plots"
@@ -29,7 +31,7 @@ class BenchTree(object):
         """Clean previous benchmarking runs as needed. 
         Archives previous rev_number.log"""
 
-        revision_file=Path("rev_number.log")
+        revision_file = Path("rev_number.log")
         if revision_file.exists():
             revision_file.replace(self.next_path("rev_number-*.log"))
 
@@ -46,7 +48,7 @@ class BenchTree(object):
         file-3.txt
         """
 
-        loc_pattern=Path(path_pattern)
+        loc_pattern = Path(path_pattern)
         new_file_index = 1
         common_filename, _ = loc_pattern.stem.split(sep)
 
@@ -63,10 +65,10 @@ class BenchTree(object):
            - a source directory to checkout and compile the repository branches
            - a run directory to run the testcases."""
 
-        dir_to_create= [ 
-            self.src_dir, 
+        dir_to_create = [
+            self.src_dir,
             self.runroot_dir,
-            ]
+        ]
         for mydir in dir_to_create:
             if not Path.is_dir(mydir):
                 os.makedirs(mydir)
@@ -85,9 +87,6 @@ class BenchTree(object):
         # Copy namelists from the namelists/ directory
         nml_dir = Path.cwd()/"namelists"
         try:
-            shutil.copytree(nml_dir,self.site_run["site_dir"],dirs_exist_ok=True)
+            shutil.copytree(nml_dir, self.site_run["site_dir"], dirs_exist_ok=True)
         except:
             raise
-
-
-    

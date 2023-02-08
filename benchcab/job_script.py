@@ -4,8 +4,10 @@ import subprocess
 
 from benchcab.internal import QSUB_FNAME
 
+
 def create_job_script(project: str, user: str, config_path: str, sci_config_path: str):
     pass
+
 
 def submit_job():
     cmd = shlex.split(f"qsub {QSUB_FNAME}")

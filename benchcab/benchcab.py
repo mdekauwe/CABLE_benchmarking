@@ -15,11 +15,11 @@ def parse_args(arglist):
     Parse arguments given as list (arglist)
     """
     parser = argparse.ArgumentParser(description="Run the benchmarking for CABLE")
-    parser.add_argument("-c","--config", help="Config filename", default="config.yaml")
+    parser.add_argument("-c", "--config", help="Config filename", default="config.yaml")
     parser.add_argument("-s", "--science_config", help="Config file to define the various configurations to run", default="site_configs.yaml")
-    parser.add_argument("-f","--fluxnet", help="Runs the tests for the Fluxnet sites only", action="store_true")
-    parser.add_argument("-w","--world", help="Runs the global tests only",action="store_true")
-    parser.add_argument("-b","--bitrepro", help="Check bit reproducibility, not implemented yet",action="store_true")
+    parser.add_argument("-f", "--fluxnet", help="Runs the tests for the Fluxnet sites only", action="store_true")
+    parser.add_argument("-w", "--world", help="Runs the global tests only", action="store_true")
+    parser.add_argument("-b", "--bitrepro", help="Check bit reproducibility, not implemented yet", action="store_true")
     parser.add_argument("-r", "--rebuild", action="store_true", default=False, help="Rebuild src?")
 
     args = parser.parse_args(arglist)
@@ -27,13 +27,14 @@ def parse_args(arglist):
     if args.bitrepro:
         print("Bit reproducibility not implemented yet")
         sys.exit()
-    
+
     if args.fluxnet and args.world:
         print("You can not specify -f and -g together.")
         print("To run all the tests, do not specify any of those 2 options.")
         sys.exit()
 
     return args
+
 
 def main(args):
 
@@ -63,6 +64,7 @@ def main(args):
         print("Running the spatial tests ")
         print("Warning: spatial tests not yet implemented")
 
+
 def main_parse_args(arglist):
     """
     Call main with list of arguments. Callable from tests
@@ -71,11 +73,13 @@ def main_parse_args(arglist):
     # otherwise py.test will fail
     return main(parse_args(arglist))
 
+
 def main_argv():
     """
     Call main and pass command line arguments. This is required for setup.py entry_points
     """
     main_parse_args(sys.argv[1:])
+
 
 if __name__ == "__main__":
 
