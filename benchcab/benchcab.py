@@ -9,7 +9,7 @@ from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_directory_tree
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable
-from benchcab.internal import NAMELIST_DIR, SITE_RUN_DIR
+from benchcab.internal import validate_environment, NAMELIST_DIR, SITE_RUN_DIR
 
 
 def parse_args(arglist):
@@ -39,6 +39,8 @@ def parse_args(arglist):
 
 
 def main(args):
+
+    validate_environment()
 
     config = read_config(args.config)
 
