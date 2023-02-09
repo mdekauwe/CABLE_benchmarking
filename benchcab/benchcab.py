@@ -44,8 +44,8 @@ def main(args):
 
     setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
 
-    for branch_name in config['use_branches']:
-        checkout_cable(branch_config=config[branch_name], user=config['user'])
+    for b in config['use_branches']:
+        checkout_cable(branch_config=config[b], user=config['user'])
 
     if args.fluxnet:
         print("Running the single sites tests ")
@@ -53,8 +53,9 @@ def main(args):
         # Copy contents of 'namelists' directory to 'runs/site' directory:
         shutil.copytree(NAMELIST_DIR, SITE_RUN_DIR, dirs_exist_ok=True)
 
-        for branch_name in config['use_branches']:
-            build_cable_offline(branch_name, config['modules'])
+        for b in config['use_branches']:
+            branch = config[b]
+            build_cable_offline(branch['name'], config['modules'])
 
         create_job_script(
             project=config['project'],
