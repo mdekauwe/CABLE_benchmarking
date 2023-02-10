@@ -4,8 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-# TODO(Sean) it is bad to include error checking in global file
-
 _, NODENAME, _, _, _ = os.uname()
 
 # DIRECTORY PATHS/STRUCTURE:
