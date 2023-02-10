@@ -21,6 +21,29 @@ from pathlib import Path
 from benchcab.internal import CWD, SRC_DIR, HOME_DIR, CABLE_SVN_ROOT, CABLE_AUX_DIR
 
 
+def next_path(path_pattern, sep="-"):
+    """Finds the next free path in a sequentially named list of
+    files with the following pattern:
+
+    path_pattern = 'file{sep}*.suf':
+
+    file-1.txt
+    file-2.txt
+    file-3.txt
+    """
+
+    loc_pattern = Path(path_pattern)
+    new_file_index = 1
+    common_filename, _ = loc_pattern.stem.split(sep)
+
+    pattern_files_sorted = sorted(Path('.').glob(path_pattern))
+    if len(pattern_files_sorted):
+        common_filename, last_file_index = pattern_files_sorted[-1].stem.split(sep)
+        new_file_index = int(last_file_index) + 1
+
+    return f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}"
+
+
 def checkout_cable(branch_config: dict, user: str):
     src_dir = Path(CWD / SRC_DIR)
     if not src_dir.exists():
@@ -117,7 +140,8 @@ def checkout_cable(branch_config: dict, user: str):
     cmd = shlex.split(f"svn info --show-item last-changed-revision {branch_config['name']}")
     out = subprocess.run(cmd, capture_output=True, text=True)
     rev_number = out.stdout
-    with open(f"{CWD}/rev_number.log", "a") as fout:
+    filename = next_path("rev_number-*.log")
+    with open(f"{CWD}/{filename}", "a") as fout:
         fout.write(f"{branch_config['name']} last change revision: {rev_number}")
     os.chdir(CWD)
 
