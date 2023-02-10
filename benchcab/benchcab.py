@@ -9,7 +9,7 @@ from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_directory_tree
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable
-from benchcab.internal import validate_environment, NAMELIST_DIR, SITE_RUN_DIR
+from benchcab.internal import validate_environment, CWD, NAMELIST_DIR, SITE_RUN_DIR
 
 
 def parse_args(arglist):
@@ -53,7 +53,7 @@ def main(args):
         print("Running the single sites tests ")
 
         # Copy contents of 'namelists' directory to 'runs/site' directory:
-        shutil.copytree(NAMELIST_DIR, SITE_RUN_DIR, dirs_exist_ok=True)
+        shutil.copytree(CWD / NAMELIST_DIR, CWD / SITE_RUN_DIR, dirs_exist_ok=True)
 
         for b in config['use_branches']:
             branch = config[b]

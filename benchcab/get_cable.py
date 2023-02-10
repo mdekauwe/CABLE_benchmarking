@@ -16,15 +16,17 @@ import shlex
 import datetime
 import getpass
 import tempfile
+from pathlib import Path
 
 from benchcab.internal import CWD, SRC_DIR, HOME_DIR, CABLE_SVN_ROOT, CABLE_AUX_DIR
 
 
 def checkout_cable(branch_config: dict, user: str):
-    if not SRC_DIR.exists():
-        os.makedirs(SRC_DIR)
+    src_dir = Path(CWD / SRC_DIR)
+    if not src_dir.exists():
+        os.makedirs(src_dir)
 
-    os.chdir(SRC_DIR)
+    os.chdir(src_dir)
 
     # Check if a specified version is required. Negative value means take the latest
     rev_opt = ""
@@ -92,9 +94,9 @@ def checkout_cable(branch_config: dict, user: str):
                 raise ("Error downloading repo")
 
     # Checkout CABLE-AUX
-    if need_pass:
-
-        if not CABLE_AUX_DIR.exists():
+    cable_aux_dir = Path(CWD / CABLE_AUX_DIR)
+    if not cable_aux_dir.exists():
+        if need_pass:
             cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX CABLE-AUX --password {pswd}"
             with tempfile.NamedTemporaryFile(mode="w+t") as f:
                 f.write(cmd)
@@ -104,8 +106,7 @@ def checkout_cable(branch_config: dict, user: str):
                 if error == 1:
                     raise ("Error checking out CABLE-AUX")
                 f.close()
-    else:
-        if not CABLE_AUX_DIR.exists():
+        else:
             cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX CABLE-AUX"
 
             error = subprocess.call(cmd, shell=True)

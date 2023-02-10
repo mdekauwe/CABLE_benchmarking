@@ -37,7 +37,7 @@ def clean_previous():
         revision_file.replace(next_path("rev_number-*.log"))
 
 
-def setup_directory_tree(fluxnet: bool, world: bool):
+def setup_directory_tree(fluxnet: bool, world: bool, root_dir=internal.CWD, clean=False):
     # TODO(Sean) add an argument: if 'clean' then remove
     # all existing files and directories, else fail if
     # existing directory structure does not match
@@ -45,27 +45,34 @@ def setup_directory_tree(fluxnet: bool, world: bool):
     # TODO(Sean) why do we do this?
     clean_previous()
 
-    if not internal.SRC_DIR.exists():
-        os.makedirs(internal.SRC_DIR)
+    src_dir = Path(root_dir, internal.SRC_DIR)
+    if not src_dir.exists():
+        os.makedirs(src_dir)
 
-    if not internal.RUN_DIR.exists():
-        os.makedirs(internal.RUN_DIR)
+    run_dir = Path(root_dir, internal.RUN_DIR)
+    if not run_dir.exists():
+        os.makedirs(run_dir)
 
     if fluxnet:
-        if not internal.SITE_RUN_DIR.exists():
-            os.makedirs(internal.SITE_RUN_DIR)
+        site_run_dir = Path(root_dir, internal.SITE_RUN_DIR)
+        if not site_run_dir.exists():
+            os.makedirs(site_run_dir)
 
-        if not internal.SITE_LOG_DIR.exists():
-            os.makedirs(internal.SITE_LOG_DIR)
+        site_log_dir = Path(root_dir, internal.SITE_LOG_DIR)
+        if not site_log_dir.exists():
+            os.makedirs(site_log_dir)
 
-        if not internal.SITE_OUTPUT_DIR.exists():
-            os.makedirs(internal.SITE_OUTPUT_DIR)
+        site_output_dir = Path(root_dir, internal.SITE_OUTPUT_DIR)
+        if not site_output_dir.exists():
+            os.makedirs(site_output_dir)
 
-        if not internal.SITE_RESTART_DIR.exists():
-            os.makedirs(internal.SITE_RESTART_DIR)
+        site_restart_dir = Path(root_dir, internal.SITE_RESTART_DIR)
+        if not site_restart_dir.exists():
+            os.makedirs(site_restart_dir)
 
-        if not internal.SITE_NAMELIST_DIR.exists():
-            os.makedirs(internal.SITE_NAMELIST_DIR)
+        site_namelist_dir = Path(root_dir, internal.SITE_NAMELIST_DIR)
+        if not site_namelist_dir.exists():
+            os.makedirs(site_namelist_dir)
 
     if world:
         pass
