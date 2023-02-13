@@ -158,6 +158,10 @@ def test_check_config():
         }
         check_config(config)
 
+    # TODO(Sean) test input validation for user, modules and branch names
+    # Note: these tests would be nci specific (tests that depend on the
+    # environment they are run in is not ideal)
+
 
 def test_read_config():
     # Success case: write config to file, then read config from file
@@ -171,8 +175,30 @@ def test_read_config():
     os.remove(filename)
     assert config == res
 
-    # TODO(Sean) Success case: a specified branch with a missing revision number
+    # Success case: a specified branch with a missing revision number
     # should return a config with the default revision number
+    config = make_barebones_config()
+    config["trunk"].pop("revision")
+    filename = "config-barebones.yaml"
 
-    # TODO(Sean) Success case: config branch with missing key: met_subset
+    with open(filename, "w") as file:
+        yaml.dump(config, file)
+
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert "revision" in res["trunk"] and res["trunk"]["revision"] == -1
+
+    # Success case: config branch with missing key: met_subset
     # should return a config with met_subset = empty list
+    config = make_barebones_config()
+    config.pop("met_subset")
+    filename = "config-barebones.yaml"
+
+    with open(filename, "w") as file:
+        yaml.dump(config, file)
+
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert "met_subset" in res and res["met_subset"] == []
