@@ -7,12 +7,10 @@ from pathlib import Path
 from benchcab.internal import QSUB_FNAME, NCPUS, MEM, WALL_TIME
 
 
-def create_job_script(project: str, user: str, config_path: str, sci_config_path: str):
+def create_job_script(project: str, user: str, config_path: str, sci_config_path: str, modules: list):
     email_address = f"{user}@nci.org.au"
 
     # Add the local directory to the storage flag for PBS
-    # TODO(Sean) why do we need to mount /scratch/<project_name>
-    # or /g/data/<project_name> by adding extra the storage flags?
     curdir = Path.cwd().parts
     if "scratch" in curdir:
         curdir_root = "scratch"
@@ -44,10 +42,10 @@ def create_job_script(project: str, user: str, config_path: str, sci_config_path
     f.write("\n")
     f.write("\n")
     f.write("module purge\n")
-    # TODO(Sean) we should load the modules specified by user config file?
     f.write("module use /g/data/hh5/public/modules\n")
     f.write("module load conda/analysis3-unstable\n")
-    f.write("module add netcdf/4.7.1\n")
+    for module_name in modules:
+        f.write(f"module add {module_name}\n")
     f.write(f"benchsiterun --config={config_path} --science_config={sci_config_path}\n")
     f.write("\n")
 
