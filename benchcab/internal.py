@@ -2,6 +2,7 @@
 
 import os
 import sys
+import grp
 from pathlib import Path
 
 _, NODENAME, _, _, _ = os.uname()
@@ -67,4 +68,13 @@ def validate_environment():
     namelist_dir = Path(CWD / NAMELIST_DIR)
     if not namelist_dir.exists():
         print("Error: cannot find 'namelists' directory in current working directory")
+        sys.exit(1)
+
+    required_groups = ["ks32", "wd9", "hh5"]
+    groups = [grp.getgrgid(gid).gr_name for gid in os.getgroups()]
+    if not set(groups).intersection(required_groups):
+        print(
+            "Error: user does not have the required group permissions.",
+            "The required groups are:", ", ".join(required_groups)
+        )
         sys.exit(1)
