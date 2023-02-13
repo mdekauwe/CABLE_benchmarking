@@ -21,7 +21,7 @@ SRC_DIR = Path("src")
 RUN_DIR = Path("runs")
 
 # Relative path to namelist files in bench_example
-# TODO(Sean) add better comment
+# TODO(Sean) what are these namelist files for?
 NAMELIST_DIR = Path("namelists")
 
 # TODO(Sean) what does CABLE auxiliary do?
@@ -39,7 +39,7 @@ SITE_OUTPUT_DIR = SITE_RUN_DIR / "outputs"
 # Relative path to directory that stores CABLE restart files
 SITE_RESTART_DIR = SITE_RUN_DIR / "restart_files"
 
-# TODO(Sean) add a comment
+# TODO(Sean) what are these namelist files for?
 SITE_NAMELIST_DIR = SITE_RUN_DIR / "namelists"
 
 # Path to met files:

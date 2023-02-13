@@ -11,7 +11,8 @@ def create_job_script(project: str, user: str, config_path: str, sci_config_path
     email_address = f"{user}@nci.org.au"
 
     # Add the local directory to the storage flag for PBS
-    # TODO(Sean) why?
+    # TODO(Sean) why do we need to mount /scratch/<project_name>
+    # or /g/data/<project_name> by adding extra the storage flags?
     curdir = Path.cwd().parts
     if "scratch" in curdir:
         curdir_root = "scratch"
