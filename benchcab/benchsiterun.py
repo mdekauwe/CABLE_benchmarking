@@ -63,10 +63,16 @@ def read_sci_configs(sci_configfile):
     return sci_configs
 
 
-def main(qsub=False, config=default_config, science_config=default_science, **kwargs):
+def main(config=default_config, science_config=default_science, **kwargs):
     """To run CABLE on single sites for the benchmarking.
     Keyword arguments are the same as the command line arguments for the benchsiterun command
     """
+    # TODO(Sean) need to perform checks as we cannot trust the
+    # user to use `benchsiterun` correctly:
+    # - validate directory structure (function to be implemented)
+    # - validate user environment (call validate_environment())
+    # - build was successful and executables exist?
+
     # Always run site simulations without mpi and with multiprocess
     mpi = False
     multiprocess = True
@@ -79,46 +85,38 @@ def main(qsub=False, config=default_config, science_config=default_science, **kw
     # Read science configurations
     sci_configs = read_sci_configs(science_config)
 
-    if qsub:
-        # Create a script to launch on NCI's compute nodes if requested
-        # Create a run object instance using default values since we won't use those values
-        R = RunCableSite()
-        R.create_qsub_script(opt["project"], opt["user"], config, science_config)
+    # Aliases to branches to use:
+    branch_alias = opt["use_branches"]
+    run_branches = [
+        opt[branch_alias[0]],
+    ]
+    run_branches.append(opt[branch_alias[1]])
 
-    else:
+    start_dir = Path.cwd()
+    os.chdir(benchdirs.runroot_dir / "site")
+    for branchid, branch in enumerate(run_branches):
+        branch_name = branch["name"]
+        cable_src = benchdirs.src_dir / branch_name
 
-        # Aliases to branches to use:
-        branch_alias = opt["use_branches"]
-        run_branches = [
-            opt[branch_alias[0]],
-        ]
-        run_branches.append(opt[branch_alias[1]])
+        # Define the name for the executable: cable for serial, cable-mpi for mpi runs
+        cable_exe = f"cable{'-mpi'*mpi}"
 
-        start_dir = Path.cwd()
-        os.chdir(benchdirs.runroot_dir / "site")
-        for branchid, branch in enumerate(run_branches):
-            branch_name = branch["name"]
-            cable_src = benchdirs.src_dir / branch_name
+        R = RunCableSite(
+            met_dir=compilation_opt["met_dir"],
+            log_dir=benchdirs.site_run["log_dir"],
+            output_dir=benchdirs.site_run["output_dir"],
+            restart_dir=benchdirs.site_run["restart_dir"],
+            aux_dir=benchdirs.aux_dir,
+            namelist_dir=benchdirs.site_run["namelist_dir"],
+            met_subset=opt["met_subset"],
+            cable_src=cable_src,
+            num_cores=None,
+            cable_exe=cable_exe,
+            multiprocess=multiprocess,
+        )
 
-            # Define the name for the executable: cable for serial, cable-mpi for mpi runs
-            cable_exe = f"cable{'-mpi'*mpi}"
-
-            R = RunCableSite(
-                met_dir=compilation_opt["met_dir"],
-                log_dir=benchdirs.site_run["log_dir"],
-                output_dir=benchdirs.site_run["output_dir"],
-                restart_dir=benchdirs.site_run["restart_dir"],
-                aux_dir=benchdirs.aux_dir,
-                namelist_dir=benchdirs.site_run["namelist_dir"],
-                met_subset=opt["met_subset"],
-                cable_src=cable_src,
-                num_cores=None,
-                cable_exe=cable_exe,
-                multiprocess=multiprocess,
-            )
-
-            for sci_id, sci_config in enumerate(sci_configs.values()):
-                R.main(sci_config, branchid, sci_id)
+        for sci_id, sci_config in enumerate(sci_configs.values()):
+            R.main(sci_config, branchid, sci_id)
 
         os.chdir(start_dir)
 
