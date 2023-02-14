@@ -101,7 +101,7 @@ def checkout_cable(branch_config: dict, user: str):
 
         if need_pass:
 
-            if branch_config['share']:
+            if branch_config['share_branch']:
                 cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Share/{branch_config['name']} --password {pswd}"
             else:
                 cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Users/{user}/{branch_config['name']} --password {pswd}"
@@ -115,7 +115,7 @@ def checkout_cable(branch_config: dict, user: str):
                     raise ("Error downloading repo")
                 f.close()
         else:
-            if branch_config['share']:
+            if branch_config['share_branch']:
                 cmd = (
                     f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Share/{branch_config['name']}"
                 )
