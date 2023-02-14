@@ -59,6 +59,8 @@ def checkout_cable(branch_config: dict, user: str):
 
     os.chdir(src_dir)
 
+    need_pass = False
+
     # Check if a specified version is required. Negative value means take the latest
     rev_opt = ""
     if branch_config['revision'] > 0:
