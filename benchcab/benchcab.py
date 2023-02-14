@@ -44,10 +44,13 @@ def main(args):
 
     config = read_config(args.config)
 
-    if directory_tree_exists():
-        validate_directory_tree(fluxnet=args.fluxnet, world=args.world)
-    else:
-        setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
+    # TODO(Sean) temporary solution, validating the directory structure is probably
+    # over-engineering, building the directory structure when needed is probably better?
+    setup_directory_tree(fluxnet=args.fluxnet, world=args.world, clean=True)
+    # if directory_tree_exists():
+    #     validate_directory_tree(fluxnet=args.fluxnet, world=args.world)
+    # else:
+    #     setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
 
     for b in config['use_branches']:
         checkout_cable(branch_config=config[b], user=config['user'])
@@ -67,7 +70,8 @@ def main(args):
             project=config['project'],
             user=config['user'],
             config_path=args.config,
-            sci_config_path=args.science_config
+            sci_config_path=args.science_config,
+            modules=config['modules']
         )
 
         submit_job()
