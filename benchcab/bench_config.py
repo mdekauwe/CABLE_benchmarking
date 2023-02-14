@@ -35,7 +35,7 @@ def check_config(config: dict):
                 f"The 'name' field in '{branch_name}' must be a "
                 "string."
             )
-        # the "revision" key is an optional
+        # the "revision" key is optional
         if "revision" in branch_config and type(branch_config["revision"]) is not int:
             raise TypeError(
                 f"The 'revision' field in '{branch_name}' must be an "
