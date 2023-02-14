@@ -72,7 +72,7 @@ def validate_environment():
 
     required_groups = ["ks32", "wd9", "hh5"]
     groups = [grp.getgrgid(gid).gr_name for gid in os.getgroups()]
-    if not set(groups).intersection(required_groups):
+    if not set(required_groups).issubset(groups):
         print(
             "Error: user does not have the required group permissions.",
             "The required groups are:", ", ".join(required_groups)
