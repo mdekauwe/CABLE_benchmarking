@@ -8,7 +8,7 @@ from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_directory_tree, validate_directory_tree, directory_tree_exists
 from benchcab.build_cable import build_cable_offline
-from benchcab.get_cable import checkout_cable
+from benchcab.get_cable import checkout_cable, archive_rev_number
 from benchcab.internal import validate_environment, CWD, NAMELIST_DIR, SITE_RUN_DIR
 
 
@@ -51,6 +51,7 @@ def main(args):
 
     for b in config['use_branches']:
         checkout_cable(branch_config=config[b], user=config['user'])
+    archive_rev_number()
 
     if args.fluxnet:
         print("Running the single sites tests ")

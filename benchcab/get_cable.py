@@ -44,6 +44,14 @@ def next_path(path_pattern, sep="-"):
     return f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}"
 
 
+def archive_rev_number():
+    """Archives previous rev_number.log"""
+
+    revision_file = Path("rev_number.log")
+    if revision_file.exists():
+        revision_file.replace(next_path("rev_number-*.log"))
+
+
 def checkout_cable(branch_config: dict, user: str):
     src_dir = Path(CWD / SRC_DIR)
     if not src_dir.exists():
@@ -140,8 +148,7 @@ def checkout_cable(branch_config: dict, user: str):
     cmd = shlex.split(f"svn info --show-item last-changed-revision {branch_config['name']}")
     out = subprocess.run(cmd, capture_output=True, text=True)
     rev_number = out.stdout
-    filename = next_path("rev_number-*.log")
-    with open(f"{CWD}/{filename}", "a") as fout:
+    with open(f"{CWD}/rev_number.log", "a") as fout:
         fout.write(f"{branch_config['name']} last change revision: {rev_number}")
     os.chdir(CWD)
 
