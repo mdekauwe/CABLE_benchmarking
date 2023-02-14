@@ -5,30 +5,6 @@ import shutil
 import benchcab.internal as internal
 
 
-def directory_tree_exists(root_dir=internal.CWD) -> bool:
-    paths = [Path(root_dir, internal.SRC_DIR), Path(root_dir, internal.RUN_DIR)]
-    return any([path.exists() for path in paths])
-
-
-def validate_directory_tree(fluxnet: bool, world: bool, root_dir=internal.CWD):
-    paths = [Path(root_dir, internal.SRC_DIR), Path(root_dir, internal.RUN_DIR)]
-
-    if fluxnet:
-        paths += [
-            Path(root_dir, internal.SITE_RUN_DIR),
-            Path(root_dir, internal.SITE_LOG_DIR),
-            Path(root_dir, internal.SITE_OUTPUT_DIR),
-            Path(root_dir, internal.SITE_RESTART_DIR),
-            Path(root_dir, internal.SITE_NAMELIST_DIR),
-        ]
-
-    if world:
-        pass
-
-    if not all([path.exists() for path in paths]):
-        raise EnvironmentError("Invalid directory structure in current working directory.")
-
-
 def clean_directory_tree(root_dir=internal.CWD):
     src_dir = Path(root_dir, internal.SRC_DIR)
     if src_dir.exists():
@@ -44,26 +20,33 @@ def setup_directory_tree(fluxnet: bool, world: bool, root_dir=internal.CWD, clea
         clean_directory_tree(root_dir)
 
     src_dir = Path(root_dir, internal.SRC_DIR)
-    os.makedirs(src_dir)
+    if not src_dir.exists():
+        os.makedirs(src_dir)
 
     run_dir = Path(root_dir, internal.RUN_DIR)
-    os.makedirs(run_dir)
+    if not run_dir.exists():
+        os.makedirs(run_dir)
 
     if fluxnet:
         site_run_dir = Path(root_dir, internal.SITE_RUN_DIR)
-        os.makedirs(site_run_dir)
+        if not site_run_dir.exists():
+            os.makedirs(site_run_dir)
 
         site_log_dir = Path(root_dir, internal.SITE_LOG_DIR)
-        os.makedirs(site_log_dir)
+        if not site_log_dir.exists():
+            os.makedirs(site_log_dir)
 
         site_output_dir = Path(root_dir, internal.SITE_OUTPUT_DIR)
-        os.makedirs(site_output_dir)
+        if not site_output_dir.exists():
+            os.makedirs(site_output_dir)
 
         site_restart_dir = Path(root_dir, internal.SITE_RESTART_DIR)
-        os.makedirs(site_restart_dir)
+        if not site_restart_dir.exists():
+            os.makedirs(site_restart_dir)
 
         site_namelist_dir = Path(root_dir, internal.SITE_NAMELIST_DIR)
-        os.makedirs(site_namelist_dir)
+        if not site_namelist_dir.exists():
+            os.makedirs(site_namelist_dir)
 
     if world:
         pass
