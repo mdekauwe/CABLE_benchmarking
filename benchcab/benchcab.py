@@ -45,7 +45,7 @@ def main(args):
     config = read_config(args.config)
 
     if directory_tree_exists():
-        validate_directory_tree()
+        validate_directory_tree(fluxnet=args.fluxnet, world=args.world)
     else:
         setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
 
