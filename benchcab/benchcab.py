@@ -40,9 +40,9 @@ def parse_args(arglist):
 
 def main(args):
 
-    validate_environment()
-
     config = read_config(args.config)
+
+    validate_environment(project=config['project'], modules=config['modules'])
 
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
     setup_directory_tree(fluxnet=args.fluxnet, world=args.world)

@@ -58,7 +58,7 @@ MULTIPROCESS = True
 NUM_CORES = NCPUS  # set to a number, if None it will use all cores...!
 
 
-def validate_environment():
+def validate_environment(project: str, modules: list):
     '''Performs checks on current user environment'''
 
     if "gadi.nci" not in NODENAME:
@@ -70,7 +70,7 @@ def validate_environment():
         print("Error: cannot find 'namelists' directory in current working directory")
         sys.exit(1)
 
-    required_groups = ["ks32", "wd9", "hh5"]
+    required_groups = [project, "ks32", "wd9", "hh5"]
     groups = [grp.getgrgid(gid).gr_name for gid in os.getgroups()]
     if not set(required_groups).issubset(groups):
         print(
@@ -78,3 +78,10 @@ def validate_environment():
             "The required groups are:", ", ".join(required_groups)
         )
         sys.exit(1)
+
+    sys.path.append("/opt/Modules/v4.3.0/init")
+    from python import module
+    for modname in modules:
+        if not module("is-avail", modname):
+            print(f"Error: module ({modname}) is not available.")
+            sys.exit(1)
