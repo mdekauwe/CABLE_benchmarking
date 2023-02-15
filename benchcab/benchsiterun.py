@@ -8,7 +8,9 @@ from pathlib import Path
 import yaml
 
 from benchcab.run_cable_site import RunCableSite
-from benchcab.bench_config import BenchSetup
+import benchcab.internal as internal
+from benchcab.internal import validate_environment
+from benchcab.bench_config import read_config
 
 # Define names of default config files globally
 default_config = "config.yaml"
@@ -63,62 +65,47 @@ def read_sci_configs(sci_configfile):
     return sci_configs
 
 
-def main(config=default_config, science_config=default_science, **kwargs):
+def main(args):
     """To run CABLE on single sites for the benchmarking.
     Keyword arguments are the same as the command line arguments for the benchsiterun command
     """
     # TODO(Sean) need to perform checks as we cannot trust the
     # user to use `benchsiterun` correctly:
     # - validate directory structure (function to be implemented)
-    # - validate user environment (call validate_environment())
     # - build was successful and executables exist?
 
-    # Always run site simulations without mpi and with multiprocess
-    mpi = False
-    multiprocess = True
+    config = read_config(args.config)
 
-    # Read setup and create directory structure for single site runs
-    mysetup = BenchSetup(config)
-    opt, compilation_opt, benchdirs = mysetup.setup_bench()
-    benchdirs.create_sitebenchtree()
+    validate_environment(project=config['project'], modules=config['modules'])
 
     # Read science configurations
-    sci_configs = read_sci_configs(science_config)
+    sci_configs = read_sci_configs(args.science_config)
 
-    # Aliases to branches to use:
-    branch_alias = opt["use_branches"]
-    run_branches = [
-        opt[branch_alias[0]],
-    ]
-    run_branches.append(opt[branch_alias[1]])
-
-    start_dir = Path.cwd()
-    os.chdir(benchdirs.runroot_dir / "site")
-    for branchid, branch in enumerate(run_branches):
-        branch_name = branch["name"]
-        cable_src = benchdirs.src_dir / branch_name
+    os.chdir(internal.CWD / internal.SITE_RUN_DIR)
+    for branchid, b in enumerate(config['use_branches']):
+        branch = config[b]
 
         # Define the name for the executable: cable for serial, cable-mpi for mpi runs
-        cable_exe = f"cable{'-mpi'*mpi}"
+        cable_exe = f"cable{'-mpi'*internal.MPI}"
 
         R = RunCableSite(
-            met_dir=compilation_opt["met_dir"],
-            log_dir=benchdirs.site_run["log_dir"],
-            output_dir=benchdirs.site_run["output_dir"],
-            restart_dir=benchdirs.site_run["restart_dir"],
-            aux_dir=benchdirs.aux_dir,
-            namelist_dir=benchdirs.site_run["namelist_dir"],
-            met_subset=opt["met_subset"],
-            cable_src=cable_src,
-            num_cores=None,
+            met_dir=internal.MET_DIR,
+            log_dir=Path(internal.CWD / internal.SITE_LOG_DIR),
+            output_dir=Path(internal.CWD / internal.SITE_OUTPUT_DIR),
+            restart_dir=Path(internal.CWD / internal.SITE_RESTART_DIR),
+            aux_dir=Path(internal.CWD / internal.CABLE_AUX_DIR),
+            namelist_dir=Path(internal.CWD / internal.SITE_NAMELIST_DIR),
+            met_subset=config["met_subset"],
+            cable_src=Path(internal.CWD / internal.SRC_DIR / branch["name"]),
+            num_cores=internal.NUM_CORES,
             cable_exe=cable_exe,
-            multiprocess=multiprocess,
+            multiprocess=internal.MULTIPROCESS,
         )
 
         for sci_id, sci_config in enumerate(sci_configs.values()):
             R.main(sci_config, branchid, sci_id)
 
-        os.chdir(start_dir)
+        os.chdir(internal.CWD)
 
 
 def main_parse_args(arglist):
@@ -127,7 +114,7 @@ def main_parse_args(arglist):
     """
     # Must return so that check command return value is passed back to calling routine
     # otherwise py.test will fail
-    return main(**vars(myparse(arglist)))
+    return main(myparse(arglist))
 
 
 def main_argv():
