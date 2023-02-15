@@ -158,10 +158,6 @@ def test_check_config():
         }
         check_config(config)
 
-    # TODO(Sean) test input validation for user, modules and branch names
-    # Note: these tests would be nci specific (tests that depend on the
-    # environment they are run in is not ideal)
-
 
 def test_read_config():
     # Success case: write config to file, then read config from file
