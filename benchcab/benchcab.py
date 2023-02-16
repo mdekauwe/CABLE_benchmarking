@@ -10,7 +10,7 @@ from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_directory_tree
 from benchcab.build_cable import build_cable_offline
-from benchcab.get_cable import checkout_cable, archive_rev_number
+from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
 from benchcab.internal import validate_environment, CWD, NAMELIST_DIR, SITE_RUN_DIR
 
 
@@ -82,6 +82,7 @@ def main(args):
 
     for branch_alias in config['use_branches']:
         checkout_cable(branch_config=config[branch_alias], user=config['user'])
+    checkout_cable_auxiliary()
     archive_rev_number()
 
     if args.fluxnet:

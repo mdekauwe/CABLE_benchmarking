@@ -51,9 +51,36 @@ def archive_rev_number():
         revision_file.replace(next_path("rev_number-*.log"))
 
 
+def need_pass() -> bool:
+    """If the user requires a password for SVN, return `True`. Otherwise return `False`."""
+    try:
+        return os.listdir(f"{HOME_DIR}/.subversion/auth/svn.simple/") == []
+    except FileNotFoundError:
+        return False
+
+
+def get_password() -> str:
+    """Prompt user for a password."""
+    return "'" + getpass.getpass("Password:") + "'"
+
+
+def checkout_cable_auxiliary():
+    """Checkout CABLE-AUX."""
+
+    cable_aux_dir = Path(CWD / CABLE_AUX_DIR)
+    if cable_aux_dir.exists():
+        return
+
+    cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX {cable_aux_dir}"
+    if need_pass():
+        cmd += f" --password {get_password()}"
+    error = subprocess.call(cmd, shell=True)
+    if error != 0:
+        raise RuntimeError("Error checking out CABLE-AUX")
+
+
 def checkout_cable(branch_config: dict, user: str):
 
-    # TODO(Sean) checking out CABLE-AUX should be in a separate function
     # TODO(Sean) can we avoid code repetition for the trunk and dev branch?
 
     src_dir = Path(CWD / SRC_DIR)
@@ -128,26 +155,6 @@ def checkout_cable(branch_config: dict, user: str):
             error = subprocess.call(cmd, shell=True)
             if error == 1:
                 raise ("Error downloading repo")
-
-    # Checkout CABLE-AUX
-    cable_aux_dir = Path(CWD / CABLE_AUX_DIR)
-    if not cable_aux_dir.exists():
-        if need_pass:
-            cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX CABLE-AUX --password {pswd}"
-            with tempfile.NamedTemporaryFile(mode="w+t") as f:
-                f.write(cmd)
-                f.flush()
-
-                error = subprocess.call(["/bin/bash", f.name])
-                if error == 1:
-                    raise ("Error checking out CABLE-AUX")
-                f.close()
-        else:
-            cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX CABLE-AUX"
-
-            error = subprocess.call(cmd, shell=True)
-            if error == 1:
-                raise ("Error checking out CABLE-AUX")
 
     # Write last change revision number to rev_number.log file
     cmd = shlex.split(f"svn info --show-item last-changed-revision {branch_config['name']}")
