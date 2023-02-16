@@ -1,3 +1,5 @@
+"""Contains functions for job script creation and submission on Gadi."""
+
 import os
 import sys
 import shlex
@@ -7,7 +9,15 @@ from pathlib import Path
 from benchcab.internal import QSUB_FNAME, NCPUS, MEM, WALL_TIME
 
 
-def create_job_script(project: str, user: str, config_path: str, sci_config_path: str, modules: list):
+def create_job_script(
+    project: str,
+    user: str,
+    config_path: str,
+    sci_config_path: str,
+    modules: list
+):
+    """Creates a job script for executing `benchsiterun` on Gadi."""
+
     email_address = f"{user}@nci.org.au"
 
     # Add the local directory to the storage flag for PBS
@@ -22,44 +32,42 @@ def create_job_script(project: str, user: str, config_path: str, sci_config_path
         print("Current directory structure unknown on Gadi")
         sys.exit(1)
 
-    f = open(QSUB_FNAME, "w")
-
-    f.write("#!/bin/bash\n")
-    f.write("\n")
-    f.write("#PBS -l wd\n")
-    f.write("#PBS -l ncpus=%d\n" % (NCPUS))
-    f.write("#PBS -l mem=%s\n" % (MEM))
-    f.write("#PBS -l walltime=%s\n" % (WALL_TIME))
-    f.write("#PBS -q normal\n")
-    f.write("#PBS -P %s\n" % (project))
-    f.write("#PBS -j oe\n")
-    f.write("#PBS -M %s\n" % (email_address))
-    f.write(
-        f"#PBS -l storage=gdata/ks32+gdata/wd9+gdata/hh5+gdata/{project}+{curdir_root}/{curdir_proj}\n"
-    )
-    f.write("\n")
-    f.write("\n")
-    f.write("\n")
-    f.write("\n")
-    f.write("module purge\n")
-    f.write("module use /g/data/hh5/public/modules\n")
-    f.write("module load conda/analysis3-unstable\n")
-    for module_name in modules:
-        f.write(f"module add {module_name}\n")
-    f.write(f"benchsiterun --config={config_path} --science_config={sci_config_path}\n")
-    f.write("\n")
-
-    f.close()
+    with open(QSUB_FNAME, "w", encoding="utf-8") as file:
+        file.write("#!/bin/bash\n")
+        file.write("\n")
+        file.write("#PBS -l wd\n")
+        file.write(f"#PBS -l ncpus={NCPUS}\n")
+        file.write(f"#PBS -l mem={MEM}\n")
+        file.write(f"#PBS -l walltime={WALL_TIME}\n")
+        file.write("#PBS -q normal\n")
+        file.write(f"#PBS -P {project}\n")
+        file.write("#PBS -j oe\n")
+        file.write(f"#PBS -M {email_address}\n")
+        file.write("#PBS -l storage=gdata/ks32+gdata/wd9+gdata/hh5"
+                   f"+gdata/{project}+{curdir_root}/{curdir_proj}\n")
+        file.write("\n")
+        file.write("\n")
+        file.write("\n")
+        file.write("\n")
+        file.write("module purge\n")
+        file.write("module use /g/data/hh5/public/modules\n")
+        file.write("module load conda/analysis3-unstable\n")
+        for module_name in modules:
+            file.write(f"module add {module_name}\n")
+        file.write(f"benchsiterun --config={config_path} --science_config={sci_config_path}\n")
+        file.write("\n")
 
     os.chmod(QSUB_FNAME, 0o755)
 
 
 def submit_job():
+    """Submits the job script specified by `QSUB_FNAME`."""
+
     cmd = shlex.split(f"qsub {QSUB_FNAME}")
-    sb = subprocess.run(cmd, capture_output=True)
-    if sb.returncode != 0:
+    proc = subprocess.run(cmd, capture_output=True, check=False)
+    if proc.returncode != 0:
         print("Error when submitting job to NCI queue")
-        print(sb.stderr)
+        print(proc.stderr)
         sys.exit(1)
 
-    print(f"Benchmark submitted in PBS job: {sb.stdout}")
+    print(f"Benchmark submitted in PBS job: {proc.stdout}")
