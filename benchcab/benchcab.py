@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+Contains the main program entry point for `benchcab`.
+
+"""
+
 import argparse
 import sys
 import shutil
@@ -13,16 +18,46 @@ from benchcab.internal import validate_environment, CWD, NAMELIST_DIR, SITE_RUN_
 
 
 def parse_args(arglist):
-    """
-    Parse arguments given as list (arglist)
-    """
+    """Parse arguments given by `arglist`."""
+
     parser = argparse.ArgumentParser(description="Run the benchmarking for CABLE")
-    parser.add_argument("-c", "--config", help="Config filename", default="config.yaml")
-    parser.add_argument("-s", "--science_config", help="Config file to define the various configurations to run", default="site_configs.yaml")
-    parser.add_argument("-f", "--fluxnet", help="Runs the tests for the Fluxnet sites only", action="store_true")
-    parser.add_argument("-w", "--world", help="Runs the global tests only", action="store_true")
-    parser.add_argument("-b", "--bitrepro", help="Check bit reproducibility, not implemented yet", action="store_true")
-    parser.add_argument("-r", "--rebuild", action="store_true", default=False, help="Rebuild src?")
+    parser.add_argument(
+        "-c",
+        "--config",
+        help="Config filename",
+        default="config.yaml"
+    )
+    parser.add_argument(
+        "-s",
+        "--science_config",
+        help="Config file to define the various configurations to run",
+        default="site_configs.yaml"
+    )
+    parser.add_argument(
+        "-f",
+        "--fluxnet",
+        help="Runs the tests for the Fluxnet sites only",
+        action="store_true"
+    )
+    parser.add_argument(
+        "-w",
+        "--world",
+        help="Runs the global tests only",
+        action="store_true"
+    )
+    parser.add_argument(
+        "-b",
+        "--bitrepro",
+        help="Check bit reproducibility, not implemented yet",
+        action="store_true"
+    )
+    parser.add_argument(
+        "-r",
+        "--rebuild",
+        action="store_true",
+        default=False,
+        help="Rebuild src?"
+    )
 
     args = parser.parse_args(arglist)
 
@@ -39,6 +74,7 @@ def parse_args(arglist):
 
 
 def main(args):
+    """Main program entry point for `benchcab`."""
 
     config = read_config(args.config)
 
@@ -47,8 +83,8 @@ def main(args):
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
     setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
 
-    for b in config['use_branches']:
-        checkout_cable(branch_config=config[b], user=config['user'])
+    for branch_alias in config['use_branches']:
+        checkout_cable(branch_config=config[branch_alias], user=config['user'])
     archive_rev_number()
 
     if args.fluxnet:
@@ -57,8 +93,8 @@ def main(args):
         # Copy contents of 'namelists' directory to 'runs/site' directory:
         shutil.copytree(CWD / NAMELIST_DIR, CWD / SITE_RUN_DIR, dirs_exist_ok=True)
 
-        for b in config['use_branches']:
-            branch = config[b]
+        for branch_alias in config['use_branches']:
+            branch = config[branch_alias]
             build_cable_offline(branch['name'], config['modules'])
 
         create_job_script(
@@ -77,17 +113,16 @@ def main(args):
 
 
 def main_parse_args(arglist):
-    """
-    Call main with list of arguments. Callable from tests
-    """
+    """Call main with list of arguments. Callable from tests."""
     # Must return so that check command return value is passed back to calling routine
     # otherwise py.test will fail
     return main(parse_args(arglist))
 
 
 def main_argv():
-    """
-    Call main and pass command line arguments. This is required for setup.py entry_points
+    """Call main and pass command line arguments.
+
+    This is required for setup.py entry_points
     """
     main_parse_args(sys.argv[1:])
 
