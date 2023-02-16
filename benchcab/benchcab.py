@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Contains the main program entry point for `benchcab`.
-
-"""
+"""Contains the main program entry point for `benchcab`."""
 
 import argparse
 import sys
