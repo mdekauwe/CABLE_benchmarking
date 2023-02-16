@@ -23,39 +23,39 @@ def check_config(config: dict):
     if len(config['use_branches']) != 2:
         raise ValueError("You need to list 2 branches in 'use_branches'")
 
-    if any(branch_name not in config for branch_name in config['use_branches']):
+    if any(branch_alias not in config for branch_alias in config['use_branches']):
         raise ValueError(
             "At least one of the first 2 aliases listed in 'use_branches' is"
             "not an entry in the config file to define a CABLE branch."
         )
 
-    for branch_name in config['use_branches']:
-        branch_config = config[branch_name]
+    for branch_alias in config['use_branches']:
+        branch_config = config[branch_alias]
         required_keys = ["name", "trunk", "share_branch"]
         if any(key not in branch_config for key in required_keys):
             raise ValueError(
-                f"The '{branch_name}' does not list all required "
+                f"The '{branch_alias}' does not list all required "
                 "entries. Those are 'name', 'trunk', 'share_branch'."
             )
         if not isinstance(branch_config["name"], str):
             raise TypeError(
-                f"The 'name' field in '{branch_name}' must be a "
+                f"The 'name' field in '{branch_alias}' must be a "
                 "string."
             )
         # the "revision" key is optional
         if "revision" in branch_config and not isinstance(branch_config["revision"], int):
             raise TypeError(
-                f"The 'revision' field in '{branch_name}' must be an "
+                f"The 'revision' field in '{branch_alias}' must be an "
                 "integer."
             )
         if not isinstance(branch_config["trunk"], bool):
             raise TypeError(
-                f"The 'trunk' field in '{branch_name}' must be a "
+                f"The 'trunk' field in '{branch_alias}' must be a "
                 "boolean."
             )
         if not isinstance(branch_config["share_branch"], bool):
             raise TypeError(
-                f"The 'share_branch' field in '{branch_name}' must be a "
+                f"The 'share_branch' field in '{branch_alias}' must be a "
                 "boolean."
             )
 

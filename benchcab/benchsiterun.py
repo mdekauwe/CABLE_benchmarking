@@ -82,8 +82,8 @@ def main(args):
     sci_configs = read_sci_configs(args.science_config)
 
     os.chdir(internal.CWD / internal.SITE_RUN_DIR)
-    for branchid, b in enumerate(config['use_branches']):
-        branch = config[b]
+    for branchid, branch_alias in enumerate(config['use_branches']):
+        branch = config[branch_alias]
 
         # Define the name for the executable: cable for serial, cable-mpi for mpi runs
         cable_exe = f"cable{'-mpi'*internal.MPI}"
