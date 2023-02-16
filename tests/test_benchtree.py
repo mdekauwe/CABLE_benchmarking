@@ -1,4 +1,5 @@
-import pytest
+"""`pytest` tests for benchtree.py"""
+
 from pathlib import Path
 
 from benchcab.benchtree import setup_directory_tree, clean_directory_tree
@@ -8,6 +9,8 @@ from benchcab.benchtree import setup_directory_tree, clean_directory_tree
 
 
 def test_setup_directory_tree(tmp_path):
+    """Tests for `setup_directory_tree()`."""
+
     # Success case: generate fluxnet directory structure
     setup_directory_tree(fluxnet=True, world=False, root_dir=tmp_path)
     assert len(list(tmp_path.glob("*"))) == 2
@@ -33,6 +36,8 @@ def test_setup_directory_tree(tmp_path):
 
 
 def test_clean_directory_tree(tmp_path):
+    """Tests for `clean_directory_tree()`."""
+
     # Success case: directory tree does not exist after clean
     setup_directory_tree(fluxnet=True, world=False, root_dir=tmp_path)
     clean_directory_tree(root_dir=tmp_path)
