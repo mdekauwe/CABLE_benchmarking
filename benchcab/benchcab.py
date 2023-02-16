@@ -87,8 +87,14 @@ def main(args):
     if args.fluxnet:
         print("Running the single sites tests ")
 
+        # TODO(Sean) why?
         # Copy contents of 'namelists' directory to 'runs/site' directory:
         shutil.copytree(CWD / NAMELIST_DIR, CWD / SITE_RUN_DIR, dirs_exist_ok=True)
+
+        # TODO(Sean) A single function that does all the file manipulations of copying and
+        # moving files would be ideal so that the job simply goes into a directory and
+        # executes cable. Most of the code in run_cable_site.py is manipulating files to
+        # setup for running cable. These file manipulations can be moved benchcab.
 
         for branch_alias in config['use_branches']:
             branch = config[branch_alias]

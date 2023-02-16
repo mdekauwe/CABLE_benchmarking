@@ -52,6 +52,10 @@ def archive_rev_number():
 
 
 def checkout_cable(branch_config: dict, user: str):
+
+    # TODO(Sean) checking out CABLE-AUX should be in a separate function
+    # TODO(Sean) can we avoid code repetition for the trunk and dev branch?
+
     src_dir = Path(CWD / SRC_DIR)
     if not src_dir.exists():
         os.makedirs(src_dir)
