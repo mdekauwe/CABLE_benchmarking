@@ -1,11 +1,13 @@
+"""Contains functions for generating the directory structure used for `benchcab`."""
 from pathlib import Path
 import os
 import shutil
 
-import benchcab.internal as internal
+from benchcab import internal
 
 
 def clean_directory_tree(root_dir=internal.CWD):
+    """Remove pre-existing directories in `root_dir`."""
     src_dir = Path(root_dir, internal.SRC_DIR)
     if src_dir.exists():
         shutil.rmtree(src_dir)
@@ -16,6 +18,7 @@ def clean_directory_tree(root_dir=internal.CWD):
 
 
 def setup_directory_tree(fluxnet: bool, world: bool, root_dir=internal.CWD, clean=False):
+    """Generate the directory structure used of `benchcab`."""
     if clean:
         clean_directory_tree(root_dir)
 
