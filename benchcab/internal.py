@@ -80,7 +80,7 @@ def validate_environment(project: str, modules: list):
         sys.exit(1)
 
     sys.path.append("/opt/Modules/v4.3.0/init")
-    from python import module
+    from python import module  # pylint: disable=import-error, import-outside-toplevel
     for modname in modules:
         if not module("is-avail", modname):
             print(f"Error: module ({modname}) is not available.")
