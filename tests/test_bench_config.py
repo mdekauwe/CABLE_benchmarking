@@ -1,3 +1,5 @@
+"""`pytest` tests for bench_config.py"""
+
 import os
 import pytest
 import yaml
@@ -5,7 +7,8 @@ import yaml
 from benchcab.bench_config import check_config, read_config
 
 
-def make_barebones_config():
+def make_barebones_config() -> dict:
+    """Returns a valid mock config."""
     conf = {
         "user": "foo1234",
         "project": "bar",
@@ -33,6 +36,8 @@ def make_barebones_config():
 
 
 def test_check_config():
+    """Tests for `check_config()`."""
+
     # Success case: test barebones config is valid
     config = make_barebones_config()
     check_config(config)
@@ -160,11 +165,13 @@ def test_check_config():
 
 
 def test_read_config():
+    """Tests for `read_config()`."""
+
     # Success case: write config to file, then read config from file
     config = make_barebones_config()
     filename = "config-barebones.yaml"
 
-    with open(filename, "w") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
 
     res = read_config(filename)
@@ -177,7 +184,7 @@ def test_read_config():
     config["trunk"].pop("revision")
     filename = "config-barebones.yaml"
 
-    with open(filename, "w") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
 
     res = read_config(filename)
@@ -191,7 +198,7 @@ def test_read_config():
     config.pop("met_subset")
     filename = "config-barebones.yaml"
 
-    with open(filename, "w") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
 
     res = read_config(filename)
