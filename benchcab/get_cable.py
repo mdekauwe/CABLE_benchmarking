@@ -66,100 +66,53 @@ def get_password() -> str:
 
 def checkout_cable_auxiliary():
     """Checkout CABLE-AUX."""
+    # TODO(Sean) we should archive revision numbers for CABLE-AUX
 
     cable_aux_dir = Path(CWD / CABLE_AUX_DIR)
     if cable_aux_dir.exists():
         return
 
     cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX {cable_aux_dir}"
+
     if need_pass():
         cmd += f" --password {get_password()}"
+
     error = subprocess.call(cmd, shell=True)
     if error != 0:
         raise RuntimeError("Error checking out CABLE-AUX")
 
 
 def checkout_cable(branch_config: dict, user: str):
+    """Checkout a branch of CABLE."""
+    # TODO(Sean) do nothing if the repository has already been checked out?
+    # This also relates the 'clean' feature.
 
-    # TODO(Sean) can we avoid code repetition for the trunk and dev branch?
+    cmd = "svn checkout"
 
-    src_dir = Path(CWD / SRC_DIR)
-    if not src_dir.exists():
-        os.makedirs(src_dir)
+    # Check if a specified revision is required. Negative value means take the latest
+    if branch_config["revision"] > 0:
+        cmd += f" -r {branch_config['revision']}"
 
-    os.chdir(src_dir)
-
-    need_pass = False
-
-    # Check if a specified version is required. Negative value means take the latest
-    rev_opt = ""
-    if branch_config['revision'] > 0:
-        rev_opt = f"-r {branch_config['revision']}"
-
-    try:
-        where = os.listdir("%s/.subversion/auth/svn.simple/" % (HOME_DIR))
-        if len(where) == 0:
-            pswd = "'" + getpass.getpass("Password:") + "'"
-            need_pass = True
-    except FileNotFoundError:
-        pswd = "'" + getpass.getpass("Password:") + "'"
-        need_pass = True
-
-    # Checkout the head of the trunk ...
-    if branch_config['trunk']:
-
-        if need_pass:
-            cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/trunk --password {pswd}"
-
-            with tempfile.NamedTemporaryFile(mode="w+t") as f:
-                f.write(cmd)
-                f.flush()
-
-                error = subprocess.call(["/bin/bash", f.name])
-                if error == 1:
-                    raise ("Error downloading repo")
-                f.close()
-        else:
-            cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/trunk"
-
-            error = subprocess.call(cmd, shell=True)
-            if error == 1:
-                raise ("Error downloading repo")
-
-    # Checkout named branch ...
+    if branch_config["trunk"]:
+        path_to_repo = Path(CWD, SRC_DIR, "trunk")
+        cmd += f" {CABLE_SVN_ROOT}/trunk {path_to_repo}"
+    elif branch_config["share_branch"]:
+        path_to_repo = Path(CWD, SRC_DIR, branch_config["name"])
+        cmd += f" {CABLE_SVN_ROOT}/branches/Share/{branch_config['name']} {path_to_repo}"
     else:
+        path_to_repo = Path(CWD, SRC_DIR, branch_config["name"])
+        cmd += f" {CABLE_SVN_ROOT}/branches/Users/{user}/{branch_config['name']} {path_to_repo}"
 
-        if need_pass:
+    if need_pass():
+        cmd += f" --password {get_password()}"
 
-            if branch_config['share_branch']:
-                cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Share/{branch_config['name']} --password {pswd}"
-            else:
-                cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Users/{user}/{branch_config['name']} --password {pswd}"
-
-            with tempfile.NamedTemporaryFile(mode="w+t") as f:
-                f.write(cmd)
-                f.flush()
-
-                error = subprocess.call(["/bin/bash", f.name])
-                if error == 1:
-                    raise ("Error downloading repo")
-                f.close()
-        else:
-            if branch_config['share_branch']:
-                cmd = (
-                    f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Share/{branch_config['name']}"
-                )
-            else:
-                cmd = f"svn checkout {rev_opt} {CABLE_SVN_ROOT}/branches/Users/{user}/{branch_config['name']}"
-
-            error = subprocess.call(cmd, shell=True)
-            if error == 1:
-                raise ("Error downloading repo")
+    error = subprocess.call(cmd, shell=True)
+    if error != 0:
+        raise RuntimeError("Error downloading repo")
 
     # Write last change revision number to rev_number.log file
-    cmd = shlex.split(f"svn info --show-item last-changed-revision {branch_config['name']}")
-    out = subprocess.run(cmd, capture_output=True, text=True)
+    cmd = shlex.split(f"svn info --show-item last-changed-revision {path_to_repo}")
+    out = subprocess.run(cmd, capture_output=True, text=True, check=True)
     rev_number = out.stdout
-    with open(f"{CWD}/rev_number.log", "a") as fout:
+    with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
         fout.write(f"{branch_config['name']} last change revision: {rev_number}")
-    os.chdir(CWD)
