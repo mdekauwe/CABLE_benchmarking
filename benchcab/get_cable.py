@@ -14,7 +14,6 @@ import os
 import subprocess
 import shlex
 import getpass
-import tempfile
 from pathlib import Path
 
 from benchcab.internal import CWD, SRC_DIR, HOME_DIR, CABLE_SVN_ROOT, CABLE_AUX_DIR
