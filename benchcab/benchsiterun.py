@@ -12,7 +12,7 @@ import yaml
 from benchcab.run_cable_site import RunCableSite
 from benchcab import internal
 from benchcab.internal import validate_environment
-from benchcab.bench_config import read_config
+from benchcab.bench_config import read_config, read_science_config
 
 # Define names of default config files globally
 DEFAULT_CONFIG = "config.yaml"
@@ -47,15 +47,6 @@ def myparse(arglist):
     return args
 
 
-def read_sci_configs(sci_configfile):
-    """Read the science config file"""
-
-    with open(sci_configfile, "r", encoding="utf-8") as fin:
-        sci_configs = yaml.safe_load(fin)
-
-    return sci_configs
-
-
 def main(args):
     """To run CABLE on single sites for the benchmarking.
     Keyword arguments are the same as the command line arguments for the benchsiterun command
@@ -70,7 +61,7 @@ def main(args):
     validate_environment(project=config['project'], modules=config['modules'])
 
     # Read science configurations
-    sci_configs = read_sci_configs(args.science_config)
+    sci_configs = read_science_config(args.science_config)
 
     os.chdir(internal.CWD / internal.SITE_RUN_DIR)
     for branchid, branch_alias in enumerate(config['use_branches']):

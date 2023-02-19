@@ -77,3 +77,12 @@ def read_config(config_path: str) -> dict:
     config.setdefault("met_subset", [])
 
     return config
+
+
+def read_science_config(science_config_path):
+    """Read the science config file"""
+
+    # TODO(Sean) input validation for science configurations
+
+    with open(science_config_path, "r", encoding="utf-8") as file:
+        return yaml.safe_load(file)
