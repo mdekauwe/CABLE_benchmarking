@@ -6,6 +6,8 @@ import grp
 import glob
 from pathlib import Path
 
+from benchcab.task import Task
+
 _, NODENAME, _, _, _ = os.uname()
 
 # DIRECTORY PATHS/STRUCTURE:
@@ -27,6 +29,21 @@ NAMELIST_DIR = Path("namelists")
 
 # Relative path to CABLE Auxiliary repository (for spatial runs)
 CABLE_AUX_DIR = SRC_DIR / "CABLE-AUX"
+
+# TODO(Sean) what is this?
+GRID_FILE = CABLE_AUX_DIR / "offline" / "gridinfo_CSIRO_1x1.nc"
+
+# TODO(Sean) what is this?
+VEG_FILE = CABLE_AUX_DIR / "core" / "biogeophys" / "def_veg_params_zr_clitt_albedo_fix.txt"
+
+# TODO(Sean) what is this?
+SOIL_FILE = CABLE_AUX_DIR / "core" / "biogeophys" / "def_soil_params.txt"
+
+# TODO(Sean) what is this?
+PHEN_FILE = CABLE_AUX_DIR / "core" / "biogeochem" / "modis_phenology_csiro.txt"
+
+# TODO(Sean) what is this?
+CNPBIOME_FILE = CABLE_AUX_DIR / "core" / "biogeochem" / "pftlookup_csiro_v16_17tiles.csv"
 
 # Relative path to root directory for CABLE site runs
 SITE_RUN_DIR = RUN_DIR / "site"
@@ -52,6 +69,21 @@ MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
 
 # CABLE SVN root url:
 CABLE_SVN_ROOT = "https://trac.nci.org.au/svn/cable"
+
+# CABLE executable file name:
+CABLE_EXE = "cable"
+
+# CABLE namelist file name:
+CABLE_NML = "cable.nml"
+
+# CABLE vegetation namelist file:
+CABLE_VEGETATION_NML = "pft_params.nml"
+
+# CABLE soil namelist file:
+CABLE_SOIL_NML = "cable_soilparm.nml"
+
+# TODO(Sean) why do we specify a fixed C02 concentration?
+CABLE_FIXED_CO2_CONC = 400.0
 
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"
@@ -92,7 +124,7 @@ def validate_environment(project: str, modules: list):
             sys.exit(1)
 
 
-def get_fluxnet_tasks(config: dict, science_config: dict):
+def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
     """Returns a list of fluxnet tasks to run.
 
     Each task is a tuple: `(branch_name, site, sci_key)` where `branch_name` is the name
@@ -102,8 +134,8 @@ def get_fluxnet_tasks(config: dict, science_config: dict):
     branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
     met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
     tasks = [
-        (branch_name, site, sci_key)
-        for branch_name in branch_names for site in met_sites for sci_key in science_config.keys()
+        Task(branch_name, site, key, science_config[key])
+        for branch_name in branch_names for site in met_sites for key in science_config
     ]
     return tasks
 

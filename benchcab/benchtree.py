@@ -4,6 +4,7 @@ import os
 import shutil
 
 from benchcab import internal
+from benchcab.task import Task
 
 
 def clean_directory_tree(root_dir=internal.CWD):
@@ -17,7 +18,7 @@ def clean_directory_tree(root_dir=internal.CWD):
         shutil.rmtree(run_dir)
 
 
-def setup_fluxnet_directory_tree(fluxnet_tasks, root_dir=internal.CWD, clean=False):
+def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CWD, clean=False):
     """Generate the directory structure used of `benchcab`."""
     if clean:
         clean_directory_tree(root_dir)
@@ -55,9 +56,7 @@ def setup_fluxnet_directory_tree(fluxnet_tasks, root_dir=internal.CWD, clean=Fal
     if not site_tasks_dir.exists():
         os.makedirs(site_tasks_dir)
 
-    for branch_name, site, sciconf_key in fluxnet_tasks:
-        site_base_filename = site.split(".")[0]
-        task_name = f"{branch_name}_{site_base_filename}_{sciconf_key}"
-        task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task_name)
+    for task in fluxnet_tasks:
+        task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task.get_task_name())
         if not task_dir.exists():
             os.makedirs(task_dir)

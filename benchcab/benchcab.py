@@ -4,14 +4,12 @@
 
 import argparse
 import sys
-import shutil
 
 from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config, read_science_config
 from benchcab.benchtree import setup_fluxnet_directory_tree
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab import internal
 from benchcab.internal import validate_environment, get_fluxnet_tasks
 
 
@@ -91,18 +89,8 @@ def main(args):
     if args.fluxnet:
         print("Running the single sites tests ")
 
-        # TODO(Sean) remove (this will be replaced by the TODO below)
-        # Copy contents of 'namelists' directory to 'runs/site' directory:
-        shutil.copytree(
-            internal.CWD / internal.NAMELIST_DIR,
-            internal.CWD / internal.SITE_RUN_DIR,
-            dirs_exist_ok=True
-        )
-
-        # TODO(Sean) A single function that does all the file manipulations of copying and
-        # moving files would be ideal so that the job simply goes into a directory and
-        # executes cable. Most of the code in run_cable_site.py is manipulating files to
-        # setup for running cable. These file manipulations can be moved benchcab.
+        for task in get_fluxnet_tasks(config, sci_configs):
+            task.setup_task()
 
         for branch_alias in config['use_branches']:
             branch = config[branch_alias]
