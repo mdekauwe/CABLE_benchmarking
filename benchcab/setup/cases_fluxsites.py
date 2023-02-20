@@ -1,6 +1,9 @@
 #
 ## science configs
 #
+
+# TODO(Sean) need to implement default science configurations
+
 sci1 = {
     "cable_user%GS_SWITCH": "'medlyn'",
 }
