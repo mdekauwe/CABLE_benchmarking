@@ -10,6 +10,15 @@ from benchcab.task import Task
 
 _, NODENAME, _, _, _ = os.uname()
 
+# Parameters for job script:
+QSUB_FNAME = "benchmark_cable_qsub.sh"
+NCPUS = 18
+MEM = "30GB"
+WALL_TIME = "6:00:00"
+MPI = False
+MULTIPROCESS = True
+NUM_CORES = NCPUS  # set to a number, if None it will use all cores...!
+
 # DIRECTORY PATHS/STRUCTURE:
 
 # Path to the user's current working directory
@@ -71,7 +80,7 @@ MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
 CABLE_SVN_ROOT = "https://trac.nci.org.au/svn/cable"
 
 # CABLE executable file name:
-CABLE_EXE = "cable"
+CABLE_EXE = "cable-mpi" if MPI else "cable"
 
 # CABLE namelist file name:
 CABLE_NML = "cable.nml"
@@ -84,15 +93,6 @@ CABLE_SOIL_NML = "cable_soilparm.nml"
 
 # TODO(Sean) why do we specify a fixed C02 concentration?
 CABLE_FIXED_CO2_CONC = 400.0
-
-# Parameters for job script:
-QSUB_FNAME = "benchmark_cable_qsub.sh"
-NCPUS = 18
-MEM = "30GB"
-WALL_TIME = "6:00:00"
-MPI = False
-MULTIPROCESS = True
-NUM_CORES = NCPUS  # set to a number, if None it will use all cores...!
 
 
 def validate_environment(project: str, modules: list):
