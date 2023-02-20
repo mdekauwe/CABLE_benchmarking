@@ -16,6 +16,7 @@ import shlex
 import getpass
 from pathlib import Path
 
+from benchcab import internal
 from benchcab.internal import CWD, SRC_DIR, HOME_DIR, CABLE_SVN_ROOT, CABLE_AUX_DIR
 
 
@@ -79,6 +80,25 @@ def checkout_cable_auxiliary():
     error = subprocess.call(cmd, shell=True)
     if error != 0:
         raise RuntimeError("Error checking out CABLE-AUX")
+
+    # Check relevant files exist in repository:
+
+    if not Path.exists(CWD / internal.GRID_FILE):
+        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.GRID_FILE}'")
+
+    if not Path.exists(CWD / internal.VEG_FILE):
+        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.VEG_FILE}'")
+
+    if not Path.exists(CWD / internal.SOIL_FILE):
+        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.SOIL_FILE}'")
+
+    if not Path.exists(CWD / internal.PHEN_FILE):
+        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.PHEN_FILE}'")
+
+    if not Path.exists(CWD / internal.CNPBIOME_FILE):
+        raise RuntimeError(
+            f"Error checking out CABLE-AUX: cannot find file '{internal.CNPBIOME_FILE}'"
+        )
 
 
 def checkout_cable(branch_config: dict, user: str):
