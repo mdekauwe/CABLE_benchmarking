@@ -3,6 +3,7 @@
 import os
 import sys
 import grp
+import glob
 from pathlib import Path
 
 _, NODENAME, _, _, _ = os.uname()
@@ -39,8 +40,12 @@ SITE_OUTPUT_DIR = SITE_RUN_DIR / "outputs"
 # Relative path to directory that stores CABLE restart files
 SITE_RESTART_DIR = SITE_RUN_DIR / "restart_files"
 
+# TODO(Sean) remove (store namelists in SITE_TASKS_DIR / <task_name>)
 # Relative path to namelist files generated for all site runs
 SITE_NAMELIST_DIR = SITE_RUN_DIR / "namelists"
+
+# Relative path to tasks directory where cable executables are run from
+SITE_TASKS_DIR = SITE_RUN_DIR / "tasks"
 
 # Path to met files:
 MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
@@ -85,3 +90,24 @@ def validate_environment(project: str, modules: list):
         if not module("is-avail", modname):
             print(f"Error: module ({modname}) is not available.")
             sys.exit(1)
+
+
+def get_fluxnet_tasks(config: dict, science_config: dict):
+    """Returns a list of fluxnet tasks to run.
+
+    Each task is a tuple: `(branch_name, site, sci_key)` where `branch_name` is the name
+    of the branch, `site` is the met_site name and `sci_key` is the dictionary key of each
+    science configuration i.e. an element of `science_config.keys()`.
+    """
+    branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
+    met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
+    tasks = [
+        (branch_name, site, sci_key)
+        for branch_name in branch_names for site in met_sites for sci_key in science_config.keys()
+    ]
+    return tasks
+
+
+def get_all_met_sites():
+    """Get list of all met files in `MET_DIR` directory."""
+    return glob.glob(os.path.join(MET_DIR, "*.nc"))

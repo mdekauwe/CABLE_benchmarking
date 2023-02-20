@@ -7,11 +7,12 @@ import sys
 import shutil
 
 from benchcab.job_script import create_job_script, submit_job
-from benchcab.bench_config import read_config
-from benchcab.benchtree import setup_directory_tree
+from benchcab.bench_config import read_config, read_science_config
+from benchcab.benchtree import setup_fluxnet_directory_tree
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment, CWD, NAMELIST_DIR, SITE_RUN_DIR
+from benchcab import internal
+from benchcab.internal import validate_environment, get_fluxnet_tasks
 
 
 def parse_args(arglist):
@@ -74,11 +75,13 @@ def main(args):
     """Main program entry point for `benchcab`."""
 
     config = read_config(args.config)
+    sci_configs = read_science_config(args.science_config)
 
     validate_environment(project=config['project'], modules=config['modules'])
 
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
-    setup_directory_tree(fluxnet=args.fluxnet, world=args.world)
+    # TODO(Sean) setup directory structure for global / world
+    setup_fluxnet_directory_tree(fluxnet_tasks=get_fluxnet_tasks(config, sci_configs))
 
     for branch_alias in config['use_branches']:
         checkout_cable(branch_config=config[branch_alias], user=config['user'])
@@ -88,9 +91,13 @@ def main(args):
     if args.fluxnet:
         print("Running the single sites tests ")
 
-        # TODO(Sean) why?
+        # TODO(Sean) remove (this will be replaced by the TODO below)
         # Copy contents of 'namelists' directory to 'runs/site' directory:
-        shutil.copytree(CWD / NAMELIST_DIR, CWD / SITE_RUN_DIR, dirs_exist_ok=True)
+        shutil.copytree(
+            internal.CWD / internal.NAMELIST_DIR,
+            internal.CWD / internal.SITE_RUN_DIR,
+            dirs_exist_ok=True
+        )
 
         # TODO(Sean) A single function that does all the file manipulations of copying and
         # moving files would be ideal so that the job simply goes into a directory and

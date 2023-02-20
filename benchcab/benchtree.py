@@ -17,7 +17,7 @@ def clean_directory_tree(root_dir=internal.CWD):
         shutil.rmtree(run_dir)
 
 
-def setup_directory_tree(fluxnet: bool, world: bool, root_dir=internal.CWD, clean=False):
+def setup_fluxnet_directory_tree(fluxnet_tasks, root_dir=internal.CWD, clean=False):
     """Generate the directory structure used of `benchcab`."""
     if clean:
         clean_directory_tree(root_dir)
@@ -30,26 +30,34 @@ def setup_directory_tree(fluxnet: bool, world: bool, root_dir=internal.CWD, clea
     if not run_dir.exists():
         os.makedirs(run_dir)
 
-    if fluxnet:
-        site_run_dir = Path(root_dir, internal.SITE_RUN_DIR)
-        if not site_run_dir.exists():
-            os.makedirs(site_run_dir)
+    site_run_dir = Path(root_dir, internal.SITE_RUN_DIR)
+    if not site_run_dir.exists():
+        os.makedirs(site_run_dir)
 
-        site_log_dir = Path(root_dir, internal.SITE_LOG_DIR)
-        if not site_log_dir.exists():
-            os.makedirs(site_log_dir)
+    site_log_dir = Path(root_dir, internal.SITE_LOG_DIR)
+    if not site_log_dir.exists():
+        os.makedirs(site_log_dir)
 
-        site_output_dir = Path(root_dir, internal.SITE_OUTPUT_DIR)
-        if not site_output_dir.exists():
-            os.makedirs(site_output_dir)
+    site_output_dir = Path(root_dir, internal.SITE_OUTPUT_DIR)
+    if not site_output_dir.exists():
+        os.makedirs(site_output_dir)
 
-        site_restart_dir = Path(root_dir, internal.SITE_RESTART_DIR)
-        if not site_restart_dir.exists():
-            os.makedirs(site_restart_dir)
+    site_restart_dir = Path(root_dir, internal.SITE_RESTART_DIR)
+    if not site_restart_dir.exists():
+        os.makedirs(site_restart_dir)
 
-        site_namelist_dir = Path(root_dir, internal.SITE_NAMELIST_DIR)
-        if not site_namelist_dir.exists():
-            os.makedirs(site_namelist_dir)
+    # TODO(Sean) remove (store namelists in SITE_TASKS_DIR / <task_name>)
+    site_namelist_dir = Path(root_dir, internal.SITE_NAMELIST_DIR)
+    if not site_namelist_dir.exists():
+        os.makedirs(site_namelist_dir)
 
-    if world:
-        pass
+    site_tasks_dir = Path(root_dir, internal.SITE_TASKS_DIR)
+    if not site_tasks_dir.exists():
+        os.makedirs(site_tasks_dir)
+
+    for branch_name, site, sciconf_key in fluxnet_tasks:
+        site_base_filename = site.split(".")[0]
+        task_name = f"{branch_name}_{site_base_filename}_{sciconf_key}"
+        task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task_name)
+        if not task_dir.exists():
+            os.makedirs(task_dir)
