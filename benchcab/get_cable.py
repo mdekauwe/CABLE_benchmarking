@@ -130,8 +130,8 @@ def checkout_cable(branch_config: dict, user: str):
         raise RuntimeError("Error downloading repo")
 
     # Write last change revision number to rev_number.log file
-    cmd = shlex.split(f"svn info --show-item last-changed-revision {path_to_repo}")
-    out = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    args = shlex.split(f"svn info --show-item last-changed-revision {path_to_repo}")
+    out = subprocess.run(args, capture_output=True, text=True, check=True)
     rev_number = out.stdout
     with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
         fout.write(f"{branch_config['name']} last change revision: {rev_number}")
