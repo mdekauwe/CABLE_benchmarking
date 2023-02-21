@@ -125,12 +125,7 @@ def validate_environment(project: str, modules: list):
 
 
 def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
-    """Returns a list of fluxnet tasks to run.
-
-    Each task is a tuple: `(branch_name, site, sci_key)` where `branch_name` is the name
-    of the branch, `site` is the met_site name and `sci_key` is the dictionary key of each
-    science configuration i.e. an element of `science_config.keys()`.
-    """
+    """Returns a list of fluxnet tasks to run."""
     branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
     met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
     tasks = [
