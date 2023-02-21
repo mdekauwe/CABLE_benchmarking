@@ -7,7 +7,6 @@ import argparse
 import sys
 import os
 from pathlib import Path
-import yaml
 
 from benchcab.run_cable_site import RunCableSite
 from benchcab import internal
