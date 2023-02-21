@@ -5,12 +5,13 @@
 # To run the CABLE benchmarking at single sites
 import argparse
 import sys
-import os
-from pathlib import Path
+from multiprocessing import cpu_count, Process
 
-from benchcab.run_cable_site import RunCableSite
+import numpy as np
+
+from benchcab.run_cable_site import run_tasks
 from benchcab import internal
-from benchcab.internal import validate_environment
+from benchcab.internal import validate_environment, get_fluxnet_tasks
 from benchcab.bench_config import read_config, read_science_config
 
 # Define names of default config files globally
@@ -56,37 +57,32 @@ def main(args):
     # - build was successful and executables exist?
 
     config = read_config(args.config)
+    sci_configs = read_science_config(args.science_config)
 
     validate_environment(project=config['project'], modules=config['modules'])
 
-    # Read science configurations
-    sci_configs = read_science_config(args.science_config)
+    tasks = get_fluxnet_tasks(config, sci_configs)
 
-    os.chdir(internal.CWD / internal.SITE_RUN_DIR)
-    for branchid, branch_alias in enumerate(config['use_branches']):
-        branch = config[branch_alias]
+    if internal.MULTIPROCESS:
+        num_cores = cpu_count() if internal.NUM_CORES is None else internal.NUM_CORES
+        chunk_size = int(np.ceil(len(tasks) / num_cores))
 
-        # Define the name for the executable: cable for serial, cable-mpi for mpi runs
-        cable_exe = f"cable{'-mpi'*internal.MPI}"
+        jobs = []
+        for i in range(num_cores):
+            start = chunk_size * i
+            end = min(chunk_size * (i + 1), len(tasks))
 
-        run_obj = RunCableSite(
-            met_dir=internal.MET_DIR,
-            log_dir=Path(internal.CWD / internal.SITE_LOG_DIR),
-            output_dir=Path(internal.CWD / internal.SITE_OUTPUT_DIR),
-            restart_dir=Path(internal.CWD / internal.SITE_RESTART_DIR),
-            aux_dir=Path(internal.CWD / internal.CABLE_AUX_DIR),
-            namelist_dir=Path(internal.CWD / internal.SITE_NAMELIST_DIR),
-            met_subset=config["met_subset"],
-            cable_src=Path(internal.CWD / internal.SRC_DIR / branch["name"]),
-            num_cores=internal.NUM_CORES,
-            cable_exe=cable_exe,
-            multiprocess=internal.MULTIPROCESS,
-        )
+            # setup a list of processes that we want to run
+            proc = Process(target=run_tasks, args=[tasks[start:end]])
+            proc.start()
+            jobs.append(proc)
 
-        for sci_id, sci_config in enumerate(sci_configs.values()):
-            run_obj.main(sci_config, branchid, sci_id)
+        # wait for all multiprocessing processes to finish
+        for j in jobs:
+            j.join()
 
-        os.chdir(internal.CWD)
+    else:
+        run_tasks(tasks)
 
 
 def main_parse_args(arglist):

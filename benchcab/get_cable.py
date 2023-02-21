@@ -64,6 +64,13 @@ def get_password() -> str:
     return "'" + getpass.getpass("Password:") + "'"
 
 
+def svn_info_show_item(path: Path | str, item: str) -> str:
+    """A wrapper around `svn info --show-item <item> <path>`."""
+    cmd = f"svn info --show-item {item} {path}"
+    out = subprocess.run(shlex.split(cmd), capture_output=True, text=True, check=True)
+    return out.stdout
+
+
 def checkout_cable_auxiliary():
     """Checkout CABLE-AUX."""
     # TODO(Sean) we should archive revision numbers for CABLE-AUX
@@ -130,8 +137,6 @@ def checkout_cable(branch_config: dict, user: str):
         raise RuntimeError("Error downloading repo")
 
     # Write last change revision number to rev_number.log file
-    args = shlex.split(f"svn info --show-item last-changed-revision {path_to_repo}")
-    out = subprocess.run(args, capture_output=True, text=True, check=True)
-    rev_number = out.stdout
+    rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")
     with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
         fout.write(f"{branch_config['name']} last change revision: {rev_number}")
