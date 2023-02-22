@@ -90,12 +90,12 @@ def main(args):
     if args.fluxnet:
         print("Running the single sites tests ")
 
-        for task in get_fluxnet_tasks(config, sci_configs):
-            task.setup_task()
-
         for branch_alias in config['use_branches']:
             branch = config[branch_alias]
             build_cable_offline(branch['name'], config['modules'])
+
+        for task in get_fluxnet_tasks(config, sci_configs):
+            task.setup_task()
 
         create_job_script(
             project=config['project'],
