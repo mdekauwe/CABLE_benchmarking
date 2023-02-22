@@ -42,6 +42,7 @@ def test_get_output_filename():
 def test_fetch_files(tmp_path):
     """Tests for `fetch_files()`."""
 
+    # Success case: fetch files required to run CABLE
     task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
 
     # Setup mock namelists directory in tmp_path:
@@ -71,6 +72,7 @@ def test_fetch_files(tmp_path):
 def test_clean_task(tmp_path):
     """Tests for `clean_task()`."""
 
+    # Success case: fetch then clean files
     task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
 
     # Setup mock namelists directory in tmp_path:
