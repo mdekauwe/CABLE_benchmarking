@@ -68,7 +68,7 @@ def svn_info_show_item(path: Path | str, item: str) -> str:
     """A wrapper around `svn info --show-item <item> <path>`."""
     cmd = f"svn info --show-item {item} {path}"
     out = subprocess.run(shlex.split(cmd), capture_output=True, text=True, check=True)
-    return out.stdout
+    return out.stdout.strip()
 
 
 def checkout_cable_auxiliary():
