@@ -11,7 +11,8 @@ import numpy as np
 
 from benchcab.run_cable_site import run_tasks
 from benchcab import internal
-from benchcab.internal import validate_environment, get_fluxnet_tasks
+from benchcab.internal import validate_environment
+from benchcab.task import get_fluxnet_tasks
 from benchcab.bench_config import read_config, read_science_config
 
 # Define names of default config files globally

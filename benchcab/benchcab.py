@@ -10,7 +10,8 @@ from benchcab.bench_config import read_config, read_science_config
 from benchcab.benchtree import setup_fluxnet_directory_tree
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment, get_fluxnet_tasks
+from benchcab.internal import validate_environment
+from benchcab.task import get_fluxnet_tasks
 
 
 def parse_args(arglist):

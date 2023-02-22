@@ -3,10 +3,7 @@
 import os
 import sys
 import grp
-import glob
 from pathlib import Path
-
-from benchcab.task import Task
 
 _, NODENAME, _, _, _ = os.uname()
 
@@ -122,19 +119,3 @@ def validate_environment(project: str, modules: list):
         if not module("is-avail", modname):
             print(f"Error: module ({modname}) is not available.")
             sys.exit(1)
-
-
-def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
-    """Returns a list of fluxnet tasks to run."""
-    branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
-    met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
-    tasks = [
-        Task(branch_name, site, key, science_config[key])
-        for branch_name in branch_names for site in met_sites for key in science_config
-    ]
-    return tasks
-
-
-def get_all_met_sites():
-    """Get list of all met files in `MET_DIR` directory."""
-    return glob.glob(os.path.join(MET_DIR, "*.nc"))
