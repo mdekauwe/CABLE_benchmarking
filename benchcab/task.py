@@ -90,30 +90,35 @@ class Task:
         patch_nml = {
             "cable": {
                 "filename": {
-                    "met": self.met_forcing_file,
-                    "out": self.get_output_filename(),
-                    "log": self.get_log_filename(),
+                    "met": str(self.met_forcing_file),
+                    "out": str(root_dir / internal.SITE_OUTPUT_DIR / self.get_output_filename()),
+                    "log": str(root_dir / internal.SITE_LOG_DIR / self.get_log_filename()),
                     "restart_out": " ",
-                    "type": internal.CWD / internal.GRID_FILE,
-                    "veg": internal.CWD / internal.VEG_FILE,
-                    "soil": internal.CWD / internal.SOIL_FILE,
+                    "type": str(root_dir / internal.GRID_FILE),
+                    "veg": str(root_dir / internal.VEG_FILE),
+                    "soil": str(root_dir / internal.SOIL_FILE),
                 },
                 "output": {
                     "restart": False,
                 },
                 "fixedCO2": internal.CABLE_FIXED_CO2_CONC,
                 "casafile": {
-                    "phen": internal.CWD / internal.PHEN_FILE,
-                    "cnpbiome": internal.CWD / internal.CNPBIOME_FILE,
+                    "phen": str(root_dir / internal.PHEN_FILE),
+                    "cnpbiome": str(root_dir / internal.CNPBIOME_FILE),
                 },
-                "spinup": ".FALSE.",
+                "spinup": False,
             }
         }
 
         # TODO(Sean) the science config dictionary must comply with the f90nml api
         patch_nml["cable"].update(self.sci_config)
 
-        f90nml.patch(task_dir / internal.CABLE_NML, patch_nml)
+        cable_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
+        # remove namelist file as f90nml cannot write to an existing file
+        os.remove(str(task_dir / internal.CABLE_NML))
+
+        cable_nml.patch(patch_nml)
+        cable_nml.write(str(task_dir / internal.CABLE_NML))
 
         return self
 
