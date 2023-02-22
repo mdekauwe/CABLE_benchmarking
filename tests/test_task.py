@@ -143,6 +143,7 @@ def test_adjust_namelist_file(tmp_path):
 
     res_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
 
+    met_file_path = Path(internal.MET_DIR, "forcing-file.nc")
     output_path = Path(tmp_path, internal.SITE_OUTPUT_DIR, task.get_output_filename())
     log_path = Path(tmp_path, internal.SITE_LOG_DIR, task.get_log_filename())
     grid_file_path = Path(tmp_path, internal.GRID_FILE)
@@ -151,7 +152,7 @@ def test_adjust_namelist_file(tmp_path):
     phen_file_path = Path(tmp_path, internal.PHEN_FILE)
     cnpbiome_file_path = Path(tmp_path, internal.CNPBIOME_FILE)
 
-    assert res_nml['cable']['filename']['met'] == "forcing-file.nc"
+    assert res_nml['cable']['filename']['met'] == str(met_file_path)
     assert res_nml['cable']['filename']['out'] == str(output_path)
     assert res_nml['cable']['filename']['log'] == str(log_path)
     assert res_nml['cable']['filename']['restart_out'] == " "

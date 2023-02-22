@@ -90,7 +90,7 @@ class Task:
         patch_nml = {
             "cable": {
                 "filename": {
-                    "met": str(self.met_forcing_file),
+                    "met": str(internal.MET_DIR / self.met_forcing_file),
                     "out": str(root_dir / internal.SITE_OUTPUT_DIR / self.get_output_filename()),
                     "log": str(root_dir / internal.SITE_LOG_DIR / self.get_log_filename()),
                     "restart_out": " ",
