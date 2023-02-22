@@ -4,6 +4,7 @@ from pathlib import Path
 
 
 from tests.common import make_barebones_config, make_barbones_science_config
+from benchcab.task import Task
 from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree
 
 # Here we use the tmp_path fixture provided by pytest to
@@ -16,23 +17,22 @@ def test_setup_directory_tree(tmp_path):
     # Success case: generate fluxnet directory structure
     config = make_barebones_config()
     science_config = make_barbones_science_config()
-    branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
-    met_sites = ["site_foo.nc", "site_bar.nc"]
-
-    assert len(branch_names) == len(science_config) == 2
-    branch_name_a, branch_name_b = branch_names
-    met_site_a, met_site_b = met_sites
+    branch_name_a, branch_name_b = [
+        config[branch_alias]["name"]
+        for branch_alias in config["use_branches"]
+    ]
+    met_site_a, met_site_b = "site_foo", "site_bar"
     key_a, key_b = science_config
 
     tasks = [
-        (branch_name_a, met_site_a, key_a),
-        (branch_name_a, met_site_a, key_b),
-        (branch_name_a, met_site_b, key_a),
-        (branch_name_a, met_site_b, key_b),
-        (branch_name_b, met_site_a, key_a),
-        (branch_name_b, met_site_a, key_b),
-        (branch_name_b, met_site_b, key_a),
-        (branch_name_b, met_site_b, key_b),
+        Task(branch_name_a, met_site_a, key_a, science_config[key_a]),
+        Task(branch_name_a, met_site_a, key_b, science_config[key_b]),
+        Task(branch_name_a, met_site_b, key_a, science_config[key_a]),
+        Task(branch_name_a, met_site_b, key_b, science_config[key_b]),
+        Task(branch_name_b, met_site_a, key_a, science_config[key_a]),
+        Task(branch_name_b, met_site_a, key_b, science_config[key_b]),
+        Task(branch_name_b, met_site_b, key_a, science_config[key_a]),
+        Task(branch_name_b, met_site_b, key_b, science_config[key_b]),
     ]
 
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=tmp_path)
@@ -64,23 +64,22 @@ def test_clean_directory_tree(tmp_path):
     # Success case: directory tree does not exist after clean
     config = make_barebones_config()
     science_config = make_barbones_science_config()
-    branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
-    met_sites = ["site_foo", "site_bar"]
-
-    assert len(branch_names) == len(science_config) == 2
-    branch_name_a, branch_name_b = branch_names
-    met_site_a, met_site_b = met_sites
+    branch_name_a, branch_name_b = [
+        config[branch_alias]["name"]
+        for branch_alias in config["use_branches"]
+    ]
+    met_site_a, met_site_b = "site_foo", "site_bar"
     key_a, key_b = science_config
 
     tasks = [
-        (branch_name_a, met_site_a, key_a),
-        (branch_name_a, met_site_a, key_b),
-        (branch_name_a, met_site_b, key_a),
-        (branch_name_a, met_site_b, key_b),
-        (branch_name_b, met_site_a, key_a),
-        (branch_name_b, met_site_a, key_b),
-        (branch_name_b, met_site_b, key_a),
-        (branch_name_b, met_site_b, key_b),
+        Task(branch_name_a, met_site_a, key_a, science_config[key_a]),
+        Task(branch_name_a, met_site_a, key_b, science_config[key_b]),
+        Task(branch_name_a, met_site_b, key_a, science_config[key_a]),
+        Task(branch_name_a, met_site_b, key_b, science_config[key_b]),
+        Task(branch_name_b, met_site_a, key_a, science_config[key_a]),
+        Task(branch_name_b, met_site_a, key_b, science_config[key_b]),
+        Task(branch_name_b, met_site_b, key_a, science_config[key_a]),
+        Task(branch_name_b, met_site_b, key_b, science_config[key_b]),
     ]
 
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=tmp_path)
