@@ -18,10 +18,8 @@ def clean_directory_tree(root_dir=internal.CWD):
         shutil.rmtree(run_dir)
 
 
-def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CWD, clean=False):
+def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CWD):
     """Generate the directory structure used of `benchcab`."""
-    if clean:
-        clean_directory_tree(root_dir)
 
     src_dir = Path(root_dir, internal.SRC_DIR)
     if not src_dir.exists():
