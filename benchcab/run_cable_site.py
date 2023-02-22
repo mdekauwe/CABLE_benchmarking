@@ -23,13 +23,15 @@ from benchcab.internal import CWD, SRC_DIR, SITE_TASKS_DIR, SITE_OUTPUT_DIR, CAB
 from benchcab.task import Task
 
 
-def run_tasks(tasks: list[Task]):
+def run_tasks(tasks: list[Task], verbose=False):
     """Executes CABLE for each task in `tasks`."""
 
     for task in tasks:
         task_name = task.get_task_name()
         os.chdir(CWD / SITE_TASKS_DIR / task_name)
         cmd = f"./{CABLE_EXE} {CABLE_NML}"
+        if not verbose:
+            cmd += " > /dev/null 2>&1"
         try:
             subprocess.run(cmd, shell=True, check=True)
         except subprocess.CalledProcessError as err:
