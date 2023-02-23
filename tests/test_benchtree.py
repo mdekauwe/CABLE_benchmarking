@@ -42,8 +42,6 @@ def test_setup_directory_tree(tmp_path):
     assert Path(tmp_path, "runs").exists()
     assert Path(tmp_path, "runs", "site").exists()
     assert Path(tmp_path, "runs", "site", "logs").exists()
-    # TODO(Sean) remove runs/site/namelists requirement
-    assert Path(tmp_path, "runs", "site", "namelists").exists()
     assert Path(tmp_path, "runs", "site", "outputs").exists()
     assert Path(tmp_path, "runs", "site", "restart_files").exists()
     assert Path(tmp_path, "runs", "site", "tasks").exists()

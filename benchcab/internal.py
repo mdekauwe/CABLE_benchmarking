@@ -61,10 +61,6 @@ SITE_OUTPUT_DIR = SITE_RUN_DIR / "outputs"
 # Relative path to directory that stores CABLE restart files
 SITE_RESTART_DIR = SITE_RUN_DIR / "restart_files"
 
-# TODO(Sean) remove (store namelists in SITE_TASKS_DIR / <task_name>)
-# Relative path to namelist files generated for all site runs
-SITE_NAMELIST_DIR = SITE_RUN_DIR / "namelists"
-
 # Relative path to tasks directory where cable executables are run from
 SITE_TASKS_DIR = SITE_RUN_DIR / "tasks"
 
