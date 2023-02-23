@@ -13,13 +13,9 @@ import numpy as np
 
 from benchcab.run_cable_site import run_tasks
 from benchcab import internal
-from benchcab.internal import validate_environment
+from benchcab.internal import validate_environment, DEFAULT_CONFIG, DEFAULT_SCIENCE
 from benchcab.task import get_fluxnet_tasks
 from benchcab.bench_config import read_config, read_science_config
-
-# Define names of default config files globally
-DEFAULT_CONFIG = "config.yaml"
-DEFAULT_SCIENCE = "site_configs.yaml"
 
 
 def myparse(arglist):

@@ -7,6 +7,10 @@ from pathlib import Path
 
 _, NODENAME, _, _, _ = os.uname()
 
+# Default config file names
+DEFAULT_CONFIG = "config.yaml"
+DEFAULT_SCIENCE = "site_configs.yaml"
+
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"
 NCPUS = 18
