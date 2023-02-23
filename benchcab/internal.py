@@ -33,10 +33,10 @@ RUN_DIR = Path("runs")
 # Relative path to core namelist files
 NAMELIST_DIR = Path("namelists")
 
-# Relative path to CABLE Auxiliary repository (for spatial runs)
+# Relative path to CABLE Auxiliary repository
 CABLE_AUX_DIR = SRC_DIR / "CABLE-AUX"
 
-# TODO(Sean) what is this?
+# Relative path to CABLE grid info file
 GRID_FILE = CABLE_AUX_DIR / "offline" / "gridinfo_CSIRO_1x1.nc"
 
 # TODO(Sean) what is this?
@@ -45,10 +45,10 @@ VEG_FILE = CABLE_AUX_DIR / "core" / "biogeophys" / "def_veg_params_zr_clitt_albe
 # TODO(Sean) what is this?
 SOIL_FILE = CABLE_AUX_DIR / "core" / "biogeophys" / "def_soil_params.txt"
 
-# TODO(Sean) what is this?
+# Relative path to modis_phenology_csiro.txt
 PHEN_FILE = CABLE_AUX_DIR / "core" / "biogeochem" / "modis_phenology_csiro.txt"
 
-# TODO(Sean) what is this?
+# Relative path to pftlookup_csiro_v16_17tiles.csv
 CNPBIOME_FILE = CABLE_AUX_DIR / "core" / "biogeochem" / "pftlookup_csiro_v16_17tiles.csv"
 
 # Relative path to root directory for CABLE site runs
@@ -88,7 +88,7 @@ CABLE_VEGETATION_NML = "pft_params.nml"
 # CABLE soil namelist file:
 CABLE_SOIL_NML = "cable_soilparm.nml"
 
-# TODO(Sean) why do we specify a fixed C02 concentration?
+# CABLE fixed C02 concentration
 CABLE_FIXED_CO2_CONC = 400.0
 
 
