@@ -37,8 +37,7 @@ def test_setup_directory_tree(tmp_path):
 
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=tmp_path)
 
-    assert len(list(tmp_path.glob("*"))) == 2
-    assert Path(tmp_path, "src").exists()
+    assert len(list(tmp_path.glob("*"))) == 1
     assert Path(tmp_path, "runs").exists()
     assert Path(tmp_path, "runs", "site").exists()
     assert Path(tmp_path, "runs", "site", "logs").exists()
@@ -82,13 +81,16 @@ def test_clean_directory_tree(tmp_path):
 
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=tmp_path)
     clean_directory_tree(root_dir=tmp_path)
-    assert not Path(tmp_path, "src").exists()
     assert not Path(tmp_path, "runs").exists()
+
+    setup_src_dir(root_dir=tmp_path)
+    clean_directory_tree(root_dir=tmp_path)
+    assert not Path(tmp_path, "src").exists()
 
 
 def test_setup_src_dir(tmp_path):
     """Tests for `setup_src_dir()`."""
 
     # Success case: make src directory
-    setup_src_dir()
+    setup_src_dir(root_dir=tmp_path)
     assert Path(tmp_path, "src").exists()
