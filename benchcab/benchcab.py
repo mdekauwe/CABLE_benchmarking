@@ -7,7 +7,7 @@ import sys
 
 from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config, read_science_config
-from benchcab.benchtree import setup_fluxnet_directory_tree
+from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
 from benchcab.internal import validate_environment
@@ -79,9 +79,8 @@ def main(args):
     validate_environment(project=config['project'], modules=config['modules'])
 
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
-    # TODO(Sean) setup directory structure for global / world
-    setup_fluxnet_directory_tree(fluxnet_tasks=get_fluxnet_tasks(config, sci_configs))
 
+    setup_src_dir()
     for branch_alias in config['use_branches']:
         checkout_cable(branch_config=config[branch_alias], user=config['user'])
     checkout_cable_auxiliary()
@@ -90,11 +89,15 @@ def main(args):
     if args.fluxnet:
         print("Running the single sites tests ")
 
+        tasks = get_fluxnet_tasks(config, sci_configs)
+
+        setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
+
         for branch_alias in config['use_branches']:
             branch = config[branch_alias]
             build_cable_offline(branch['name'], config['modules'])
 
-        for task in get_fluxnet_tasks(config, sci_configs):
+        for task in tasks:
             task.setup_task()
 
         create_job_script(

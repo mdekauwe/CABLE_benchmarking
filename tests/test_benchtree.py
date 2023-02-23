@@ -5,7 +5,7 @@ from pathlib import Path
 
 from tests.common import make_barebones_config, make_barbones_science_config
 from benchcab.task import Task
-from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree
+from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree, setup_src_dir
 
 # Here we use the tmp_path fixture provided by pytest to
 # run tests using a temporary directory.
@@ -84,3 +84,11 @@ def test_clean_directory_tree(tmp_path):
     clean_directory_tree(root_dir=tmp_path)
     assert not Path(tmp_path, "src").exists()
     assert not Path(tmp_path, "runs").exists()
+
+
+def test_setup_src_dir(tmp_path):
+    """Tests for `setup_src_dir()`."""
+
+    # Success case: make src directory
+    setup_src_dir()
+    assert Path(tmp_path, "src").exists()
