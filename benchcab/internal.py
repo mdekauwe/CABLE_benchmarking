@@ -40,9 +40,6 @@ CABLE_AUX_DIR = SRC_DIR / "CABLE-AUX"
 GRID_FILE = CABLE_AUX_DIR / "offline" / "gridinfo_CSIRO_1x1.nc"
 
 # TODO(Sean) what is this?
-VEG_FILE = CABLE_AUX_DIR / "core" / "biogeophys" / "def_veg_params_zr_clitt_albedo_fix.txt"
-
-# TODO(Sean) what is this?
 SOIL_FILE = CABLE_AUX_DIR / "core" / "biogeophys" / "def_soil_params.txt"
 
 # Relative path to modis_phenology_csiro.txt

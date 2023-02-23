@@ -93,9 +93,6 @@ def checkout_cable_auxiliary():
     if not Path.exists(CWD / internal.GRID_FILE):
         raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.GRID_FILE}'")
 
-    if not Path.exists(CWD / internal.VEG_FILE):
-        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.VEG_FILE}'")
-
     if not Path.exists(CWD / internal.SOIL_FILE):
         raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.SOIL_FILE}'")
 
