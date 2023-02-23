@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-"""Contains the main program entry point for `benchsiterun`."""
+"""Contains the main program entry point for `benchsiterun`.
 
-# To run the CABLE benchmarking at single sites
+Runs the CABLE test suite for single sites on a Gadi compute node.
+"""
+
 import argparse
 import sys
 from multiprocessing import cpu_count, Process
