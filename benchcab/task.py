@@ -69,8 +69,8 @@ class Task:
         """Retrieves all files necessary to run cable in the task directory.
 
         Namely:
-        - Copies contents of 'namelists' directory to 'runs/site/tasks/<task_name>' directory:
-        - Copies cable executable from source directory:
+        - copies contents of 'namelists' directory to 'runs/site/tasks/<task_name>' directory.
+        - copies cable executable from source to 'runs/site/tasks/<task_name>' directory.
         """
 
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, self.get_task_name())
