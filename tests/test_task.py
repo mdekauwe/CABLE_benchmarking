@@ -147,8 +147,6 @@ def test_adjust_namelist_file(tmp_path):
     output_path = Path(tmp_path, internal.SITE_OUTPUT_DIR, task.get_output_filename())
     log_path = Path(tmp_path, internal.SITE_LOG_DIR, task.get_log_filename())
     grid_file_path = Path(tmp_path, internal.GRID_FILE)
-    veg_file_path = Path(tmp_path, internal.VEG_FILE)
-    soil_file_path = Path(tmp_path, internal.SOIL_FILE)
     phen_file_path = Path(tmp_path, internal.PHEN_FILE)
     cnpbiome_file_path = Path(tmp_path, internal.CNPBIOME_FILE)
 
@@ -157,8 +155,6 @@ def test_adjust_namelist_file(tmp_path):
     assert res_nml['cable']['filename']['log'] == str(log_path)
     assert res_nml['cable']['filename']['restart_out'] == " "
     assert res_nml['cable']['filename']['type'] == str(grid_file_path)
-    assert res_nml['cable']['filename']['veg'] == str(veg_file_path)
-    assert res_nml['cable']['filename']['soil'] == str(soil_file_path)
     assert res_nml['cable']['output']['restart'] is False
     assert res_nml['cable']['fixedCO2'] == internal.CABLE_FIXED_CO2_CONC
     assert res_nml['cable']['casafile']['phen'] == str(phen_file_path)

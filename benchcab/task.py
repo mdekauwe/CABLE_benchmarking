@@ -95,7 +95,6 @@ class Task:
                     "log": str(root_dir / internal.SITE_LOG_DIR / self.get_log_filename()),
                     "restart_out": " ",
                     "type": str(root_dir / internal.GRID_FILE),
-                    "soil": str(root_dir / internal.SOIL_FILE),
                 },
                 "output": {
                     "restart": False,
