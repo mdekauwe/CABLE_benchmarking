@@ -26,6 +26,7 @@ class Task:
 
     def get_task_name(self) -> str:
         """Returns the file name convention used for this task."""
+        # TODO(Sean) needs to conform to me.org file convention
         met_forcing_base_filename = self.met_forcing_file.split(".")[0]
         return f"{self.branch_name}_{met_forcing_base_filename}_{self.sci_conf_key}"
 
