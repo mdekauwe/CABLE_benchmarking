@@ -109,7 +109,6 @@ class Task:
             }
         }
 
-        # TODO(Sean) the science config dictionary must comply with the f90nml api
         patch_nml["cable"].update(self.sci_config)
 
         cable_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
