@@ -81,8 +81,8 @@ def main(args):
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
 
     setup_src_dir()
-    for branch_alias in config['use_branches']:
-        checkout_cable(branch_config=config[branch_alias], user=config['user'])
+    for branch in config['realisations'].values():
+        checkout_cable(branch_config=branch, user=config['user'])
     checkout_cable_auxiliary()
     archive_rev_number()
 
@@ -93,8 +93,7 @@ def main(args):
 
         setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
 
-        for branch_alias in config['use_branches']:
-            branch = config[branch_alias]
+        for branch in config['realisations'].values():
             build_cable_offline(branch['name'], config['modules'])
 
         for task in tasks:

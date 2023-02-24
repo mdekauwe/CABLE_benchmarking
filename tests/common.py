@@ -12,18 +12,19 @@ def make_barebones_config() -> dict:
             "openmpi/4.1.0",
             "netcdf/4.7.4",
         ],
-        "use_branches": ["user_branch", "trunk"],
-        "user_branch": {
-            "name": "v3.0-YP-changes",
-            "revision": -1,
-            "trunk": False,
-            "share_branch": False,
-        },
-        "trunk": {
-            "name": "trunk",
-            "revision": 9000,
-            "trunk": True,
-            "share_branch": False,
+        "realisations": {
+            0: {
+                "name": "trunk",
+                "revision": 9000,
+                "trunk": True,
+                "share_branch": False,
+            },
+            1: {
+                "name": "v3.0-YP-changes",
+                "revision": -1,
+                "trunk": False,
+                "share_branch": False,
+            },
         },
     }
     return conf

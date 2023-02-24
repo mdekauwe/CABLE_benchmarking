@@ -139,7 +139,7 @@ class Task:
 def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
-    branch_names = [config[branch_alias]["name"] for branch_alias in config["use_branches"]]
+    branch_names = [branch["name"] for branch in config["realisations"].values()]
     met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
     tasks = [
         Task(branch_name, site, key, science_config[key])

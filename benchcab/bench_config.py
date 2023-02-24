@@ -14,49 +14,42 @@ def check_config(config: dict):
     If the config is invalid, an exception is raised. Otherwise, do nothing.
     """
 
-    required_keys = ['use_branches', 'project', 'user', 'modules']
+    required_keys = ['realisations', 'project', 'user', 'modules']
     if any(key not in config for key in required_keys):
         raise ValueError(
             "The config file does not list all required entries. "
-            "Those are 'use_branches', 'project', 'user', 'modules'"
+            "Those are 'realisations', 'project', 'user', 'modules'"
         )
 
-    if len(config['use_branches']) != 2:
-        raise ValueError("You need to list 2 branches in 'use_branches'")
+    if len(config["realisations"]) != 2:
+        raise ValueError("You need to list 2 branches in 'realisations'")
 
-    if any(branch_alias not in config for branch_alias in config['use_branches']):
-        raise ValueError(
-            "At least one of the first 2 aliases listed in 'use_branches' is"
-            "not an entry in the config file to define a CABLE branch."
-        )
-
-    for branch_alias in config['use_branches']:
-        branch_config = config[branch_alias]
+    for branch_id, branch_config in config['realisations'].items():
         required_keys = ["name", "trunk", "share_branch"]
         if any(key not in branch_config for key in required_keys):
             raise ValueError(
-                f"The '{branch_alias}' does not list all required "
+                f"Realisation '{branch_id}' does not list all required "
                 "entries. Those are 'name', 'trunk', 'share_branch'."
             )
         if not isinstance(branch_config["name"], str):
             raise TypeError(
-                f"The 'name' field in '{branch_alias}' must be a "
+                f"The 'name' field in realisation '{branch_id}' must be a "
                 "string."
             )
         # the "revision" key is optional
         if "revision" in branch_config and not isinstance(branch_config["revision"], int):
             raise TypeError(
-                f"The 'revision' field in '{branch_alias}' must be an "
+                f"The 'revision' field in realisation '{branch_id}' must be an "
                 "integer."
             )
         if not isinstance(branch_config["trunk"], bool):
             raise TypeError(
-                f"The 'trunk' field in '{branch_alias}' must be a "
+                f"The 'trunk' field in realisation '{branch_id}' must be a "
                 "boolean."
             )
         if not isinstance(branch_config["share_branch"], bool):
             raise TypeError(
-                f"The 'share_branch' field in '{branch_alias}' must be a "
+                f"The 'share_branch' field in realisation '{branch_id}' must be a "
                 "boolean."
             )
 
@@ -84,8 +77,8 @@ def read_config(config_path: str) -> dict:
 
     # Add "revision" to each branch description if not provided with default value -1,
     # i.e. HEAD of branch
-    for branch in config['use_branches']:
-        config[branch].setdefault('revision', -1)
+    for branch in config['realisations'].values():
+        branch.setdefault('revision', -1)
 
     # Add a "met_subset" key set to empty list if not found in config.yaml file.
     config.setdefault("met_subset", [])

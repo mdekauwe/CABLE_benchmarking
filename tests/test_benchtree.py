@@ -17,10 +17,7 @@ def test_setup_directory_tree(tmp_path):
     # Success case: generate fluxnet directory structure
     config = make_barebones_config()
     science_config = make_barbones_science_config()
-    branch_name_a, branch_name_b = [
-        config[branch_alias]["name"]
-        for branch_alias in config["use_branches"]
-    ]
+    branch_name_a, branch_name_b = [branch["name"] for branch in config["realisations"].values()]
     met_site_a, met_site_b = "site_foo", "site_bar"
     key_a, key_b = science_config
 
@@ -61,10 +58,7 @@ def test_clean_directory_tree(tmp_path):
     # Success case: directory tree does not exist after clean
     config = make_barebones_config()
     science_config = make_barbones_science_config()
-    branch_name_a, branch_name_b = [
-        config[branch_alias]["name"]
-        for branch_alias in config["use_branches"]
-    ]
+    branch_name_a, branch_name_b = [branch["name"] for branch in config["realisations"].values()]
     met_site_a, met_site_b = "site_foo", "site_bar"
     key_a, key_b = science_config
 
