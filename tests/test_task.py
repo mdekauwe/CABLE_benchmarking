@@ -21,29 +21,29 @@ def touch(path):
 def test_get_task_name():
     """Tests for `get_task_name()`."""
     # Success case: check task name convention
-    task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
-    assert task.get_task_name() == "test-branch_forcing-file_sci_key"
+    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    assert task.get_task_name() == "forcing-file_R1_S0"
 
 
 def test_get_log_filename():
     """Tests for `get_log_filename()`."""
     # Success case: check log file name convention
-    task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
-    assert task.get_log_filename() == "test-branch_forcing-file_sci_key_log.txt"
+    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    assert task.get_log_filename() == "forcing-file_R1_S0_log.txt"
 
 
 def test_get_output_filename():
     """Tests for `get_output_filename()`."""
     # Success case: check output file name convention
-    task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
-    assert task.get_output_filename() == "test-branch_forcing-file_sci_key_out.nc"
+    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    assert task.get_output_filename() == "forcing-file_R1_S0_out.nc"
 
 
 def test_fetch_files(tmp_path):
     """Tests for `fetch_files()`."""
 
     # Success case: fetch files required to run CABLE
-    task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
+    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
 
     # Setup mock namelists directory in tmp_path:
     Path(tmp_path, internal.NAMELIST_DIR).mkdir()
@@ -73,7 +73,7 @@ def test_clean_task(tmp_path):
     """Tests for `clean_task()`."""
 
     # Success case: fetch then clean files
-    task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
+    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
 
     # Setup mock namelists directory in tmp_path:
     Path(tmp_path, internal.NAMELIST_DIR).mkdir()
@@ -123,7 +123,7 @@ def test_adjust_namelist_file(tmp_path):
     """Tests for `adjust_namelist_file()`."""
 
     # Success case: adjust cable namelist file
-    task = Task("test-branch", "forcing-file.nc", "sci_key", {"some_setting": True})
+    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
     task_dir = Path(tmp_path, internal.SITE_TASKS_DIR, task.get_task_name())
 
     setup_fluxnet_directory_tree([task], root_dir=tmp_path)

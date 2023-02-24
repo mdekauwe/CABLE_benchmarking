@@ -6,7 +6,7 @@ import yaml
 
 from tests.common import make_barebones_config, make_barbones_science_config
 from benchcab.bench_config import check_config, read_config
-from benchcab.bench_config import check_science_config, read_science_config
+from benchcab.bench_config import check_science_config, read_science_config, get_science_config_id
 
 
 def test_check_config():
@@ -175,6 +175,32 @@ def test_check_science_config():
         science_config = make_barbones_science_config()
         science_config["0"] = {"some_setting": True}
         check_science_config(science_config)
+
+
+def test_get_science_config_id():
+    """Tests for `check_science_config()`."""
+
+    # Success case: single digit id
+    assert get_science_config_id("sci0") == "0"
+
+    # Success case: multi digit id
+    assert get_science_config_id("sci000") == "000"
+
+    # Failure case: outer dictionary key with invalid naming convention
+    with pytest.raises(ValueError):
+        get_science_config_id("science1")
+
+    # Failure case: outer dictionary key with invalid naming convention
+    with pytest.raises(ValueError):
+        get_science_config_id("sci_0")
+
+    # Failure case: outer dictionary key with invalid naming convention
+    with pytest.raises(ValueError):
+        get_science_config_id("sci")
+
+    # Failure case: outer dictionary key with invalid naming convention
+    with pytest.raises(ValueError):
+        get_science_config_id("0")
 
 
 def test_read_science_config():

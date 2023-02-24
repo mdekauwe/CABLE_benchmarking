@@ -7,6 +7,7 @@ import glob
 import f90nml
 
 from benchcab import internal
+from benchcab.bench_config import get_science_config_id
 
 
 class Task:
@@ -14,11 +15,13 @@ class Task:
 
     def __init__(
         self,
+        branch_id: int,
         branch_name: str,
         met_forcing_file: str,
         sci_conf_key: str,
         sci_config: dict
     ) -> None:
+        self.branch_id = branch_id
         self.branch_name = branch_name
         self.met_forcing_file = met_forcing_file
         self.sci_conf_key = sci_conf_key
@@ -26,9 +29,9 @@ class Task:
 
     def get_task_name(self) -> str:
         """Returns the file name convention used for this task."""
-        # TODO(Sean) needs to conform to me.org file convention
         met_forcing_base_filename = self.met_forcing_file.split(".")[0]
-        return f"{self.branch_name}_{met_forcing_base_filename}_{self.sci_conf_key}"
+        sci_conf_id = get_science_config_id(self.sci_conf_key)
+        return f"{met_forcing_base_filename}_R{self.branch_id}_S{sci_conf_id}"
 
     def get_output_filename(self) -> str:
         """Returns the file name convention used for the netcdf output file."""
@@ -139,11 +142,16 @@ class Task:
 def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
-    branch_names = [branch["name"] for branch in config["realisations"].values()]
     met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
     tasks = [
-        Task(branch_name, site, key, science_config[key])
-        for branch_name in branch_names for site in met_sites for key in science_config
+        Task(
+            branch_id=id,
+            branch_name=branch["name"],
+            met_forcing_file=site,
+            sci_conf_key=key,
+            sci_config=science_config[key]
+        )
+        for id, branch in config["realisations"] for site in met_sites for key in science_config
     ]
     return tasks
 
