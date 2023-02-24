@@ -32,7 +32,18 @@ def make_barebones_config() -> dict:
 def make_barbones_science_config() -> dict:
     """Returns a valid mock science config."""
     sci_conf = {
-        "sci01": "",
-        "sci02": "",
+        "sci0": {
+            "cable_user": {
+                "GS_SWITCH": "medlyn",
+                "FWSOIL_SWITCH": "Haverd2013",
+            }
+        },
+        "sci1": {
+            "cable_user": {
+                "GS_SWITCH": "leuning",
+                "FWSOIL_SWITCH": "Haverd2013"
+            }
+        },
     }
+
     return sci_conf
