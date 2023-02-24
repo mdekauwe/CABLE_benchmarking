@@ -54,13 +54,24 @@ def check_config(config: dict):
             )
 
 
+def get_science_config_id(key: str) -> str:
+    """Get ID from science config key."""
+    match = re.fullmatch("sci([0-9]+)", key)
+    if not match:
+        raise ValueError(
+            "Science config keys must be in the format: "
+            "sci<count> where count = 0, 1, 2, ..."
+        )
+    return match.group(1)
+
+
 def check_science_config(science_config: dict):
     """Performs input validation on science config file.
 
     If the science config is invalid, an exception is raised. Otherwise, do nothing.
     """
 
-    if any(re.fullmatch("sci[0-9]+", key) is None for key in science_config):
+    if not all(re.fullmatch("sci[0-9]+", key) for key in science_config):
         raise ValueError(
             "Science config keys must be in the format: "
             "sci<count> where count = 0, 1, 2, ..."
