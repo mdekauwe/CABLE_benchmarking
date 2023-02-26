@@ -133,4 +133,4 @@ def checkout_cable(branch_config: dict, user: str):
     # Write last change revision number to rev_number.log file
     rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")
     with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
-        fout.write(f"{branch_config['name']} last change revision: {rev_number}")
+        fout.write(f"{branch_config['name']} last change revision: {rev_number}\n")
