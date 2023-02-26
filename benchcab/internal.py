@@ -58,9 +58,6 @@ SITE_LOG_DIR = SITE_RUN_DIR / "logs"
 # Relative path to directory that stores CABLE output files
 SITE_OUTPUT_DIR = SITE_RUN_DIR / "outputs"
 
-# Relative path to directory that stores CABLE restart files
-SITE_RESTART_DIR = SITE_RUN_DIR / "restart_files"
-
 # Relative path to tasks directory where cable executables are run from
 SITE_TASKS_DIR = SITE_RUN_DIR / "tasks"
 

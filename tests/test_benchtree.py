@@ -42,7 +42,6 @@ def test_setup_directory_tree(tmp_path):
     assert Path(tmp_path, "runs", "site").exists()
     assert Path(tmp_path, "runs", "site", "logs").exists()
     assert Path(tmp_path, "runs", "site", "outputs").exists()
-    assert Path(tmp_path, "runs", "site", "restart_files").exists()
     assert Path(tmp_path, "runs", "site", "tasks").exists()
 
     assert Path(tmp_path, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_a}").exists()

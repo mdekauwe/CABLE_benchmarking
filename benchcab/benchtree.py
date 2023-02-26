@@ -45,10 +45,6 @@ def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CW
     if not site_output_dir.exists():
         os.makedirs(site_output_dir)
 
-    site_restart_dir = Path(root_dir, internal.SITE_RESTART_DIR)
-    if not site_restart_dir.exists():
-        os.makedirs(site_restart_dir)
-
     site_tasks_dir = Path(root_dir, internal.SITE_TASKS_DIR)
     if not site_tasks_dir.exists():
         os.makedirs(site_tasks_dir)
