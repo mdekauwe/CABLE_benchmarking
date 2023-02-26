@@ -151,7 +151,7 @@ def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
             sci_conf_key=key,
             sci_config=science_config[key]
         )
-        for id, branch in config["realisations"] for site in met_sites for key in science_config
+        for id, branch in config["realisations"].items() for site in met_sites for key in science_config
     ]
     return tasks
 
