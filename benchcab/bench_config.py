@@ -21,6 +21,18 @@ def check_config(config: dict):
             "Those are 'realisations', 'project', 'user', 'modules'"
         )
 
+    if not isinstance(config["realisations"], dict):
+        raise TypeError("The 'realisations' key must be a dictionary.")
+
+    if not isinstance(config["project"], str):
+        raise TypeError("The 'project' key must be a string.")
+
+    if not isinstance(config["user"], str):
+        raise TypeError("The 'user' key must be a string.")
+
+    if not isinstance(config["modules"], list):
+        raise TypeError("The 'modules' key must be a list.")
+
     if len(config["realisations"]) != 2:
         raise ValueError("You need to list 2 branches in 'realisations'")
 

@@ -80,6 +80,30 @@ def test_check_config():
         config["realisations"][1].pop("share_branch")
         check_config(config)
 
+    # Failure case: user key is not a string
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["user"] = 123
+        check_config(config)
+
+    # Failure case: project key is not a string
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["project"] = 123
+        check_config(config)
+
+    # Failure case: realisations key is not a dictionary
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"] = ["foo", "bar"]
+        check_config(config)
+
+    # Failure case: modules key is not a list
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["modules"] = "netcdf"
+        check_config(config)
+
     # Failure case: type of config["branch"]["revision"] is
     # not an integer
     with pytest.raises(TypeError):
