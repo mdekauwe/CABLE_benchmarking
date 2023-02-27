@@ -200,6 +200,12 @@ def test_check_science_config():
         science_config["0"] = {"some_setting": True}
         check_science_config(science_config)
 
+    # Failure case: science config settings are not specified by a dictionary
+    with pytest.raises(TypeError):
+        science_config = make_barbones_science_config()
+        science_config["sci0"] = "some_setting = true"
+        check_science_config(science_config)
+
 
 def test_get_science_config_id():
     """Tests for `check_science_config()`."""

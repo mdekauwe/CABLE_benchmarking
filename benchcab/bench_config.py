@@ -89,6 +89,12 @@ def check_science_config(science_config: dict):
             "sci<count> where count = 0, 1, 2, ..."
         )
 
+    if not all(isinstance(settings, dict) for settings in science_config.values()):
+        raise TypeError(
+            "Science config settings must be specified using a dictionary "
+            "that is compatible with the f90nml python package."
+        )
+
 
 def read_config(config_path: str) -> dict:
     """Reads the config file and returns a dictionary containing the configurations."""
