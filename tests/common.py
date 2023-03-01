@@ -1,5 +1,9 @@
 """Helper functions for `pytest`."""
 
+from pathlib import Path
+
+TMP_DIR = Path.cwd() / "tests" / "tmp"
+
 
 def make_barebones_config() -> dict:
     """Returns a valid mock config."""

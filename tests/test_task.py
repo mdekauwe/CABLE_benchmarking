@@ -1,15 +1,36 @@
 """`pytest` tests for task.py"""
 
 import os
+import shutil
 from pathlib import Path
 import f90nml
+import pytest
 
+from tests.common import TMP_DIR
 from benchcab.task import Task
 from benchcab import internal
 from benchcab.benchtree import setup_fluxnet_directory_tree
 
-# Here we use the tmp_path fixture provided by pytest to
-# run tests using a temporary directory.
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    """`pytest` autouse fixture that runs around each test."""
+
+    # Setup:
+    if TMP_DIR.exists():
+        shutil.rmtree(TMP_DIR)
+    try:
+        TMP_DIR.mkdir()
+    except FileNotFoundError as err:
+        print(err, "\n")
+        print("Try running pytest from the project root directory.")
+        raise
+
+    # Run the test:
+    yield
+
+    # Teardown:
+    shutil.rmtree(TMP_DIR)
 
 
 def touch(path):
@@ -39,94 +60,94 @@ def test_get_output_filename():
     assert task.get_output_filename() == "forcing-file_R1_S0_out.nc"
 
 
-def test_fetch_files(tmp_path):
+def test_fetch_files():
     """Tests for `fetch_files()`."""
 
     # Success case: fetch files required to run CABLE
     task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
 
-    # Setup mock namelists directory in tmp_path:
-    Path(tmp_path, internal.NAMELIST_DIR).mkdir()
-    touch(Path(tmp_path, internal.NAMELIST_DIR, internal.CABLE_NML))
-    touch(Path(tmp_path, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML))
-    touch(Path(tmp_path, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML))
+    # Setup mock namelists directory in TMP_DIR:
+    Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
+    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML))
+    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML))
+    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML))
 
-    setup_fluxnet_directory_tree([task], root_dir=tmp_path)
+    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
 
     # Setup mock repository that has been checked out and built:
-    Path(tmp_path, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
-    touch(Path(tmp_path, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE))
+    Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
+    touch(Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE))
 
-    task.fetch_files(root_dir=tmp_path)
+    task.fetch_files(root_dir=TMP_DIR)
 
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_NML).exists()
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_VEGETATION_NML).exists()
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_SOIL_NML).exists()
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_EXE).exists()
 
 
-def test_clean_task(tmp_path):
+def test_clean_task():
     """Tests for `clean_task()`."""
 
     # Success case: fetch then clean files
     task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
 
-    # Setup mock namelists directory in tmp_path:
-    Path(tmp_path, internal.NAMELIST_DIR).mkdir()
-    touch(Path(tmp_path, internal.NAMELIST_DIR, internal.CABLE_NML))
-    touch(Path(tmp_path, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML))
-    touch(Path(tmp_path, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML))
+    # Setup mock namelists directory in TMP_DIR:
+    Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
+    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML))
+    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML))
+    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML))
 
-    setup_fluxnet_directory_tree([task], root_dir=tmp_path)
+    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
 
     # Setup mock repository that has been checked out and built:
-    Path(tmp_path, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
-    touch(Path(tmp_path, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE))
+    Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
+    touch(Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE))
 
-    task.fetch_files(root_dir=tmp_path)
+    task.fetch_files(root_dir=TMP_DIR)
 
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_NML).exists()
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_VEGETATION_NML).exists()
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_SOIL_NML).exists()
-    assert Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
                 task.get_task_name(), internal.CABLE_EXE).exists()
 
     # Make mock log files and output files as if benchcab has just been run:
-    touch(Path(tmp_path, internal.SITE_OUTPUT_DIR, task.get_output_filename()))
-    assert Path(tmp_path, internal.SITE_OUTPUT_DIR, task.get_output_filename()).exists()
+    touch(Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename()))
+    assert Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename()).exists()
 
-    touch(Path(tmp_path, internal.SITE_LOG_DIR, task.get_log_filename()))
-    assert Path(tmp_path, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
+    touch(Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename()))
+    assert Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
 
-    task.clean_task(root_dir=tmp_path)
+    task.clean_task(root_dir=TMP_DIR)
 
-    assert not Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
                     task.get_task_name(), internal.CABLE_NML).exists()
-    assert not Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
                     task.get_task_name(), internal.CABLE_VEGETATION_NML).exists()
-    assert not Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
                     task.get_task_name(), internal.CABLE_SOIL_NML).exists()
-    assert not Path(tmp_path, internal.SITE_TASKS_DIR,
+    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
                     task.get_task_name(), internal.CABLE_EXE).exists()
-    assert not Path(tmp_path, internal.SITE_OUTPUT_DIR, task.get_output_filename()).exists()
-    assert not Path(tmp_path, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
+    assert not Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename()).exists()
+    assert not Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
 
 
-def test_adjust_namelist_file(tmp_path):
+def test_adjust_namelist_file():
     """Tests for `adjust_namelist_file()`."""
 
     # Success case: adjust cable namelist file
     task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
-    task_dir = Path(tmp_path, internal.SITE_TASKS_DIR, task.get_task_name())
+    task_dir = Path(TMP_DIR, internal.SITE_TASKS_DIR, task.get_task_name())
 
-    setup_fluxnet_directory_tree([task], root_dir=tmp_path)
+    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
 
     # Create mock namelist file in task directory:
     nml = {
@@ -139,16 +160,16 @@ def test_adjust_namelist_file(tmp_path):
 
     f90nml.write(nml, str(task_dir / internal.CABLE_NML))
 
-    task.adjust_namelist_file(root_dir=tmp_path)
+    task.adjust_namelist_file(root_dir=TMP_DIR)
 
     res_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
 
     met_file_path = Path(internal.MET_DIR, "forcing-file.nc")
-    output_path = Path(tmp_path, internal.SITE_OUTPUT_DIR, task.get_output_filename())
-    log_path = Path(tmp_path, internal.SITE_LOG_DIR, task.get_log_filename())
-    grid_file_path = Path(tmp_path, internal.GRID_FILE)
-    phen_file_path = Path(tmp_path, internal.PHEN_FILE)
-    cnpbiome_file_path = Path(tmp_path, internal.CNPBIOME_FILE)
+    output_path = Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename())
+    log_path = Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename())
+    grid_file_path = Path(TMP_DIR, internal.GRID_FILE)
+    phen_file_path = Path(TMP_DIR, internal.PHEN_FILE)
+    cnpbiome_file_path = Path(TMP_DIR, internal.CNPBIOME_FILE)
 
     assert res_nml['cable']['filename']['met'] == str(met_file_path)
     assert res_nml['cable']['filename']['out'] == str(output_path)

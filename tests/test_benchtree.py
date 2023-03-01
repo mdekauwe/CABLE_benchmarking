@@ -1,18 +1,39 @@
 """`pytest` tests for benchtree.py"""
 
+import shutil
 from pathlib import Path
+import pytest
 
 
+from tests.common import TMP_DIR
 from tests.common import make_barebones_config, make_barbones_science_config
 from benchcab.task import Task
 from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree, setup_src_dir
 from benchcab.bench_config import get_science_config_id
 
-# Here we use the tmp_path fixture provided by pytest to
-# run tests using a temporary directory.
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    """`pytest` autouse fixture that runs around each test."""
+
+    # Setup:
+    if TMP_DIR.exists():
+        shutil.rmtree(TMP_DIR)
+    try:
+        TMP_DIR.mkdir()
+    except FileNotFoundError as err:
+        print(err, "\n")
+        print("Try running pytest from the project root directory.")
+        raise
+
+    # Run the test:
+    yield
+
+    # Teardown:
+    shutil.rmtree(TMP_DIR)
 
 
-def test_setup_directory_tree(tmp_path):
+def test_setup_directory_tree():
     """Tests for `setup_fluxnet_directory_tree()`."""
 
     # Success case: generate fluxnet directory structure
@@ -35,26 +56,26 @@ def test_setup_directory_tree(tmp_path):
         Task(branch_id_b, branch_name_b, met_site_b, key_b, science_config[key_b]),
     ]
 
-    setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=tmp_path)
+    setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=TMP_DIR)
 
-    assert len(list(tmp_path.glob("*"))) == 1
-    assert Path(tmp_path, "runs").exists()
-    assert Path(tmp_path, "runs", "site").exists()
-    assert Path(tmp_path, "runs", "site", "logs").exists()
-    assert Path(tmp_path, "runs", "site", "outputs").exists()
-    assert Path(tmp_path, "runs", "site", "tasks").exists()
+    assert len(list(TMP_DIR.glob("*"))) == 1
+    assert Path(TMP_DIR, "runs").exists()
+    assert Path(TMP_DIR, "runs", "site").exists()
+    assert Path(TMP_DIR, "runs", "site", "logs").exists()
+    assert Path(TMP_DIR, "runs", "site", "outputs").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks").exists()
 
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_a}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_b}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_bar_R{branch_id_a}_S{sci_id_a}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_bar_R{branch_id_a}_S{sci_id_b}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_foo_R{branch_id_b}_S{sci_id_a}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_foo_R{branch_id_b}_S{sci_id_b}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_bar_R{branch_id_b}_S{sci_id_a}").exists()
-    assert Path(tmp_path, "runs", "site", "tasks", f"site_bar_R{branch_id_b}_S{sci_id_b}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_a}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_b}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_a}_S{sci_id_a}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_a}_S{sci_id_b}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_b}_S{sci_id_a}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_b}_S{sci_id_b}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_b}_S{sci_id_a}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_b}_S{sci_id_b}").exists()
 
 
-def test_clean_directory_tree(tmp_path):
+def test_clean_directory_tree():
     """Tests for `clean_directory_tree()`."""
 
     # Success case: directory tree does not exist after clean
@@ -77,18 +98,18 @@ def test_clean_directory_tree(tmp_path):
 
     ]
 
-    setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=tmp_path)
-    clean_directory_tree(root_dir=tmp_path)
-    assert not Path(tmp_path, "runs").exists()
+    setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=TMP_DIR)
+    clean_directory_tree(root_dir=TMP_DIR)
+    assert not Path(TMP_DIR, "runs").exists()
 
-    setup_src_dir(root_dir=tmp_path)
-    clean_directory_tree(root_dir=tmp_path)
-    assert not Path(tmp_path, "src").exists()
+    setup_src_dir(root_dir=TMP_DIR)
+    clean_directory_tree(root_dir=TMP_DIR)
+    assert not Path(TMP_DIR, "src").exists()
 
 
-def test_setup_src_dir(tmp_path):
+def test_setup_src_dir():
     """Tests for `setup_src_dir()`."""
 
     # Success case: make src directory
-    setup_src_dir(root_dir=tmp_path)
-    assert Path(tmp_path, "src").exists()
+    setup_src_dir(root_dir=TMP_DIR)
+    assert Path(TMP_DIR, "src").exists()
