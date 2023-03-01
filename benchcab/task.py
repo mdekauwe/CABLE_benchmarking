@@ -158,4 +158,4 @@ def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
 
 def get_all_met_sites():
     """Get list of all met files in `MET_DIR` directory."""
-    return glob.glob(os.path.join(internal.MET_DIR, "*.nc"))
+    return list(map(os.path.basename, glob.glob(os.path.join(internal.MET_DIR, "*.nc"))))
