@@ -39,6 +39,43 @@ def touch(path):
         os.utime(path, None)
 
 
+def setup_mock_namelists_directory():
+    """Setup a mock namelists directory in TMP_DIR."""
+    Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
+
+    cable_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML)
+    touch(cable_nml_path)
+    assert cable_nml_path.exists()
+
+    cable_soil_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML)
+    touch(cable_soil_nml_path)
+    assert cable_soil_nml_path.exists()
+
+    cable_vegetation_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML)
+    touch(cable_vegetation_nml_path)
+    assert cable_vegetation_nml_path.exists()
+
+
+def do_mock_checkout_and_build():
+    """Setup mock repository that has been checked out and built."""
+    Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
+
+    cable_exe_path = Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE)
+    touch(cable_exe_path)
+    assert cable_exe_path.exists()
+
+
+def do_mock_run(task: Task):
+    """Make mock log files and output files as if benchcab has just been run."""
+    output_path = Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename())
+    touch(output_path)
+    assert output_path.exists()
+
+    log_path = Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename())
+    touch(log_path)
+    assert log_path.exists()
+
+
 def test_get_task_name():
     """Tests for `get_task_name()`."""
     # Success case: check task name convention
@@ -66,17 +103,9 @@ def test_fetch_files():
     # Success case: fetch files required to run CABLE
     task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
 
-    # Setup mock namelists directory in TMP_DIR:
-    Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
-    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML))
-    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML))
-    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML))
-
+    setup_mock_namelists_directory()
     setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
-
-    # Setup mock repository that has been checked out and built:
-    Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
-    touch(Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE))
+    do_mock_checkout_and_build()
 
     task.fetch_files(root_dir=TMP_DIR)
 
@@ -96,35 +125,13 @@ def test_clean_task():
     # Success case: fetch then clean files
     task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
 
-    # Setup mock namelists directory in TMP_DIR:
-    Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
-    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML))
-    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML))
-    touch(Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML))
-
+    setup_mock_namelists_directory()
     setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
-
-    # Setup mock repository that has been checked out and built:
-    Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
-    touch(Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE))
+    do_mock_checkout_and_build()
 
     task.fetch_files(root_dir=TMP_DIR)
 
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_NML).exists()
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_VEGETATION_NML).exists()
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_SOIL_NML).exists()
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_EXE).exists()
-
-    # Make mock log files and output files as if benchcab has just been run:
-    touch(Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename()))
-    assert Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename()).exists()
-
-    touch(Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename()))
-    assert Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
+    do_mock_run(task)
 
     task.clean_task(root_dir=TMP_DIR)
 
