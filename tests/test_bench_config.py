@@ -152,7 +152,7 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config != res
-    assert "revision" in res["realisations"][0] and res["realisations"][0]["revision"] == -1
+    assert res["realisations"][0]["revision"] == -1
 
     # Success case: config branch with missing key: met_subset
     # should return a config with met_subset = empty list
@@ -166,7 +166,7 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config != res
-    assert "met_subset" in res and res["met_subset"] == []
+    assert res["met_subset"] == []
 
 
 def test_check_science_config():
