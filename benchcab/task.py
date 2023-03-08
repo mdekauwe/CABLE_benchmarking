@@ -3,7 +3,6 @@
 import os
 import shutil
 from pathlib import Path
-import glob
 import f90nml
 
 from benchcab import internal
