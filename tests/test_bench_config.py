@@ -5,6 +5,7 @@ import pytest
 import yaml
 
 from tests.common import make_barebones_config, make_barbones_science_config
+from benchcab.internal import MEORG_PLUMBER_MET_FILES
 from benchcab.bench_config import check_config, read_config
 from benchcab.bench_config import check_science_config, read_science_config, get_science_config_id
 
@@ -19,6 +20,11 @@ def test_check_config():
     # Success case: branch configuration with missing revision key
     config = make_barebones_config()
     config["realisations"][0].pop("revision")
+    check_config(config)
+
+    # Success case: branch configuration with missing met_subset key
+    config = make_barebones_config()
+    config.pop("met_subset")
     check_config(config)
 
     # Failure case: test config without project key raises an exception
@@ -80,6 +86,12 @@ def test_check_config():
         config["realisations"][1].pop("share_branch")
         check_config(config)
 
+    # Failure case: value of met_subset is not a subset of MEORG_PLUMBER_MET_FILES
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["met_subset"] = ["foo", "bar"]
+        check_config(config)
+
     # Failure case: user key is not a string
     with pytest.raises(TypeError):
         config = make_barebones_config()
@@ -102,6 +114,12 @@ def test_check_config():
     with pytest.raises(TypeError):
         config = make_barebones_config()
         config["modules"] = "netcdf"
+        check_config(config)
+
+    # Failure case: met_subset key is not a list
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["met_subset"] = {}
         check_config(config)
 
     # Failure case: type of config["branch"]["revision"] is
@@ -155,7 +173,7 @@ def test_read_config():
     assert res["realisations"][0]["revision"] == -1
 
     # Success case: config branch with missing key: met_subset
-    # should return a config with met_subset = empty list
+    # should return a config with met_subset = MEORG_PLUMBER_MET_FILES
     config = make_barebones_config()
     config.pop("met_subset")
     filename = "config-barebones.yaml"
@@ -166,7 +184,21 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config != res
-    assert res["met_subset"] == []
+    assert res["met_subset"] == MEORG_PLUMBER_MET_FILES
+
+    # Success case: config branch with an empty met_subset
+    # should return a config with met_subset = MEORG_PLUMBER_MET_FILES
+    config = make_barebones_config()
+    config["met_subset"] = []
+    filename = "config-barebones.yaml"
+
+    with open(filename, "w", encoding="utf-8") as file:
+        yaml.dump(config, file)
+
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert res["met_subset"] == MEORG_PLUMBER_MET_FILES
 
 
 def test_check_science_config():

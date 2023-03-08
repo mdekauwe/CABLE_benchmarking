@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 import yaml
 
+from benchcab.internal import MEORG_PLUMBER_MET_FILES
+
 
 def check_config(config: dict):
     """Performs input validation on config file.
@@ -32,6 +34,17 @@ def check_config(config: dict):
 
     if not isinstance(config["modules"], list):
         raise TypeError("The 'modules' key must be a list.")
+
+    # the "met_subset" key is optional
+    if "met_subset" in config:
+        if not isinstance(config["met_subset"], list):
+            raise TypeError("The 'met_subset' key must be a list.")
+        if not set(config["met_subset"]).issubset(MEORG_PLUMBER_MET_FILES):
+            raise ValueError(
+                "The files listed in 'met_subset' must be a subset of of the 20 "
+                "PLUMBER sites associated with CABLE_multisite_PLUMBER experiment "
+                "on modelevaluation.org."
+            )
 
     if len(config["realisations"]) != 2:
         raise ValueError("You need to list 2 branches in 'realisations'")
@@ -109,8 +122,12 @@ def read_config(config_path: str) -> dict:
     for branch in config['realisations'].values():
         branch.setdefault('revision', -1)
 
-    # Add a "met_subset" key set to empty list if not found in config.yaml file.
-    config.setdefault("met_subset", [])
+    # Add a "met_subset" key set to MEORG_PLUMBER_MET_FILES if not found in config.yaml file.
+    config.setdefault("met_subset", MEORG_PLUMBER_MET_FILES)
+
+    # Set "met_subset" to MEORG_PLUMBER_MET_FILES if empty:
+    if config["met_subset"] == []:
+        config["met_subset"] = MEORG_PLUMBER_MET_FILES
 
     return config
 
