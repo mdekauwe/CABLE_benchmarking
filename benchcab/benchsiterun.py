@@ -13,7 +13,8 @@ import numpy as np
 
 from benchcab.run_cable_site import run_tasks
 from benchcab import internal
-from benchcab.internal import validate_environment, DEFAULT_CONFIG, DEFAULT_SCIENCE
+from benchcab.internal import validate_environment, get_met_sites
+from benchcab.internal import DEFAULT_CONFIG, DEFAULT_SCIENCE
 from benchcab.task import get_fluxnet_tasks
 from benchcab.bench_config import read_config, read_science_config
 
@@ -60,7 +61,11 @@ def main(args):
 
     validate_environment(project=config['project'], modules=config['modules'])
 
-    tasks = get_fluxnet_tasks(config, sci_configs)
+    tasks = get_fluxnet_tasks(
+        config=config,
+        science_config=sci_configs,
+        met_sites=get_met_sites(config['experiment'])
+    )
 
     if internal.MULTIPROCESS:
         num_cores = cpu_count() if internal.NUM_CORES is None else internal.NUM_CORES

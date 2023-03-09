@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import yaml
 
-from benchcab.internal import MEORG_PLUMBER_MET_FILES
+from benchcab.internal import MEORG_EXPERIMENTS
 
 
 def check_config(config: dict):
@@ -16,7 +16,7 @@ def check_config(config: dict):
     If the config is invalid, an exception is raised. Otherwise, do nothing.
     """
 
-    required_keys = ['realisations', 'project', 'user', 'modules']
+    required_keys = ['realisations', 'project', 'user', 'modules', 'experiment']
     if any(key not in config for key in required_keys):
         raise ValueError(
             "The config file does not list all required entries. "
@@ -35,16 +35,15 @@ def check_config(config: dict):
     if not isinstance(config["modules"], list):
         raise TypeError("The 'modules' key must be a list.")
 
-    # the "met_subset" key is optional
-    if "met_subset" in config:
-        if not isinstance(config["met_subset"], list):
-            raise TypeError("The 'met_subset' key must be a list.")
-        if not set(config["met_subset"]).issubset(MEORG_PLUMBER_MET_FILES):
-            raise ValueError(
-                "The files listed in 'met_subset' must be a subset of of the 20 "
-                "PLUMBER sites associated with CABLE_multisite_PLUMBER experiment "
-                "on modelevaluation.org."
-            )
+    if not isinstance(config["experiment"], str):
+        raise TypeError("The 'experiment' key must be a string.")
+
+    valid_experiments = list(MEORG_EXPERIMENTS) + MEORG_EXPERIMENTS["five-site-test"]
+    if config["experiment"] not in valid_experiments:
+        raise ValueError(
+            "The 'experiment' key is invalid.\n"
+            "Valid experiments are: " ", ".join(valid_experiments)
+        )
 
     if len(config["realisations"]) != 2:
         raise ValueError("You need to list 2 branches in 'realisations'")
@@ -121,13 +120,6 @@ def read_config(config_path: str) -> dict:
     # i.e. HEAD of branch
     for branch in config['realisations'].values():
         branch.setdefault('revision', -1)
-
-    # Add a "met_subset" key set to MEORG_PLUMBER_MET_FILES if not found in config.yaml file.
-    config.setdefault("met_subset", MEORG_PLUMBER_MET_FILES)
-
-    # Set "met_subset" to MEORG_PLUMBER_MET_FILES if empty:
-    if config["met_subset"] == []:
-        config["met_subset"] = MEORG_PLUMBER_MET_FILES
 
     return config
 

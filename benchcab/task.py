@@ -138,7 +138,7 @@ class Task:
             .adjust_namelist_file()
 
 
-def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
+def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
     tasks = [
@@ -150,7 +150,7 @@ def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
             sci_config=science_config[key]
         )
         for id, branch in config["realisations"].items()
-        for site in config["met_subset"]
+        for site in met_sites
         for key in science_config
     ]
     return tasks

@@ -10,7 +10,7 @@ from benchcab.bench_config import read_config, read_science_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment
+from benchcab.internal import validate_environment, get_met_sites
 from benchcab.task import get_fluxnet_tasks
 
 
@@ -89,7 +89,11 @@ def main(args):
     if args.fluxnet:
         print("Running the single sites tests ")
 
-        tasks = get_fluxnet_tasks(config, sci_configs)
+        tasks = get_fluxnet_tasks(
+            config=config,
+            science_config=sci_configs,
+            met_sites=get_met_sites(config['experiment'])
+        )
 
         setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
 
