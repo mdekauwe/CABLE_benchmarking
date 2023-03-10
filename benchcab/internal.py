@@ -4,7 +4,6 @@ import os
 import sys
 import grp
 from pathlib import Path
-import re
 
 _, NODENAME, _, _, _ = os.uname()
 
