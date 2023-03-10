@@ -19,12 +19,7 @@ def run_around_tests():
     # Setup:
     if TMP_DIR.exists():
         shutil.rmtree(TMP_DIR)
-    try:
-        TMP_DIR.mkdir()
-    except FileNotFoundError as err:
-        print(err, "\n")
-        print("Try running pytest from the project root directory.")
-        raise
+    TMP_DIR.mkdir()
 
     # Run the test:
     yield
