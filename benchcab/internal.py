@@ -156,11 +156,12 @@ def get_met_sites(experiment: str) -> list[str]:
 
     if experiment in MEORG_EXPERIMENTS["five-site-test"]:
         # the user is specifying a single met site
-        return list(map(lambda path: path.name, MET_DIR.glob(f"{experiment}*")))
+        return [next(MET_DIR.glob(f"{experiment}*")).name]
 
-    met_sites = []
-    for site_id in MEORG_EXPERIMENTS[experiment]:
-        met_sites += list(map(lambda path: path.name, MET_DIR.glob(f"{site_id}*")))
+    met_sites = [
+        next(MET_DIR.glob(f"{site_id}*")).name
+        for site_id in MEORG_EXPERIMENTS[experiment]
+    ]
 
     return met_sites
 
