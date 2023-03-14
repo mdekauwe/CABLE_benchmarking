@@ -1,8 +1,9 @@
 """Helper functions for `pytest`."""
 
+import os
 from pathlib import Path
 
-TMP_DIR = Path.cwd() / "tests" / "tmp"
+TMP_DIR = Path(os.environ["TMPDIR"], "benchcab_tests")
 
 
 def make_barebones_config() -> dict:
