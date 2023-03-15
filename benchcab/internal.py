@@ -82,6 +82,89 @@ CABLE_SOIL_NML = "cable_soilparm.nml"
 # CABLE fixed C02 concentration
 CABLE_FIXED_CO2_CONC = 400.0
 
+# Contains the site ids for each met forcing file associated with an experiment
+# on modelevaluation.org
+MEORG_EXPERIMENTS = {
+    # List of site ids associated with the 'Five site test'
+    # experiment (workspace: NRI Land testing), see:
+    # https://modelevaluation.org/experiment/display/xNZx2hSvn4PMKAa9R
+    "five-site-test": [
+        "AU-Tum",
+        "AU-How",
+        "FI-Hyy",
+        "US-Var",
+        "US-Whs",
+    ],
+    # List of site ids associated with the 'Forty two site test'
+    # experiment (workspace: NRI Land testing), see:
+    # https://modelevaluation.org/experiment/display/urTKSXEsojdvEPwdR
+    "forty-two-site-test": [
+        "AU-Tum",
+        "AU-How",
+        "AU-Cum",
+        "AU-ASM",
+        "AU-GWW",
+        "AU-Ctr",
+        "AU-Stp",
+        "BR-Sa3",
+        "CA-Qfo",
+        "CH-Dav",
+        "CN-Cha",
+        "CN-Din",
+        "DE-Geb",
+        "DE-Gri",
+        "DE-Hai",
+        "DE-Tha",
+        "DK-Sor",
+        "FI-Hyy",
+        "FR-Gri",
+        "FR-Pue",
+        "GF-Guy",
+        "IT-Lav",
+        "IT-MBo",
+        "IT-Noe",
+        "NL-Loo",
+        "RU-Fyo",
+        "US-Blo",
+        "US-GLE",
+        "US-Ha1",
+        "US-Me2",
+        "US-MMS",
+        "US-Myb",
+        "US-NR1",
+        "US-PFa",
+        "US-FPe",
+        "US-SRM",
+        "US-SRG",
+        "US-Ton",
+        "US-UMB",
+        "US-Var",
+        "US-Whs",
+        "US-Wkg",
+    ]
+}
+
+
+def get_met_sites(experiment: str) -> list[str]:
+    '''Get a list of met forcing file basenames specified by an experiment
+
+    The `experiment` argument either specifies a key in `MEORG_EXPERIMENTS` or a site id
+    within the five-site-test experiment.
+
+    Assume all site ids map uniquely to a met file in MET_DIR.
+    '''
+
+    if experiment in MEORG_EXPERIMENTS["five-site-test"]:
+        # the user is specifying a single met site
+        return [next(MET_DIR.glob(f"{experiment}*")).name]
+
+    met_sites = [
+        next(MET_DIR.glob(f"{site_id}*")).name
+        for site_id in MEORG_EXPERIMENTS[experiment]
+    ]
+
+    return met_sites
+
 
 def validate_environment(project: str, modules: list):
     '''Performs checks on current user environment'''
@@ -109,4 +192,17 @@ def validate_environment(project: str, modules: list):
     for modname in modules:
         if not module("is-avail", modname):
             print(f"Error: module ({modname}) is not available.")
+            sys.exit(1)
+
+    all_site_ids = set(
+        MEORG_EXPERIMENTS["five-site-test"] +
+        MEORG_EXPERIMENTS["forty-two-site-test"]
+    )
+    for site_id in all_site_ids:
+        paths = list(MET_DIR.glob(f"{site_id}*"))
+        if not paths:
+            print(f"Error: failed to infer met file for site id '{site_id}' in {MET_DIR}.")
+            sys.exit(1)
+        if len(paths) > 1:
+            print(f"Error: multiple paths infered for site id: '{site_id}' in {MET_DIR}.")
             sys.exit(1)

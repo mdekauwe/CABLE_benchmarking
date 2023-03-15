@@ -11,7 +11,7 @@ def make_barebones_config() -> dict:
     conf = {
         "user": "foo1234",
         "project": "bar",
-        "met_subset": [],
+        "experiment": "five-site-test",
         "modules": [
             "intel-compiler/2021.1.1",
             "openmpi/4.1.0",

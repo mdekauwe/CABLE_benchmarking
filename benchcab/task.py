@@ -3,7 +3,6 @@
 import os
 import shutil
 from pathlib import Path
-import glob
 import f90nml
 
 from benchcab import internal
@@ -139,10 +138,9 @@ class Task:
             .adjust_namelist_file()
 
 
-def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
+def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
-    met_sites = get_all_met_sites() if config["met_subset"] == [] else config["met_subset"]
     tasks = [
         Task(
             branch_id=id,
@@ -151,11 +149,8 @@ def get_fluxnet_tasks(config: dict, science_config: dict) -> list[Task]:
             sci_conf_key=key,
             sci_config=science_config[key]
         )
-        for id, branch in config["realisations"].items() for site in met_sites for key in science_config
+        for id, branch in config["realisations"].items()
+        for site in met_sites
+        for key in science_config
     ]
     return tasks
-
-
-def get_all_met_sites():
-    """Get list of all met files in `MET_DIR` directory."""
-    return list(map(os.path.basename, glob.glob(os.path.join(internal.MET_DIR, "*.nc"))))

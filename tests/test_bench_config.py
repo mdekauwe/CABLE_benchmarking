@@ -21,6 +21,12 @@ def test_check_config():
     config["realisations"][0].pop("revision")
     check_config(config)
 
+    # Success case: test experiment with site id from the
+    # five-site-test is valid
+    config = make_barebones_config()
+    config["experiment"] = "AU-Tum"
+    check_config(config)
+
     # Failure case: test config without project key raises an exception
     with pytest.raises(ValueError):
         config = make_barebones_config()
@@ -43,6 +49,25 @@ def test_check_config():
     with pytest.raises(ValueError):
         config = make_barebones_config()
         config.pop("modules")
+        check_config(config)
+
+    # Failure case: test config without experiment key raises an exception
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config.pop("experiment")
+        check_config(config)
+
+    # Failure case: test config with invalid experiment key raises an exception
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["experiment"] = "foo"
+        check_config(config)
+
+    # Failure case: test config with invalid experiment key (not a subset of
+    # five-site-test) raises an exception
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["experiment"] = "CH-Dav"
         check_config(config)
 
     # Failure case: test config when realisations contains more than two keys
@@ -104,6 +129,12 @@ def test_check_config():
         config["modules"] = "netcdf"
         check_config(config)
 
+    # Failure case: experiment key is not a string
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["experiment"] = 0
+        check_config(config)
+
     # Failure case: type of config["branch"]["revision"] is
     # not an integer
     with pytest.raises(TypeError):
@@ -152,21 +183,7 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config != res
-    assert "revision" in res["realisations"][0] and res["realisations"][0]["revision"] == -1
-
-    # Success case: config branch with missing key: met_subset
-    # should return a config with met_subset = empty list
-    config = make_barebones_config()
-    config.pop("met_subset")
-    filename = "config-barebones.yaml"
-
-    with open(filename, "w", encoding="utf-8") as file:
-        yaml.dump(config, file)
-
-    res = read_config(filename)
-    os.remove(filename)
-    assert config != res
-    assert "met_subset" in res and res["met_subset"] == []
+    assert res["realisations"][0]["revision"] == -1
 
 
 def test_check_science_config():
