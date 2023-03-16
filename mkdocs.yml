@@ -37,7 +37,6 @@ plugins:
       type: date
       enable_creation_date: true
   - search
-  - macros
 
 markdown_extensions:
   - pymdownx.arithmatex:
@@ -69,4 +68,5 @@ nav:
   - About: index.md
   - User Guide:
     - user_guide/index.md
+    - user_guide/config_options.md
       
