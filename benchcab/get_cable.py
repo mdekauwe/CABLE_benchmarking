@@ -14,6 +14,7 @@ import os
 import subprocess
 import shlex
 import getpass
+from typing import Union
 from pathlib import Path
 
 from benchcab import internal
@@ -64,7 +65,7 @@ def get_password() -> str:
     return "'" + getpass.getpass("Password:") + "'"
 
 
-def svn_info_show_item(path: Path | str, item: str) -> str:
+def svn_info_show_item(path: Union[Path, str], item: str) -> str:
     """A wrapper around `svn info --show-item <item> <path>`."""
     cmd = f"svn info --show-item {item} {path}"
     out = subprocess.run(shlex.split(cmd), capture_output=True, text=True, check=True)
