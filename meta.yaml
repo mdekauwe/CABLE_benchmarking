@@ -21,9 +21,7 @@ requirements:
         - pbr
     run:
         - python >=3.9
-        - xarray
         - numpy
-        - pandas
-        - matplotlib
         - netCDF4
         - PyYAML
+        - f90nml
