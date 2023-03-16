@@ -156,7 +156,9 @@ def test_adjust_namelist_file():
         'cable': {
             'filename': {
                 'met': "/path/to/met/file",
+                'foo': 123
             },
+            'bar': 123
         }
     }
 
@@ -184,3 +186,6 @@ def test_adjust_namelist_file():
     assert res_nml['cable']['casafile']['cnpbiome'] == str(cnpbiome_file_path)
     assert res_nml['cable']['spinup'] is False
     assert res_nml['cable']['some_setting'] is True
+
+    assert res_nml['cable']['filename']['foo'] == 123, "assert existing derived types are preserved"
+    assert res_nml['cable']['bar'] == 123, "assert existing top-level parameters are preserved"
