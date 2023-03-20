@@ -39,7 +39,7 @@ def setup_mock_task() -> Task:
     task = Task(
         branch_id=1,
         branch_name="test-branch",
-        branch_patch={},
+        branch_patch={"some_branch_specific_setting": True},
         met_forcing_file="forcing-file.nc",
         sci_conf_key="sci0",
         sci_config={"some_setting": True}
@@ -202,3 +202,21 @@ def test_adjust_namelist_file():
 
     assert res_nml['cable']['filename']['foo'] == 123, "assert existing derived types are preserved"
     assert res_nml['cable']['bar'] == 123, "assert existing top-level parameters are preserved"
+
+
+def test_setup_task():
+    """Tests for `setup_task()`."""
+
+    # Success case: test branch specific settings are patched into task namelist file
+    task = setup_mock_task()
+    task_dir = Path(TMP_DIR, internal.SITE_TASKS_DIR, task.get_task_name())
+
+    setup_mock_namelists_directory()
+    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
+    do_mock_checkout_and_build()
+
+    task.setup_task(root_dir=TMP_DIR)
+
+    res_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
+
+    assert res_nml['cable']['some_branch_specific_setting'] is True

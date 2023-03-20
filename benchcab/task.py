@@ -155,7 +155,7 @@ class Task:
 
         return self
 
-    def setup_task(self):
+    def setup_task(self, root_dir=internal.CWD):
         """Does all file manipulations to run cable in the task directory.
 
         These include:
@@ -167,12 +167,13 @@ class Task:
         5. apply a branch patch if specified
         """
 
-        self.clean_task() \
-            .fetch_files() \
-            .adjust_namelist_file()
+        self.clean_task(root_dir=root_dir) \
+            .fetch_files(root_dir=root_dir) \
+            .adjust_namelist_file(root_dir=root_dir)
 
         if self.branch_patch:
-            self.patch_namelist_file(self.branch_patch)
+            # the user should not specify 'cable' in the top level of the patch dictionary
+            self.patch_namelist_file({'cable': self.branch_patch}, root_dir=root_dir)
 
 
 def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
