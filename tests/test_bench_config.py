@@ -21,6 +21,11 @@ def test_check_config():
     config["realisations"][0].pop("revision")
     check_config(config)
 
+    # Success case: branch configuration with missing patch key
+    config = make_barebones_config()
+    config["realisations"][0].pop("patch")
+    check_config(config)
+
     # Success case: test experiment with site id from the
     # five-site-test is valid
     config = make_barebones_config()
@@ -156,6 +161,12 @@ def test_check_config():
         config["realisations"][1]["share_branch"] = "0"
         check_config(config)
 
+    # Failure case: type of patch key is not a dictionary
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"][1]["patch"] = r"cable_user%ENABLE_SOME_FEATURE = .FALSE."
+        check_config(config)
+
 
 def test_read_config():
     """Tests for `read_config()`."""
@@ -184,6 +195,20 @@ def test_read_config():
     os.remove(filename)
     assert config != res
     assert res["realisations"][0]["revision"] == -1
+
+    # Success case: a specified branch with a missing patch dictionary
+    # should return a config with patch set to its default value
+    config = make_barebones_config()
+    config["realisations"][0].pop("patch")
+    filename = "config-barebones.yaml"
+
+    with open(filename, "w", encoding="utf-8") as file:
+        yaml.dump(config, file)
+
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert res["realisations"][0]["patch"] == {}
 
 
 def test_check_science_config():

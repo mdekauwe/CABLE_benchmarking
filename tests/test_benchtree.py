@@ -41,14 +41,14 @@ def test_setup_directory_tree():
     sci_id_a, sci_id_b = get_science_config_id(key_a), get_science_config_id(key_b)
 
     tasks = [
-        Task(branch_id_a, branch_name_a, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_a, branch_name_a, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, met_site_b, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, met_site_b, key_b, science_config[key_b]),
+        Task(branch_id_a, branch_name_a, {}, met_site_a, key_a, science_config[key_a]),
+        Task(branch_id_a, branch_name_a, {}, met_site_a, key_b, science_config[key_b]),
+        Task(branch_id_a, branch_name_a, {}, met_site_b, key_a, science_config[key_a]),
+        Task(branch_id_a, branch_name_a, {}, met_site_b, key_b, science_config[key_b]),
+        Task(branch_id_b, branch_name_b, {}, met_site_a, key_a, science_config[key_a]),
+        Task(branch_id_b, branch_name_b, {}, met_site_a, key_b, science_config[key_b]),
+        Task(branch_id_b, branch_name_b, {}, met_site_b, key_a, science_config[key_a]),
+        Task(branch_id_b, branch_name_b, {}, met_site_b, key_b, science_config[key_b]),
     ]
 
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=TMP_DIR)
@@ -82,15 +82,14 @@ def test_clean_directory_tree():
     key_a, key_b = science_config
 
     tasks = [
-        Task(branch_id_a, branch_name_a, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_a, branch_name_a, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, met_site_b, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, met_site_b, key_b, science_config[key_b]),
-
+        Task(branch_id_a, branch_name_a, {}, met_site_a, key_a, science_config[key_a]),
+        Task(branch_id_a, branch_name_a, {}, met_site_a, key_b, science_config[key_b]),
+        Task(branch_id_a, branch_name_a, {}, met_site_b, key_a, science_config[key_a]),
+        Task(branch_id_a, branch_name_a, {}, met_site_b, key_b, science_config[key_b]),
+        Task(branch_id_b, branch_name_b, {}, met_site_a, key_a, science_config[key_a]),
+        Task(branch_id_b, branch_name_b, {}, met_site_a, key_b, science_config[key_b]),
+        Task(branch_id_b, branch_name_b, {}, met_site_b, key_a, science_config[key_a]),
+        Task(branch_id_b, branch_name_b, {}, met_site_b, key_b, science_config[key_b]),
     ]
 
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=TMP_DIR)

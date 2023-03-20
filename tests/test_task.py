@@ -34,6 +34,19 @@ def touch(path):
         os.utime(path, None)
 
 
+def setup_mock_task() -> Task:
+    """Returns a mock `Task` instance."""
+    task = Task(
+        branch_id=1,
+        branch_name="test-branch",
+        branch_patch={},
+        met_forcing_file="forcing-file.nc",
+        sci_conf_key="sci0",
+        sci_config={"some_setting": True}
+    )
+    return task
+
+
 def setup_mock_namelists_directory():
     """Setup a mock namelists directory in TMP_DIR."""
     Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
@@ -74,21 +87,21 @@ def do_mock_run(task: Task):
 def test_get_task_name():
     """Tests for `get_task_name()`."""
     # Success case: check task name convention
-    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    task = setup_mock_task()
     assert task.get_task_name() == "forcing-file_R1_S0"
 
 
 def test_get_log_filename():
     """Tests for `get_log_filename()`."""
     # Success case: check log file name convention
-    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    task = setup_mock_task()
     assert task.get_log_filename() == "forcing-file_R1_S0_log.txt"
 
 
 def test_get_output_filename():
     """Tests for `get_output_filename()`."""
     # Success case: check output file name convention
-    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    task = setup_mock_task()
     assert task.get_output_filename() == "forcing-file_R1_S0_out.nc"
 
 
@@ -96,7 +109,7 @@ def test_fetch_files():
     """Tests for `fetch_files()`."""
 
     # Success case: fetch files required to run CABLE
-    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    task = setup_mock_task()
 
     setup_mock_namelists_directory()
     setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
@@ -118,7 +131,7 @@ def test_clean_task():
     """Tests for `clean_task()`."""
 
     # Success case: fetch then clean files
-    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    task = setup_mock_task()
 
     setup_mock_namelists_directory()
     setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
@@ -146,7 +159,7 @@ def test_adjust_namelist_file():
     """Tests for `adjust_namelist_file()`."""
 
     # Success case: adjust cable namelist file
-    task = Task(1, "test-branch", "forcing-file.nc", "sci0", {"some_setting": True})
+    task = setup_mock_task()
     task_dir = Path(TMP_DIR, internal.SITE_TASKS_DIR, task.get_task_name())
 
     setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
