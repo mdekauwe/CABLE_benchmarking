@@ -3,10 +3,32 @@
 import os
 import shutil
 from pathlib import Path
+from typing import TypeVar, Dict, Any
 import f90nml
 
 from benchcab import internal
 from benchcab.bench_config import get_science_config_id
+
+# pylint: disable=invalid-name,missing-function-docstring,line-too-long
+# ======================================================
+# Copyright (c) 2017 - 2022 Samuel Colvin and other contributors
+# from https://github.com/pydantic/pydantic/blob/fd2991fe6a73819b48c906e3c3274e8e47d0f761/pydantic/utils.py#L200
+
+KeyType = TypeVar('KeyType')
+
+
+def deep_update(mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, Any]) -> Dict[KeyType, Any]:
+    updated_mapping = mapping.copy()
+    for updating_mapping in updating_mappings:
+        for k, v in updating_mapping.items():
+            if k in updated_mapping and isinstance(updated_mapping[k], dict) and isinstance(v, dict):
+                updated_mapping[k] = deep_update(updated_mapping[k], v)
+            else:
+                updated_mapping[k] = v
+    return updated_mapping
+
+# ======================================================
+# pylint: enable=invalid-name,missing-function-docstring,line-too-long
 
 
 class Task:
@@ -117,8 +139,7 @@ class Task:
         # remove namelist file as f90nml cannot write to an existing file
         os.remove(str(task_dir / internal.CABLE_NML))
 
-        cable_nml.patch(patch_nml)
-        cable_nml.write(str(task_dir / internal.CABLE_NML))
+        f90nml.write(deep_update(cable_nml, patch_nml), str(task_dir / internal.CABLE_NML))
 
         return self
 
