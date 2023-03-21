@@ -9,7 +9,6 @@ _, NODENAME, _, _, _ = os.uname()
 
 # Default config file names
 DEFAULT_CONFIG = "config.yaml"
-DEFAULT_SCIENCE = "site_configs.yaml"
 
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"
@@ -81,6 +80,39 @@ CABLE_SOIL_NML = "cable_soilparm.nml"
 
 # CABLE fixed C02 concentration
 CABLE_FIXED_CO2_CONC = 400.0
+
+# Contains the default science configurations used to run the CABLE test suite
+# (when a science config file is not provided by the user)
+DEFAULT_SCIENCE_CONFIGURATIONS = {
+    "sci0": {"cable_user": {"GS_SWITCH": "medlyn"}},
+    "sci1": {"cable_user": {"GS_SWITCH": "leuning"}},
+    "sci2": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}},
+    "sci3": {"cable_user": {"FWSOIL_SWITCH": "standard"}},
+    "sci4": {
+        "cable_user": {
+            "GS_SWITCH": "medlyn",
+            "FWSOIL_SWITCH": "Haverd2013",
+        }
+    },
+    "sci5": {
+        "cable_user": {
+            "GS_SWITCH": "leuning",
+            "FWSOIL_SWITCH": "Haverd2013",
+        }
+    },
+    "sci6": {
+        "cable_user": {
+            "GS_SWITCH": "medlyn",
+            "FWSOIL_SWITCH": "standard",
+        }
+    },
+    "sci7": {
+        "cable_user": {
+            "GS_SWITCH": "leuning",
+            "FWSOIL_SWITCH": "standard",
+        }
+    },
+}
 
 # Contains the site ids for each met forcing file associated with an experiment
 # on modelevaluation.org

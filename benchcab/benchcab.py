@@ -10,7 +10,7 @@ from benchcab.bench_config import read_config, read_science_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment, get_met_sites
+from benchcab.internal import validate_environment, get_met_sites, DEFAULT_SCIENCE_CONFIGURATIONS
 from benchcab.task import get_fluxnet_tasks
 
 
@@ -28,7 +28,6 @@ def parse_args(arglist):
         "-s",
         "--science_config",
         help="Config file to define the various configurations to run",
-        default="site_configs.yaml"
     )
     parser.add_argument(
         "-f",
@@ -74,7 +73,11 @@ def main(args):
     """Main program entry point for `benchcab`."""
 
     config = read_config(args.config)
-    sci_configs = read_science_config(args.science_config)
+
+    sci_configs = DEFAULT_SCIENCE_CONFIGURATIONS
+
+    if args.science_config:
+        sci_configs = read_science_config(args.science_config)
 
     validate_environment(project=config['project'], modules=config['modules'])
 

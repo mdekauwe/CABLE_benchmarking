@@ -5,6 +5,7 @@ import sys
 import shlex
 import subprocess
 from pathlib import Path
+from typing import Optional
 
 from benchcab.internal import QSUB_FNAME, NCPUS, MEM, WALL_TIME
 
@@ -13,7 +14,7 @@ def create_job_script(
     project: str,
     user: str,
     config_path: str,
-    sci_config_path: str,
+    sci_config_path: Optional[str],
     modules: list
 ):
     """Creates a job script for executing `benchsiterun` on Gadi."""
@@ -54,7 +55,8 @@ def create_job_script(
         file.write("module load conda/analysis3-unstable\n")
         for module_name in modules:
             file.write(f"module add {module_name}\n")
-        file.write(f"benchsiterun --config={config_path} --science_config={sci_config_path}\n")
+        file.write(f"benchsiterun --config={config_path}"
+                   f" --science_config={sci_config_path}\n" if sci_config_path else "\n")
         file.write("\n")
 
     os.chmod(QSUB_FNAME, 0o755)
