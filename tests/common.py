@@ -31,7 +31,7 @@ def make_barebones_config() -> dict:
                 "trunk": False,
                 "share_branch": False,
                 "patch": {
-                    "cable_user": {"ENABLE_SOME_FEATURE": False}
+                    "cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}
                 },
             },
         },

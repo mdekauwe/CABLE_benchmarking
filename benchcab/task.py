@@ -172,8 +172,7 @@ class Task:
             .adjust_namelist_file(root_dir=root_dir)
 
         if self.branch_patch:
-            # the user should not specify 'cable' in the top level of the patch dictionary
-            self.patch_namelist_file({'cable': self.branch_patch}, root_dir=root_dir)
+            self.patch_namelist_file(self.branch_patch, root_dir=root_dir)
 
 
 def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
