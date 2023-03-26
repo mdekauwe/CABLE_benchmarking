@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import yaml
 
-from benchcab.internal import MEORG_EXPERIMENTS
+from benchcab.internal import MEORG_EXPERIMENTS, DEFAULT_SCIENCE_CONFIGURATIONS
 
 
 def check_config(config: dict):
@@ -37,6 +37,23 @@ def check_config(config: dict):
 
     if not isinstance(config["experiment"], str):
         raise TypeError("The 'experiment' key must be a string.")
+
+    # the "science_configurations" key is optional
+    if "science_configurations" in config:
+        if not isinstance(config["science_configurations"], dict):
+            raise TypeError("The 'science_configurations' key must be a dictionary.")
+        if config["science_configurations"] == {}:
+            raise ValueError("The 'science_configurations' key cannot be empty.")
+        if not all(re.fullmatch("sci[0-9]+", key) for key in config["science_configurations"]):
+            raise ValueError(
+                "Science config keys must be in the format: "
+                "sci<count> where count = 0, 1, 2, ..."
+            )
+        if not all(isinstance(value, dict) for value in config["science_configurations"].values()):
+            raise TypeError(
+                "Science config settings must be specified using a dictionary "
+                "that is compatible with the f90nml python package."
+            )
 
     valid_experiments = list(MEORG_EXPERIMENTS) + MEORG_EXPERIMENTS["five-site-test"]
     if config["experiment"] not in valid_experiments:
@@ -89,25 +106,6 @@ def get_science_config_id(key: str) -> str:
     return match.group(1)
 
 
-def check_science_config(science_config: dict):
-    """Performs input validation on science config file.
-
-    If the science config is invalid, an exception is raised. Otherwise, do nothing.
-    """
-
-    if not all(re.fullmatch("sci[0-9]+", key) for key in science_config):
-        raise ValueError(
-            "Science config keys must be in the format: "
-            "sci<count> where count = 0, 1, 2, ..."
-        )
-
-    if not all(isinstance(settings, dict) for settings in science_config.values()):
-        raise TypeError(
-            "Science config settings must be specified using a dictionary "
-            "that is compatible with the f90nml python package."
-        )
-
-
 def read_config(config_path: str) -> dict:
     """Reads the config file and returns a dictionary containing the configurations."""
 
@@ -121,15 +119,8 @@ def read_config(config_path: str) -> dict:
     for branch in config['realisations'].values():
         branch.setdefault('revision', -1)
 
+    # Add "science_configurations" if not provided and set to default value
+    if "science_configurations" not in config:
+        config["science_configurations"] = DEFAULT_SCIENCE_CONFIGURATIONS
+
     return config
-
-
-def read_science_config(science_config_path) -> dict:
-    """Reads the science config file and returns a dictionary containing the configurations."""
-
-    with open(science_config_path, "r", encoding="utf-8") as file:
-        science_config = yaml.safe_load(file)
-
-    check_science_config(science_config)
-
-    return science_config

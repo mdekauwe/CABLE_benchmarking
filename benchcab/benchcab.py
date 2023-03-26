@@ -6,11 +6,11 @@ import argparse
 import sys
 
 from benchcab.job_script import create_job_script, submit_job
-from benchcab.bench_config import read_config, read_science_config
+from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment, get_met_sites, DEFAULT_SCIENCE_CONFIGURATIONS
+from benchcab.internal import validate_environment, get_met_sites
 from benchcab.task import get_fluxnet_tasks
 
 
@@ -23,11 +23,6 @@ def parse_args(arglist):
         "--config",
         help="Config filename",
         default="config.yaml"
-    )
-    parser.add_argument(
-        "-s",
-        "--science_config",
-        help="Config file to define the various configurations to run",
     )
     parser.add_argument(
         "-f",
@@ -74,11 +69,6 @@ def main(args):
 
     config = read_config(args.config)
 
-    sci_configs = DEFAULT_SCIENCE_CONFIGURATIONS
-
-    if args.science_config:
-        sci_configs = read_science_config(args.science_config)
-
     validate_environment(project=config['project'], modules=config['modules'])
 
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
@@ -94,7 +84,7 @@ def main(args):
 
         tasks = get_fluxnet_tasks(
             config=config,
-            science_config=sci_configs,
+            science_config=config['science_configurations'],
             met_sites=get_met_sites(config['experiment'])
         )
 
@@ -110,7 +100,6 @@ def main(args):
             project=config['project'],
             user=config['user'],
             config_path=args.config,
-            sci_config_path=args.science_config,
             modules=config['modules']
         )
 
