@@ -42,7 +42,7 @@ def setup_mock_task() -> Task:
         branch_patch={"cable": {"some_branch_specific_setting": True}},
         met_forcing_file="forcing-file.nc",
         sci_conf_key="sci0",
-        sci_config={"some_setting": True}
+        sci_config={"cable": {"some_setting": True}}
     )
     return task
 

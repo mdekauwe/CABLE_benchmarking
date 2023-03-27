@@ -84,32 +84,40 @@ CABLE_FIXED_CO2_CONC = 400.0
 # Contains the default science configurations used to run the CABLE test suite
 # (when a science config file is not provided by the user)
 DEFAULT_SCIENCE_CONFIGURATIONS = {
-    "sci0": {"cable_user": {"GS_SWITCH": "medlyn"}},
-    "sci1": {"cable_user": {"GS_SWITCH": "leuning"}},
-    "sci2": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}},
-    "sci3": {"cable_user": {"FWSOIL_SWITCH": "standard"}},
+    "sci0": {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
+    "sci1": {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
+    "sci2": {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
+    "sci3": {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
     "sci4": {
-        "cable_user": {
-            "GS_SWITCH": "medlyn",
-            "FWSOIL_SWITCH": "Haverd2013",
+        "cable": {
+            "cable_user": {
+                "GS_SWITCH": "medlyn",
+                "FWSOIL_SWITCH": "Haverd2013",
+            }
         }
     },
     "sci5": {
-        "cable_user": {
-            "GS_SWITCH": "leuning",
-            "FWSOIL_SWITCH": "Haverd2013",
+        "cable": {
+            "cable_user": {
+                "GS_SWITCH": "leuning",
+                "FWSOIL_SWITCH": "Haverd2013",
+            }
         }
     },
     "sci6": {
-        "cable_user": {
-            "GS_SWITCH": "medlyn",
-            "FWSOIL_SWITCH": "standard",
+        "cable": {
+            "cable_user": {
+                "GS_SWITCH": "medlyn",
+                "FWSOIL_SWITCH": "standard",
+            }
         }
     },
     "sci7": {
-        "cable_user": {
-            "GS_SWITCH": "leuning",
-            "FWSOIL_SWITCH": "standard",
+        "cable": {
+            "cable_user": {
+                "GS_SWITCH": "leuning",
+                "FWSOIL_SWITCH": "standard",
+            }
         }
     },
 }

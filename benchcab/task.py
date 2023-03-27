@@ -133,7 +133,7 @@ class Task:
             }
         }
 
-        patch_nml["cable"].update(self.sci_config)
+        patch_nml = deep_update(patch_nml, self.sci_config)
 
         self.patch_namelist_file(patch_nml, root_dir=root_dir)
 
