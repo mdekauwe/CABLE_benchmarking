@@ -38,12 +38,14 @@ class Task:
         self,
         branch_id: int,
         branch_name: str,
+        branch_patch: dict,
         met_forcing_file: str,
         sci_conf_key: str,
         sci_config: dict
     ) -> None:
         self.branch_id = branch_id
         self.branch_name = branch_name
+        self.branch_patch = branch_patch
         self.met_forcing_file = met_forcing_file
         self.sci_conf_key = sci_conf_key
         self.sci_config = sci_config
@@ -108,9 +110,7 @@ class Task:
         return self
 
     def adjust_namelist_file(self, root_dir=internal.CWD):
-        """Make necessary adjustments to the CABLE namelist file."""
-
-        task_dir = Path(root_dir, internal.SITE_TASKS_DIR, self.get_task_name())
+        """Sets the base settings in the CABLE namelist file for this task."""
 
         patch_nml = {
             "cable": {
@@ -135,15 +135,27 @@ class Task:
 
         patch_nml["cable"].update(self.sci_config)
 
+        self.patch_namelist_file(patch_nml, root_dir=root_dir)
+
+        return self
+
+    def patch_namelist_file(self, patch: dict, root_dir=internal.CWD):
+        """Writes a patch to the CABLE namelist file for this task.
+
+        The `patch` dictionary must comply with the `f90nml` api.
+        """
+
+        task_dir = Path(root_dir, internal.SITE_TASKS_DIR, self.get_task_name())
+
         cable_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
         # remove namelist file as f90nml cannot write to an existing file
         os.remove(str(task_dir / internal.CABLE_NML))
 
-        f90nml.write(deep_update(cable_nml, patch_nml), str(task_dir / internal.CABLE_NML))
+        f90nml.write(deep_update(cable_nml, patch), str(task_dir / internal.CABLE_NML))
 
         return self
 
-    def setup_task(self):
+    def setup_task(self, root_dir=internal.CWD):
         """Does all file manipulations to run cable in the task directory.
 
         These include:
@@ -152,11 +164,15 @@ class Task:
         into the `runs/site/tasks/<task_name>` directory.
         3. copying the cable executable from the source directory
         4. make appropriate adjustments to namelist files
+        5. apply a branch patch if specified
         """
 
-        self.clean_task() \
-            .fetch_files() \
-            .adjust_namelist_file()
+        self.clean_task(root_dir=root_dir) \
+            .fetch_files(root_dir=root_dir) \
+            .adjust_namelist_file(root_dir=root_dir)
+
+        if self.branch_patch:
+            self.patch_namelist_file(self.branch_patch, root_dir=root_dir)
 
 
 def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
@@ -166,6 +182,7 @@ def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) 
         Task(
             branch_id=id,
             branch_name=branch["name"],
+            branch_patch=branch["patch"],
             met_forcing_file=site,
             sci_conf_key=key,
             sci_config=science_config[key]

@@ -23,12 +23,16 @@ def make_barebones_config() -> dict:
                 "revision": 9000,
                 "trunk": True,
                 "share_branch": False,
+                "patch": {},
             },
             1: {
                 "name": "v3.0-YP-changes",
                 "revision": -1,
                 "trunk": False,
                 "share_branch": False,
+                "patch": {
+                    "cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}
+                },
             },
         },
         "science_configurations": {
