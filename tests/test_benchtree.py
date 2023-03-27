@@ -6,7 +6,7 @@ import pytest
 
 
 from tests.common import TMP_DIR
-from tests.common import make_barebones_config, make_barbones_science_config
+from tests.common import make_barebones_config
 from benchcab.task import Task
 from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree, setup_src_dir
 from benchcab.bench_config import get_science_config_id
@@ -33,7 +33,7 @@ def test_setup_directory_tree():
 
     # Success case: generate fluxnet directory structure
     config = make_barebones_config()
-    science_config = make_barbones_science_config()
+    science_config = config["science_configurations"]
     branch_id_a, branch_id_b = config["realisations"]
     branch_name_a, branch_name_b = [branch["name"] for branch in config["realisations"].values()]
     met_site_a, met_site_b = "site_foo", "site_bar"
@@ -75,7 +75,7 @@ def test_clean_directory_tree():
 
     # Success case: directory tree does not exist after clean
     config = make_barebones_config()
-    science_config = make_barbones_science_config()
+    science_config = config["science_configurations"]
     branch_id_a, branch_id_b = config["realisations"]
     branch_name_a, branch_name_b = [branch["name"] for branch in config["realisations"].values()]
     met_site_a, met_site_b = "site_foo", "site_bar"

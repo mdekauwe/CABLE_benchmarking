@@ -4,9 +4,9 @@ import os
 import pytest
 import yaml
 
-from tests.common import make_barebones_config, make_barbones_science_config
-from benchcab.bench_config import check_config, read_config
-from benchcab.bench_config import check_science_config, read_science_config, get_science_config_id
+from tests.common import make_barebones_config
+from benchcab.bench_config import check_config, read_config, get_science_config_id
+from benchcab.internal import DEFAULT_SCIENCE_CONFIGURATIONS
 
 
 def test_check_config():
@@ -30,6 +30,11 @@ def test_check_config():
     # five-site-test is valid
     config = make_barebones_config()
     config["experiment"] = "AU-Tum"
+    check_config(config)
+
+    # Success case: test config without science_configurations is valid
+    config = make_barebones_config()
+    config.pop("science_configurations")
     check_config(config)
 
     # Failure case: test config without project key raises an exception
@@ -110,6 +115,41 @@ def test_check_config():
         config["realisations"][1].pop("share_branch")
         check_config(config)
 
+    # Failure case: test config with empty science_configurations key
+    # raises an exception
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["science_configurations"] = {}
+        check_config(config)
+
+    # Failure case: science_configurations contains outer dictionary key
+    # with invalid naming convention
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["science_configurations"] = {"science1": {"some_setting": True}}
+        check_config(config)
+
+    # Failure case: science_configurations contains outer dictionary key
+    # with invalid naming convention
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["science_configurations"] = {"sci_0": {"some_setting": True}}
+        check_config(config)
+
+    # Failure case: science_configurations contains outer dictionary key
+    # with invalid naming convention
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["science_configurations"] = {"sci": {"some_setting": True}}
+        check_config(config)
+
+    # Failure case: science_configurations contains outer dictionary key
+    # with invalid naming convention
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["science_configurations"] = {"0": {"some_setting": True}}
+        check_config(config)
+
     # Failure case: user key is not a string
     with pytest.raises(TypeError):
         config = make_barebones_config()
@@ -161,6 +201,13 @@ def test_check_config():
         config["realisations"][1]["share_branch"] = "0"
         check_config(config)
 
+    # Failure case: type of config["science_configurations"] is
+    # not a dictionary
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["science_configurations"] = r"cable_user%GS_SWITCH = 'medlyn'"
+        check_config(config)
+
     # Failure case: type of patch key is not a dictionary
     with pytest.raises(TypeError):
         config = make_barebones_config()
@@ -196,6 +243,7 @@ def test_read_config():
     assert config != res
     assert res["realisations"][0]["revision"] == -1
 
+
     # Success case: a specified branch with a missing patch dictionary
     # should return a config with patch set to its default value
     config = make_barebones_config()
@@ -211,42 +259,19 @@ def test_read_config():
     assert res["realisations"][0]["patch"] == {}
 
 
-def test_check_science_config():
-    """Tests for `check_science_config()`."""
+    # Success case: a config with missing science_configurations key should return a
+    # config with config['science_configurations'] set to its default value
+    config = make_barebones_config()
+    config.pop("science_configurations")
+    filename = "config-barebones.yaml"
+    
+    with open(filename, "w", encoding="utf-8") as file:
+        yaml.dump(config, file)
 
-    # Success case: test barebones science config is valid
-    science_config = make_barbones_science_config()
-    check_science_config(science_config)
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        science_config = make_barbones_science_config()
-        science_config["science1"] = {"some_setting": True}
-        check_science_config(science_config)
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        science_config = make_barbones_science_config()
-        science_config["sci_0"] = {"some_setting": True}
-        check_science_config(science_config)
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        science_config = make_barbones_science_config()
-        science_config["sci"] = {"some_setting": True}
-        check_science_config(science_config)
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        science_config = make_barbones_science_config()
-        science_config["0"] = {"some_setting": True}
-        check_science_config(science_config)
-
-    # Failure case: science config settings are not specified by a dictionary
-    with pytest.raises(TypeError):
-        science_config = make_barbones_science_config()
-        science_config["sci0"] = "some_setting = true"
-        check_science_config(science_config)
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert res["science_configurations"] == DEFAULT_SCIENCE_CONFIGURATIONS
 
 
 def test_get_science_config_id():
@@ -273,18 +298,3 @@ def test_get_science_config_id():
     # Failure case: outer dictionary key with invalid naming convention
     with pytest.raises(ValueError):
         get_science_config_id("0")
-
-
-def test_read_science_config():
-    """Tests for `read_science_config()`."""
-
-    # Success case: write science config to file, then read science config from file
-    science_config = make_barbones_science_config()
-    filename = "science-config-barebones.yaml"
-
-    with open(filename, "w", encoding="utf-8") as file:
-        yaml.dump(science_config, file)
-
-    res = read_science_config(filename)
-    os.remove(filename)
-    assert science_config == res

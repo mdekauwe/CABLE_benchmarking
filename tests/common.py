@@ -35,25 +35,23 @@ def make_barebones_config() -> dict:
                 },
             },
         },
+        "science_configurations": {
+            "sci0": {
+                "cable": {
+                    "cable_user": {
+                        "GS_SWITCH": "medlyn",
+                        "FWSOIL_SWITCH": "Haverd2013",
+                    }
+                }
+            },
+            "sci1": {
+                "cable": {
+                    "cable_user": {
+                        "GS_SWITCH": "leuning",
+                        "FWSOIL_SWITCH": "Haverd2013",
+                    }
+                }
+            },
+        }
     }
     return conf
-
-
-def make_barbones_science_config() -> dict:
-    """Returns a valid mock science config."""
-    sci_conf = {
-        "sci0": {
-            "cable_user": {
-                "GS_SWITCH": "medlyn",
-                "FWSOIL_SWITCH": "Haverd2013",
-            }
-        },
-        "sci1": {
-            "cable_user": {
-                "GS_SWITCH": "leuning",
-                "FWSOIL_SWITCH": "Haverd2013"
-            }
-        },
-    }
-
-    return sci_conf

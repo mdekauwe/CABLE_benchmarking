@@ -13,7 +13,6 @@ def create_job_script(
     project: str,
     user: str,
     config_path: str,
-    sci_config_path: str,
     modules: list
 ):
     """Creates a job script for executing `benchsiterun` on Gadi."""
@@ -54,7 +53,7 @@ def create_job_script(
         file.write("module load conda/analysis3-unstable\n")
         for module_name in modules:
             file.write(f"module add {module_name}\n")
-        file.write(f"benchsiterun --config={config_path} --science_config={sci_config_path}\n")
+        file.write(f"benchsiterun --config={config_path}")
         file.write("\n")
 
     os.chmod(QSUB_FNAME, 0o755)

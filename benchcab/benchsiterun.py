@@ -14,9 +14,9 @@ import numpy as np
 from benchcab.run_cable_site import run_tasks
 from benchcab import internal
 from benchcab.internal import validate_environment, get_met_sites
-from benchcab.internal import DEFAULT_CONFIG, DEFAULT_SCIENCE
+from benchcab.internal import DEFAULT_CONFIG
 from benchcab.task import get_fluxnet_tasks
-from benchcab.bench_config import read_config, read_science_config
+from benchcab.bench_config import read_config
 
 
 def myparse(arglist):
@@ -35,12 +35,6 @@ def myparse(arglist):
     parser.add_argument(
         "-c", "--config", help="Config filename", default=DEFAULT_CONFIG
     )
-    parser.add_argument(
-        "-s",
-        "--science_config",
-        help="Config file to define the various configurations to run",
-        default=DEFAULT_SCIENCE,
-    )
 
     args = parser.parse_args(arglist)
 
@@ -57,13 +51,12 @@ def main(args):
     # - build was successful and executables exist?
 
     config = read_config(args.config)
-    sci_configs = read_science_config(args.science_config)
 
     validate_environment(project=config['project'], modules=config['modules'])
 
     tasks = get_fluxnet_tasks(
         config=config,
-        science_config=sci_configs,
+        science_config=config['science_configurations'],
         met_sites=get_met_sites(config['experiment'])
     )
 
