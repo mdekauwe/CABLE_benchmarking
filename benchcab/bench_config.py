@@ -76,6 +76,12 @@ def check_config(config: dict):
                 f"The 'share_branch' field in realisation '{branch_id}' must be a "
                 "boolean."
             )
+        # the "patch" key is optional
+        if "patch" in branch_config and not isinstance(branch_config["patch"], dict):
+            raise TypeError(
+                f"The 'patch' field in realisation '{branch_id}' must be a "
+                "dictionary that is compatible with the f90nml python package."
+            )
 
 
 def get_science_config_id(key: str) -> str:
@@ -116,10 +122,11 @@ def read_config(config_path: str) -> dict:
 
     check_config(config)
 
-    # Add "revision" to each branch description if not provided with default value -1,
-    # i.e. HEAD of branch
     for branch in config['realisations'].values():
+        # Add "revision" key if not provided and set to default value -1, i.e. HEAD of branch
         branch.setdefault('revision', -1)
+        # Add "patch" key if not provided and set to default value {}
+        branch.setdefault('patch', {})
 
     return config
 
