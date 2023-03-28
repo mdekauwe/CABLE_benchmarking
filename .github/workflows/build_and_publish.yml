@@ -21,5 +21,5 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages # default
-          folder: documentation/site
+          folder: site
           clean-exclude: pr-preview/ # don't overwrite previews

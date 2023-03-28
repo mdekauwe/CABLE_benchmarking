@@ -26,7 +26,6 @@ runs:
       shell: bash
 
     - name: Build documentation
-      working-directory: documentation
       run: |
         # outputs to "site" directory
         mkdocs build -f mkdocs.yml
