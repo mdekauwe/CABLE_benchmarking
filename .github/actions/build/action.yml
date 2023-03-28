@@ -22,7 +22,7 @@ runs:
 
     - name: Install dependencies for mkdocs
       run: | 
-        pip install -r documentation/mkdocs-requirements.txt
+        pip install -r mkdocs-requirements.txt
       shell: bash
 
     - name: Build documentation
