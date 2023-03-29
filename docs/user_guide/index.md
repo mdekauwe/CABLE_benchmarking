@@ -61,7 +61,7 @@ module use /g/data/hh5/public/modules
 module load conda/analysis3-unstable
 ```
 
-Currently, `benchcab` can only run CABLE for single sites. To run the single site tests, run
+Currently, `benchcab` can only run CABLE for flux sites. To run the flux site tests, run
 
 ```bash
 benchcab -f
