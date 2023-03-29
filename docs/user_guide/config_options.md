@@ -84,7 +84,30 @@
 
 `science_configurations`
 
-: User defined science configurations. This key is **optional** and can be omitted from the config file. If not specified, `science_configurations` is set internally to the following data structure:
+: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace the default science configurations.
+: Example:
+```yaml
+science_configurations: {
+  sci0: {
+    cable: {
+      cable_user: {
+        GS_SWITCH: "medlyn",
+        FWSOIL_SWITCH: "Haverd2013"
+      }
+    }
+  },
+  sci1: {
+    cable: {
+      cable_user: {
+        GS_SWITCH: "leuning",
+        FWSOIL_SWITCH: "Haverd2013"
+      }
+    }
+  }
+}
+```
+
+: Currently, the default science configurations are defined internally by the following data structure:
 ```python
 DEFAULT_SCIENCE_CONFIGURATIONS = {
     "sci0": {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
