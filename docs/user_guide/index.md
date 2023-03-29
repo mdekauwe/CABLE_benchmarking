@@ -49,17 +49,22 @@ You can run the benchmark from any directory you want under `/scratch` or `/g/da
 #### Setup the work directory
 
 The simplest is to clone an existing work directory with git and then adapt it to your case. Such [an example work directory][bench_example] is available on GitHub under the CABLE-LSM organisation.
-  
+```bash
+git clone git@github.com:CABLE-LSM/bench_example.git
+```
+
 Once the work directory is cloned, you will need to adapt the `config.yaml` file to your case. Refer to [the description of the options][config_options] for this file.
 
 ## Run the simulations
 
-Once you have a configuration file, you need to load the module for `benchcab`:
-
+Change directory into the cloned example work directory
 ```bash
-module use /g/data/hh5/public/modules
-module load conda/analysis3-unstable
+cd bench_example
 ```
+
+!!! warning
+    `benchcab` will yell at you if it cannot find files in the current working directory.
+
 
 Currently, `benchcab` can only run CABLE for flux sites. To run the flux site tests, run
 
@@ -73,38 +78,56 @@ The benchmarking will follow the steps:
 2. Compile the source code from both branches
 3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`.
 
-The following directory structure is generated when simulations are run:
-```
-runs/
-└── site
-    ├── logs
-    │   ├── <task>_log.txt
-    │   └── ...
-    ├── outputs
-    │   ├── <task>_out.nc
-    │   └── ...
-    └── tasks
-        ├── <task>
-        │   ├── cable (executable)
-        │   ├── cable.nml
-        │   ├── cable_soilparm.nml
-        │   └── pft_params.nml
-        └── ...
-```
-
-The simulations are organised into tasks where a task consists of a branch (realisation), a met file, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
-```
-<met_file_basename>_R<realisation_key>_S<science_config_key>
-```
-where `met_file_base_name` is the base file name of the met file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
-
-The `runs/site/tasks/<task>` directory contains the executable and input files for each task. The output files and log files for all tasks are stored in the `runs/site/outputs` and `runs/site/logs` directories respectively.
-
 For help on the available options for `benchcab`:
 
 ```bash
 benchcab -h
 ```
+
+## Directory structure and files
+
+The following files and directories are created when `benchcab -f` executes successfully:
+```
+.
+├── benchmark_cable_qsub.sh
+├── benchmark_cable_qsub.sh.o<jobid>
+├── rev_number-1.log
+├── runs
+│   └── site
+│       ├── logs
+│       │   ├── <task>_log.txt
+│       │   └── ...
+│       ├── outputs
+│       │   ├── <task>_out.nc
+│       │   └── ...
+│       └── tasks
+│           ├── <task>
+│           │   ├── cable (executable)
+│           │   ├── cable.nml
+│           │   ├── cable_soilparm.nml
+│           │   └── pft_params.nml
+│           └── ...
+└── src
+    ├── CABLE-AUX
+    ├── <realisation-0>
+    └── <realisation-1>
+```
+
+The `benchmark_cable_qsub.sh` file is the job script submitted to run the test suite and `benchmark_cable_qsub.sh.o<jobid>` contains the job's standard output/error stream.
+
+The `rev_number-*.log` file keeps a record of the revision numbers used for each realisation specified in the config file.
+
+The `src` directory contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
+
+The `runs/site` directory contains the log files, output files, and tasks for running CABLE. CABLE runs are organised into tasks where a task consists of a branch (realisation), a met file, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
+```
+<met_file_basename>_R<realisation_key>_S<science_config_key>
+```
+where `met_file_base_name` is the base file name of the met file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
+
+The `runs/site/tasks/<task>` directory contains the executable and input files for each task.
+
+The output files and log files for all tasks are stored in the `runs/site/outputs` and `runs/site/logs` directories respectively.
 
 !!! warning "Re-running `benchcab` multiple times in the same working directory"
     We recommend the user to manually delete the generated files when re-running `benchcab`. Re-running `benchcab` multiple times in the same working directory is currently not yet supported (see issue [CABLE-LSM/benchcab#20](https://github.com/CABLE-LSM/benchcab/issues/20)). To clean the current working directory, run the following command in the working directory
