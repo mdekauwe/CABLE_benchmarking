@@ -41,7 +41,7 @@
     : Boolean value set to `True` if this branch is under `branches/Share` in the CABLE SVN repository. Else set to `False`.
 
     `patch`
-    : Additional branch specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and or any settings defined in the science configurations.
+    : Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
     : The `patch` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
     : This key is **optional** and can be omitted from the config file. By default `patch` is empty and does not modify the namelist file.
 
