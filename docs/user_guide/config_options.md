@@ -21,7 +21,7 @@
 
 `realisations`
 
-: Entries for each of the two branches (specified by keys `0` and `1`). Each branch contains the following keys:
+: Entries for each of the two CABLE branches to use (specified by keys `0` and `1`). Each entry contains the following keys:
 
     `name`
     : The base name of the branch on SVN, i.e. relative to:
