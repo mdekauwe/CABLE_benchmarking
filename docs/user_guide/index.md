@@ -119,7 +119,7 @@ The `rev_number-*.log` file keeps a record of the revision numbers used for each
 
 The `src` directory contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
 
-The `runs/site` directory contains the log files, output files, and tasks for running CABLE. CABLE runs are organised into tasks where a task consists of a branch (realisation), a met file, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
+The `runs/site` directory contains the log files, output files, and tasks for running CABLE. CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
 ```
 <met_file_basename>_R<realisation_key>_S<science_config_key>
 ```
