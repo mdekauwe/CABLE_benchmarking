@@ -1,31 +1,13 @@
 """`pytest` tests for task.py"""
 
 import os
-import shutil
 from pathlib import Path
 import f90nml
-import pytest
 
 from tests.common import TMP_DIR
 from benchcab.task import Task
 from benchcab import internal
 from benchcab.benchtree import setup_fluxnet_directory_tree
-
-
-@pytest.fixture(autouse=True)
-def run_around_tests():
-    """`pytest` autouse fixture that runs around each test."""
-
-    # Setup:
-    if TMP_DIR.exists():
-        shutil.rmtree(TMP_DIR)
-    TMP_DIR.mkdir()
-
-    # Run the test:
-    yield
-
-    # Teardown:
-    shutil.rmtree(TMP_DIR)
 
 
 def touch(path):
