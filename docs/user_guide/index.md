@@ -123,7 +123,7 @@ The `runs/site` directory contains the log files, output files, and tasks for ru
 ```
 <met_file_basename>_R<realisation_key>_S<science_config_key>
 ```
-where `met_file_base_name` is the base file name of the met file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
+where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
 
 The `runs/site/tasks/<task>` directory contains the executable and input files for each task.
 
