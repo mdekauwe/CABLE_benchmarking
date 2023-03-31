@@ -55,7 +55,7 @@ def main(args):
     validate_environment(project=config['project'], modules=config['modules'])
 
     tasks = get_fluxnet_tasks(
-        config=config,
+        realisations=config["realisations"],
         science_config=config['science_configurations'],
         met_sites=get_met_sites(config['experiment'])
     )

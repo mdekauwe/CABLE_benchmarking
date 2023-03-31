@@ -175,7 +175,7 @@ class Task:
             self.patch_namelist_file(self.branch_patch, root_dir=root_dir)
 
 
-def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
+def get_fluxnet_tasks(realisations: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
     tasks = [
@@ -187,7 +187,7 @@ def get_fluxnet_tasks(config: dict, science_config: dict, met_sites: list[str]) 
             sci_conf_key=key,
             sci_config=science_config[key]
         )
-        for id, branch in config["realisations"].items()
+        for id, branch in realisations.items()
         for site in met_sites
         for key in science_config
     ]
