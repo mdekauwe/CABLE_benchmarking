@@ -12,7 +12,6 @@ __email__ = "mdekauwe@gmail.com"
 
 import os
 import subprocess
-import shlex
 import getpass
 from typing import Union
 from pathlib import Path
@@ -68,7 +67,7 @@ def get_password() -> str:
 def svn_info_show_item(path: Union[Path, str], item: str) -> str:
     """A wrapper around `svn info --show-item <item> <path>`."""
     cmd = f"svn info --show-item {item} {path}"
-    out = subprocess.run(shlex.split(cmd), capture_output=True, text=True, check=True)
+    out = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
     return out.stdout.strip()
 
 
@@ -85,9 +84,11 @@ def checkout_cable_auxiliary():
     if need_pass():
         cmd += f" --password {get_password()}"
 
-    error = subprocess.call(cmd, shell=True)
-    if error != 0:
-        raise RuntimeError("Error checking out CABLE-AUX")
+    try:
+        subprocess.run(cmd, shell=True, check=True)
+    except subprocess.CalledProcessError as err:
+        print(f"Error checking out CABLE-AUX: {err.cmd}")
+        raise
 
     # Check relevant files exist in repository:
 
@@ -127,9 +128,11 @@ def checkout_cable(branch_config: dict, user: str):
     if need_pass():
         cmd += f" --password {get_password()}"
 
-    error = subprocess.call(cmd, shell=True)
-    if error != 0:
-        raise RuntimeError("Error downloading repo")
+    try:
+        subprocess.run(cmd, shell=True, check=True)
+    except subprocess.CalledProcessError as err:
+        print(f"Error checking out {branch_config['name']}: {err.cmd}")
+        raise
 
     # Write last change revision number to rev_number.log file
     rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")

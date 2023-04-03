@@ -2,7 +2,6 @@
 
 import os
 import sys
-import shlex
 import subprocess
 from pathlib import Path
 
@@ -62,8 +61,8 @@ def create_job_script(
 def submit_job():
     """Submits the job script specified by `QSUB_FNAME`."""
 
-    cmd = shlex.split(f"qsub {QSUB_FNAME}")
-    proc = subprocess.run(cmd, capture_output=True, check=False)
+    cmd = f"qsub {QSUB_FNAME}"
+    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
     if proc.returncode != 0:
         print("Error when submitting job to NCI queue")
         print(proc.stderr)
