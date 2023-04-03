@@ -83,7 +83,7 @@ def main(args):
         print("Running the single sites tests ")
 
         tasks = get_fluxnet_tasks(
-            config=config,
+            realisations=config["realisations"],
             science_config=config['science_configurations'],
             met_sites=get_met_sites(config['experiment'])
         )
