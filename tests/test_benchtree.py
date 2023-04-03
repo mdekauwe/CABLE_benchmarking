@@ -1,8 +1,6 @@
 """`pytest` tests for benchtree.py"""
 
-import shutil
 from pathlib import Path
-import pytest
 
 
 from tests.common import TMP_DIR
@@ -10,22 +8,6 @@ from tests.common import make_barebones_config
 from benchcab.task import Task
 from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree, setup_src_dir
 from benchcab.bench_config import get_science_config_id
-
-
-@pytest.fixture(autouse=True)
-def run_around_tests():
-    """`pytest` autouse fixture that runs around each test."""
-
-    # Setup:
-    if TMP_DIR.exists():
-        shutil.rmtree(TMP_DIR)
-    TMP_DIR.mkdir()
-
-    # Run the test:
-    yield
-
-    # Teardown:
-    shutil.rmtree(TMP_DIR)
 
 
 def test_setup_directory_tree():

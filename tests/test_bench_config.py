@@ -4,6 +4,7 @@ import os
 import pytest
 import yaml
 
+from tests.common import TMP_DIR
 from tests.common import make_barebones_config
 from benchcab.bench_config import check_config, read_config, get_science_config_id
 from benchcab.internal import DEFAULT_SCIENCE_CONFIGURATIONS
@@ -220,7 +221,7 @@ def test_read_config():
 
     # Success case: write config to file, then read config from file
     config = make_barebones_config()
-    filename = "config-barebones.yaml"
+    filename = TMP_DIR / "config-barebones.yaml"
 
     with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
@@ -233,7 +234,7 @@ def test_read_config():
     # should return a config with the default revision number
     config = make_barebones_config()
     config["realisations"][0].pop("revision")
-    filename = "config-barebones.yaml"
+    filename = TMP_DIR / "config-barebones.yaml"
 
     with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
@@ -243,12 +244,11 @@ def test_read_config():
     assert config != res
     assert res["realisations"][0]["revision"] == -1
 
-
     # Success case: a specified branch with a missing patch dictionary
     # should return a config with patch set to its default value
     config = make_barebones_config()
     config["realisations"][0].pop("patch")
-    filename = "config-barebones.yaml"
+    filename = TMP_DIR / "config-barebones.yaml"
 
     with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
@@ -258,13 +258,12 @@ def test_read_config():
     assert config != res
     assert res["realisations"][0]["patch"] == {}
 
-
     # Success case: a config with missing science_configurations key should return a
     # config with config['science_configurations'] set to its default value
     config = make_barebones_config()
     config.pop("science_configurations")
-    filename = "config-barebones.yaml"
-    
+    filename = TMP_DIR / "config-barebones.yaml"
+
     with open(filename, "w", encoding="utf-8") as file:
         yaml.dump(config, file)
 
