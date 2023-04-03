@@ -1,1 +1,3 @@
-import benchcab.benchcab as benchcab
+import importlib.metadata
+
+__version__ = importlib.metadata.version('benchcab')
