@@ -10,121 +10,108 @@ from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment, get_met_sites
-from benchcab.task import get_fluxnet_tasks
+from benchcab.internal import validate_environment, get_met_sites, MULTIPROCESS
+from benchcab.task import get_fluxnet_tasks, Task
+from benchcab.cli import generate_parser
+from benchcab.run_cable_site import run_tasks, run_tasks_in_parallel
 
 
-def parse_args(arglist):
-    """Parse arguments given by `arglist`."""
-
-    parser = argparse.ArgumentParser(description="Run the benchmarking for CABLE")
-    parser.add_argument(
-        "-c",
-        "--config",
-        help="Config filename",
-        default="config.yaml"
-    )
-    parser.add_argument(
-        "-f",
-        "--fluxnet",
-        help="Runs the tests for the Fluxnet sites only",
-        action="store_true"
-    )
-    parser.add_argument(
-        "-w",
-        "--world",
-        help="Runs the global tests only",
-        action="store_true"
-    )
-    parser.add_argument(
-        "-b",
-        "--bitrepro",
-        help="Check bit reproducibility, not implemented yet",
-        action="store_true"
-    )
-    parser.add_argument(
-        "-r",
-        "--rebuild",
-        action="store_true",
-        default=False,
-        help="Rebuild src?"
-    )
-
-    args = parser.parse_args(arglist)
-
-    if args.bitrepro:
-        print("Bit reproducibility not implemented yet")
-        sys.exit()
-
-    if args.fluxnet and args.world:
-        print("You can not specify -f and -g together.")
-        print("To run all the tests, do not specify any of those 2 options.")
-        sys.exit()
-
-    return args
-
-
-def main(args):
-    """Main program entry point for `benchcab`."""
-
-    config = read_config(args.config)
-
-    validate_environment(project=config['project'], modules=config['modules'])
-
-    # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
-
+def benchcab_checkout(config: dict):
+    """Endpoint for `benchcab checkout`."""
     setup_src_dir()
     for branch in config['realisations'].values():
         checkout_cable(branch_config=branch, user=config['user'])
     checkout_cable_auxiliary()
     archive_rev_number()
 
-    if args.fluxnet:
-        print("Running the single sites tests ")
 
-        tasks = get_fluxnet_tasks(
-            realisations=config["realisations"],
-            science_config=config['science_configurations'],
-            met_sites=get_met_sites(config['experiment'])
-        )
+def benchcab_build(config: dict):
+    """Endpoint for `benchcab build`."""
+    for branch in config['realisations'].values():
+        build_cable_offline(branch['name'], config['modules'])
 
-        setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
 
-        for branch in config['realisations'].values():
-            build_cable_offline(branch['name'], config['modules'])
+def benchcab_fluxnet_setup_work_directory(tasks: list[Task]):
+    """Endpoint for `benchcab fluxnet-setup-work-dir`."""
+    setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
+    for task in tasks:
+        task.setup_task()
 
-        for task in tasks:
-            task.setup_task()
 
+def benchcab_fluxnet_run_tasks(args: argparse.Namespace, config: dict, tasks: list[Task]):
+    """Endpoint for `benchcab fluxnet-run-tasks [--no-submit]`."""
+    if args.no_submit:
+        if MULTIPROCESS:
+            run_tasks_in_parallel(tasks)
+        else:
+            run_tasks(tasks)
+    else:
         create_job_script(
             project=config['project'],
             user=config['user'],
             config_path=args.config,
             modules=config['modules']
         )
-
         submit_job()
 
-    if args.world:
-        print("Running the spatial tests ")
-        print("Warning: spatial tests not yet implemented")
+
+def benchcab_fluxnet(args: argparse.Namespace, config: dict, tasks: list[Task]):
+    """Endpoint for `benchcab fluxnet [--no-submit]`."""
+    benchcab_checkout(config)
+    benchcab_build(config)
+    benchcab_fluxnet_setup_work_directory(tasks)
+    benchcab_fluxnet_run_tasks(args, config, tasks)
 
 
-def main_parse_args(arglist):
-    """Call main with list of arguments. Callable from tests."""
-    # Must return so that check command return value is passed back to calling routine
-    # otherwise py.test will fail
-    return main(parse_args(arglist))
-
-
-def main_argv():
-    """Call main and pass command line arguments.
+def main():
+    """Main program entry point for `benchcab`.
 
     This is required for setup.py entry_points
     """
-    main_parse_args(sys.argv[1:])
+
+    args = generate_parser().parse_args(sys.argv[1:] if sys.argv[1:] else ['-h'])
+    config = read_config(args.config)
+    validate_environment(project=config['project'], modules=config['modules'])
+
+    if args.subcommand == 'checkout':
+        benchcab_checkout(config)
+        return
+
+    if args.subcommand == 'build':
+        benchcab_build(config)
+        return
+
+    if args.subcommand == 'fluxnet':
+        tasks = get_fluxnet_tasks(
+            realisations=config["realisations"],
+            science_config=config['science_configurations'],
+            met_sites=get_met_sites(config['experiment'])
+        )
+        benchcab_fluxnet(args, config, tasks)
+        return
+
+    if args.subcommand == 'fluxnet-setup-work-dir':
+        tasks = get_fluxnet_tasks(
+            realisations=config["realisations"],
+            science_config=config['science_configurations'],
+            met_sites=get_met_sites(config['experiment'])
+        )
+        benchcab_fluxnet_setup_work_directory(tasks)
+        return
+
+    if args.subcommand == 'fluxnet-run-tasks':
+        tasks = get_fluxnet_tasks(
+            realisations=config["realisations"],
+            science_config=config['science_configurations'],
+            met_sites=get_met_sites(config['experiment'])
+        )
+        benchcab_fluxnet_run_tasks(args, config, tasks)
+        return
+
+    if args.subcommand == 'spatial':
+        print("Warning: spatial tests not yet implemented")
+        return
 
 
 if __name__ == "__main__":
-
-    main_argv()
+    main()
