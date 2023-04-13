@@ -1,6 +1,7 @@
 """Contains the definition of the command line interface used for `benchcab`."""
 
 import argparse
+import benchcab
 
 
 def generate_parser() -> argparse.ArgumentParser:
@@ -38,6 +39,13 @@ def generate_parser() -> argparse.ArgumentParser:
         description="benchcab is a tool for evaluation of the CABLE land surface model.",
         parents=[args_help],
         add_help=False
+    )
+
+    main_parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"benchcab {benchcab.__version__}"
     )
 
     subparsers = main_parser.add_subparsers(dest='subcommand', metavar="command")
