@@ -5,6 +5,7 @@
 import argparse
 import sys
 
+import benchcab
 from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
@@ -48,6 +49,12 @@ def parse_args(arglist):
         action="store_true",
         default=False,
         help="Rebuild src?"
+    )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"benchcab {benchcab.__version__}"
     )
 
     args = parser.parse_args(arglist)
