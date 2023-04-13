@@ -45,7 +45,8 @@ def generate_parser() -> argparse.ArgumentParser:
         "-V",
         "--version",
         action="version",
-        version=f"benchcab {benchcab.__version__}"
+        version=f"benchcab {benchcab.__version__}",
+        help="Show program's version number and exit."
     )
 
     subparsers = main_parser.add_subparsers(dest='subcommand', metavar="command")
