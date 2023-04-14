@@ -100,6 +100,13 @@ def check_config(config: dict):
                 "dictionary that is compatible with the f90nml python package."
             )
 
+        # the "build_script" key is optional
+        if "build_script" in branch_config and not isinstance(branch_config["build_script"], str):
+            raise TypeError(
+                f"The 'build_script' field in realisation '{branch_id}' must be a "
+                "string."
+            )
+
 
 def get_science_config_id(key: str) -> str:
     """Get ID from science config key."""
@@ -125,6 +132,8 @@ def read_config(config_path: str) -> dict:
         branch.setdefault('revision', -1)
         # Add "patch" key if not provided and set to default value {}
         branch.setdefault('patch', {})
+        # Add "build_script" key if not provided and set to default value ""
+        branch.setdefault('build_script', "")
 
     # Add "science_configurations" if not provided and set to default value
     if "science_configurations" not in config:

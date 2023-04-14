@@ -9,8 +9,12 @@ import benchcab
 from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
-from benchcab.build_cable import build_cable_offline
-from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
+from benchcab.build_cable import build_cable
+from benchcab.get_cable import (
+    checkout_cable,
+    checkout_cable_auxiliary,
+    archive_rev_number,
+)
 from benchcab.internal import validate_environment, get_met_sites
 from benchcab.task import get_fluxnet_tasks
 
@@ -19,42 +23,27 @@ def parse_args(arglist):
     """Parse arguments given by `arglist`."""
 
     parser = argparse.ArgumentParser(description="Run the benchmarking for CABLE")
-    parser.add_argument(
-        "-c",
-        "--config",
-        help="Config filename",
-        default="config.yaml"
-    )
+    parser.add_argument("-c", "--config", help="Config filename", default="config.yaml")
     parser.add_argument(
         "-f",
         "--fluxnet",
         help="Runs the tests for the Fluxnet sites only",
-        action="store_true"
+        action="store_true",
     )
     parser.add_argument(
-        "-w",
-        "--world",
-        help="Runs the global tests only",
-        action="store_true"
+        "-w", "--world", help="Runs the global tests only", action="store_true"
     )
     parser.add_argument(
         "-b",
         "--bitrepro",
         help="Check bit reproducibility, not implemented yet",
-        action="store_true"
-    )
-    parser.add_argument(
-        "-r",
-        "--rebuild",
         action="store_true",
-        default=False,
-        help="Rebuild src?"
     )
     parser.add_argument(
-        "-V",
-        "--version",
-        action="version",
-        version=f"benchcab {benchcab.__version__}"
+        "-r", "--rebuild", action="store_true", default=False, help="Rebuild src?"
+    )
+    parser.add_argument(
+        "-V", "--version", action="version", version=f"benchcab {benchcab.__version__}"
     )
 
     args = parser.parse_args(arglist)
@@ -76,13 +65,13 @@ def main(args):
 
     config = read_config(args.config)
 
-    validate_environment(project=config['project'], modules=config['modules'])
+    validate_environment(project=config["project"], modules=config["modules"])
 
     # TODO(Sean) add command line argument 'clean' or 'new' to remove existing directories
 
     setup_src_dir()
-    for branch in config['realisations'].values():
-        checkout_cable(branch_config=branch, user=config['user'])
+    for branch in config["realisations"].values():
+        checkout_cable(branch_config=branch, user=config["user"])
     checkout_cable_auxiliary()
     archive_rev_number()
 
@@ -91,23 +80,27 @@ def main(args):
 
         tasks = get_fluxnet_tasks(
             realisations=config["realisations"],
-            science_config=config['science_configurations'],
-            met_sites=get_met_sites(config['experiment'])
+            science_config=config["science_configurations"],
+            met_sites=get_met_sites(config["experiment"]),
         )
 
         setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
 
-        for branch in config['realisations'].values():
-            build_cable_offline(branch['name'], config['modules'])
+        for branch in config["realisations"].values():
+            build_cable(
+                config_build_script=branch["build_script"],
+                branch_name=branch["name"],
+                modules=config["modules"],
+            )
 
         for task in tasks:
             task.setup_task()
 
         create_job_script(
-            project=config['project'],
-            user=config['user'],
+            project=config["project"],
+            user=config["user"],
             config_path=args.config,
-            modules=config['modules']
+            modules=config["modules"],
         )
 
         submit_job()
@@ -133,5 +126,4 @@ def main_argv():
 
 
 if __name__ == "__main__":
-
     main_argv()
