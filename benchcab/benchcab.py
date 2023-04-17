@@ -63,6 +63,20 @@ def benchcab_fluxnet(args: argparse.Namespace, config: dict, tasks: list[Task]):
     benchcab_fluxnet_run_tasks(args, config, tasks)
 
 
+def benchcab_spatial():
+    """Endpoint for `benchcab spatial`."""
+
+
+def benchcab_run(args: argparse.Namespace, config: dict):
+    """Endpoint for `benchcab run`."""
+    benchcab_fluxnet(args, config, tasks=get_fluxnet_tasks(
+        realisations=config["realisations"],
+        science_config=config['science_configurations'],
+        met_sites=get_met_sites(config['experiment'])
+    ))
+    benchcab_spatial()
+
+
 def main():
     """Main program entry point for `benchcab`.
 
@@ -73,44 +87,43 @@ def main():
     config = read_config(args.config)
     validate_environment(project=config['project'], modules=config['modules'])
 
+    if args.subcommand == 'run':
+        benchcab_fluxnet(args, config, tasks=get_fluxnet_tasks(
+            realisations=config["realisations"],
+            science_config=config['science_configurations'],
+            met_sites=get_met_sites(config['experiment'])
+        ))
+        benchcab_spatial()
+
     if args.subcommand == 'checkout':
         benchcab_checkout(config)
-        return
 
     if args.subcommand == 'build':
         benchcab_build(config)
-        return
 
     if args.subcommand == 'fluxnet':
-        tasks = get_fluxnet_tasks(
+        benchcab_fluxnet(args, config, tasks=get_fluxnet_tasks(
             realisations=config["realisations"],
             science_config=config['science_configurations'],
             met_sites=get_met_sites(config['experiment'])
-        )
-        benchcab_fluxnet(args, config, tasks)
-        return
+        ))
 
     if args.subcommand == 'fluxnet-setup-work-dir':
-        tasks = get_fluxnet_tasks(
+        benchcab_fluxnet_setup_work_directory(tasks=get_fluxnet_tasks(
             realisations=config["realisations"],
             science_config=config['science_configurations'],
             met_sites=get_met_sites(config['experiment'])
-        )
-        benchcab_fluxnet_setup_work_directory(tasks)
-        return
+        ))
 
     if args.subcommand == 'fluxnet-run-tasks':
-        tasks = get_fluxnet_tasks(
+        benchcab_fluxnet_run_tasks(args, config, tasks=get_fluxnet_tasks(
             realisations=config["realisations"],
             science_config=config['science_configurations'],
             met_sites=get_met_sites(config['experiment'])
-        )
-        benchcab_fluxnet_run_tasks(args, config, tasks)
-        return
+        ))
 
     if args.subcommand == 'spatial':
-        print("Warning: spatial tests not yet implemented")
-        return
+        benchcab_spatial()
 
 
 if __name__ == "__main__":

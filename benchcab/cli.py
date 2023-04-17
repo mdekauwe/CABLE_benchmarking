@@ -51,6 +51,15 @@ def generate_parser() -> argparse.ArgumentParser:
 
     subparsers = main_parser.add_subparsers(dest='subcommand', metavar="command")
 
+    # subcommand: 'benchcab run'
+    subparsers.add_parser(
+        'run',
+        parents=[args_help, args_subcommand, args_run_subcommand],
+        help="Run all test suites for CABLE.",
+        description="""Runs all test suites for CABLE.""",
+        add_help=False
+    )
+
     # subcommand: 'benchcab fluxnet'
     subparsers.add_parser(
         'fluxnet',

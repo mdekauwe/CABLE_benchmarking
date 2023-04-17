@@ -9,6 +9,22 @@ def test_cli_parser():
 
     parser = generate_parser()
 
+    # Success case: default benchcab command
+    res = vars(parser.parse_args(['run']))
+    assert res == {'subcommand': 'run', 'config': 'config.yaml', 'no_submit': False}
+
+    # Success case: default benchcab command with a user supplied config
+    res = vars(parser.parse_args(['run', '--config=my_config.yaml']))
+    assert res == {'subcommand': 'run', 'config': 'my_config.yaml', 'no_submit': False}
+
+    # Success case: default benchcab command with --no-submit enabled
+    res = vars(parser.parse_args(['run', '--no-submit']))
+    assert res == {'subcommand': 'run', 'config': 'config.yaml', 'no_submit': True}
+
+    # Success case: default benchcab command with a user supplied config with --no-submit enabled
+    res = vars(parser.parse_args(['run', '--config=my_config.yaml', '--no-submit']))
+    assert res == {'subcommand': 'run', 'config': 'my_config.yaml', 'no_submit': True}
+
     # Success case: default checkout command
     res = vars(parser.parse_args(['checkout']))
     assert res == {'subcommand': 'checkout', 'config': 'config.yaml'}
