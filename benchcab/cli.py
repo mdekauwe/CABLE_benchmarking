@@ -56,7 +56,8 @@ def generate_parser() -> argparse.ArgumentParser:
         'run',
         parents=[args_help, args_subcommand, args_run_subcommand],
         help="Run all test suites for CABLE.",
-        description="""Runs all test suites for CABLE.""",
+        description="""Runs all test suites for CABLE: fluxnet sites and spatial test suites. This
+        command runs the full default set of tests for CABLE.""",
         add_help=False
     )
 
@@ -65,10 +66,9 @@ def generate_parser() -> argparse.ArgumentParser:
         'fluxnet',
         parents=[args_help, args_subcommand, args_run_subcommand],
         help="Run the fluxnet test suite for CABLE.",
-        description="""Runs the default fluxnet test suite for CABLE. To launch the test suite, run
-        'benchcab fluxnet'. This command is the equivalent of running 'benchcab checkout', 'benchcab
-        build', 'benchcab fluxnet-setup-work-dir', and 'benchcab fluxnet-run-tasks'
-        sequentially.""",
+        description="""Runs the default fluxnet test suite for CABLE. This command is the
+        equivalent of running 'benchcab checkout', 'benchcab build', 'benchcab
+        fluxnet-setup-work-dir', and 'benchcab fluxnet-run-tasks' sequentially.""",
         add_help=False
     )
 
@@ -96,9 +96,9 @@ def generate_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         'fluxnet-setup-work-dir',
         parents=[args_help, args_subcommand],
-        help="Run the work directory setup step of the main fluxnet command.",
-        description="""Generates the benchcab work directory in the current working directory so
-        that tasks can be run.""",
+        help="Run the work directory setup step of the fluxnet command.",
+        description="""Generates the benchcab site/run directory tree in the current working
+        directory so that tasks can be run.""",
         add_help=False
     )
 
@@ -107,7 +107,7 @@ def generate_parser() -> argparse.ArgumentParser:
         'fluxnet-run-tasks',
         parents=[args_help, args_subcommand, args_run_subcommand],
         help="Run the fluxnet tasks of the main fluxnet command.",
-        description="""Runs the fluxnet tasks for the main fluxnet test suite. By default, this
+        description="""Runs the fluxnet tasks for the fluxnet test suite. By default, this
         command generates a PBS job script and submits it to the queue.""",
         add_help=False
     )
@@ -117,8 +117,7 @@ def generate_parser() -> argparse.ArgumentParser:
         'spatial',
         parents=[args_help, args_subcommand],
         help="Run the spatial tests only.",
-        description="""Runs the default spatial test suite for CABLE. To launch the test suite,
-        run 'benchcab spatial'.""",
+        description="""Runs the default spatial test suite for CABLE.""",
         add_help=False
     )
 
