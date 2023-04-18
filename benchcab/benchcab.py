@@ -2,7 +2,6 @@
 
 """Contains the main program entry point for `benchcab`."""
 
-import argparse
 import sys
 
 from benchcab.job_script import create_job_script, submit_job
@@ -16,65 +15,106 @@ from benchcab.cli import generate_parser
 from benchcab.run_cable_site import run_tasks, run_tasks_in_parallel
 
 
-def benchcab_checkout(config: dict):
-    """Endpoint for `benchcab checkout`."""
-    setup_src_dir()
-    for branch in config['realisations'].values():
-        checkout_cable(branch_config=branch, user=config['user'])
-    checkout_cable_auxiliary()
-    archive_rev_number()
+class Benchcab():
+    """A class that represents the `benchcab` application."""
 
+    def __init__(self) -> None:
+        self.args = generate_parser().parse_args(sys.argv[1:] if sys.argv[1:] else ['-h'])
+        self.config = read_config(self.args.config)
+        self.tasks: list[Task] = []  # initialise fluxnet tasks lazily
+        validate_environment(project=self.config['project'], modules=self.config['modules'])
 
-def benchcab_build(config: dict):
-    """Endpoint for `benchcab build`."""
-    for branch in config['realisations'].values():
-        build_cable_offline(branch['name'], config['modules'])
-
-
-def benchcab_fluxnet_setup_work_directory(tasks: list[Task]):
-    """Endpoint for `benchcab fluxnet-setup-work-dir`."""
-    setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
-    for task in tasks:
-        task.setup_task()
-
-
-def benchcab_fluxnet_run_tasks(args: argparse.Namespace, config: dict, tasks: list[Task]):
-    """Endpoint for `benchcab fluxnet-run-tasks [--no-submit]`."""
-    if args.no_submit:
-        if MULTIPROCESS:
-            run_tasks_in_parallel(tasks)
-        else:
-            run_tasks(tasks)
-    else:
-        create_job_script(
-            project=config['project'],
-            user=config['user'],
-            config_path=args.config,
-            modules=config['modules']
+    def _initialise_tasks(self) -> list[Task]:
+        """A helper method that initialises and returns the `tasks` attribute."""
+        self.tasks = get_fluxnet_tasks(
+            realisations=self.config['realisations'],
+            science_config=self.config['science_configurations'],
+            met_sites=get_met_sites(self.config['experiment'])
         )
-        submit_job()
+        return self.tasks
 
+    def checkout(self):
+        """Endpoint for `benchcab checkout`."""
+        setup_src_dir()
+        for branch in self.config['realisations'].values():
+            checkout_cable(branch_config=branch, user=self.config['user'])
+        checkout_cable_auxiliary()
+        archive_rev_number()
+        return self
 
-def benchcab_fluxnet(args: argparse.Namespace, config: dict, tasks: list[Task]):
-    """Endpoint for `benchcab fluxnet [--no-submit]`."""
-    benchcab_checkout(config)
-    benchcab_build(config)
-    benchcab_fluxnet_setup_work_directory(tasks)
-    benchcab_fluxnet_run_tasks(args, config, tasks)
+    def build(self):
+        """Endpoint for `benchcab build`."""
+        for branch in self.config['realisations'].values():
+            build_cable_offline(branch['name'], self.config['modules'])
+        return self
 
+    def fluxnet_setup_work_directory(self):
+        """Endpoint for `benchcab fluxnet-setup-work-dir`."""
+        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
+        for task in tasks:
+            task.setup_task()
+        return self
 
-def benchcab_spatial():
-    """Endpoint for `benchcab spatial`."""
+    def fluxnet_run_tasks(self):
+        """Endpoint for `benchcab fluxnet-run-tasks`."""
+        if self.args.no_submit:
+            tasks = self.tasks if self.tasks else self._initialise_tasks()
+            if MULTIPROCESS:
+                run_tasks_in_parallel(tasks)
+            else:
+                run_tasks(tasks)
+        else:
+            create_job_script(
+                project=self.config['project'],
+                user=self.config['user'],
+                config_path=self.args.config,
+                modules=self.config['modules']
+            )
+            submit_job()
+        return self
 
+    def fluxnet(self):
+        """Endpoint for `benchcab fluxnet`."""
+        self.checkout() \
+            .build() \
+            .fluxnet_setup_work_directory() \
+            .fluxnet_run_tasks()
+        return self
 
-def benchcab_run(args: argparse.Namespace, config: dict):
-    """Endpoint for `benchcab run`."""
-    benchcab_fluxnet(args, config, tasks=get_fluxnet_tasks(
-        realisations=config["realisations"],
-        science_config=config['science_configurations'],
-        met_sites=get_met_sites(config['experiment'])
-    ))
-    benchcab_spatial()
+    def spatial(self):
+        """Endpoint for `benchcab spatial`."""
+        return self
+
+    def run(self):
+        """Endpoint for `benchcab run`."""
+        self.fluxnet() \
+            .spatial()
+        return self
+
+    def main(self):
+        """Main function for `benchcab`."""
+
+        if self.args.subcommand == 'run':
+            self.run()
+
+        if self.args.subcommand == 'checkout':
+            self.checkout()
+
+        if self.args.subcommand == 'build':
+            self.build()
+
+        if self.args.subcommand == 'fluxnet':
+            self.fluxnet()
+
+        if self.args.subcommand == 'fluxnet-setup-work-dir':
+            self.fluxnet_setup_work_directory()
+
+        if self.args.subcommand == 'fluxnet-run-tasks':
+            self.fluxnet_run_tasks()
+
+        if self.args.subcommand == 'spatial':
+            self.spatial()
 
 
 def main():
@@ -83,47 +123,8 @@ def main():
     This is required for setup.py entry_points
     """
 
-    args = generate_parser().parse_args(sys.argv[1:] if sys.argv[1:] else ['-h'])
-    config = read_config(args.config)
-    validate_environment(project=config['project'], modules=config['modules'])
-
-    if args.subcommand == 'run':
-        benchcab_fluxnet(args, config, tasks=get_fluxnet_tasks(
-            realisations=config["realisations"],
-            science_config=config['science_configurations'],
-            met_sites=get_met_sites(config['experiment'])
-        ))
-        benchcab_spatial()
-
-    if args.subcommand == 'checkout':
-        benchcab_checkout(config)
-
-    if args.subcommand == 'build':
-        benchcab_build(config)
-
-    if args.subcommand == 'fluxnet':
-        benchcab_fluxnet(args, config, tasks=get_fluxnet_tasks(
-            realisations=config["realisations"],
-            science_config=config['science_configurations'],
-            met_sites=get_met_sites(config['experiment'])
-        ))
-
-    if args.subcommand == 'fluxnet-setup-work-dir':
-        benchcab_fluxnet_setup_work_directory(tasks=get_fluxnet_tasks(
-            realisations=config["realisations"],
-            science_config=config['science_configurations'],
-            met_sites=get_met_sites(config['experiment'])
-        ))
-
-    if args.subcommand == 'fluxnet-run-tasks':
-        benchcab_fluxnet_run_tasks(args, config, tasks=get_fluxnet_tasks(
-            realisations=config["realisations"],
-            science_config=config['science_configurations'],
-            met_sites=get_met_sites(config['experiment'])
-        ))
-
-    if args.subcommand == 'spatial':
-        benchcab_spatial()
+    app = Benchcab()
+    app.main()
 
 
 if __name__ == "__main__":
