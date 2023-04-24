@@ -56,7 +56,7 @@ def main(args):
 
     tasks = get_fluxnet_tasks(
         realisations=config["realisations"],
-        science_config=config['science_configurations'],
+        science_configurations=config['science_configurations'],
         met_sites=get_met_sites(config['experiment'])
     )
 

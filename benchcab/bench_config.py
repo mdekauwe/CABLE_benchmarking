@@ -4,7 +4,6 @@ A module containing all *_config() functions.
 """
 
 from pathlib import Path
-import re
 import yaml
 
 from benchcab.internal import MEORG_EXPERIMENTS, DEFAULT_SCIENCE_CONFIGURATIONS
@@ -23,8 +22,14 @@ def check_config(config: dict):
             "Those are 'realisations', 'project', 'user', 'modules'"
         )
 
-    if not isinstance(config["realisations"], dict):
-        raise TypeError("The 'realisations' key must be a dictionary.")
+    if not isinstance(config["realisations"], list):
+        raise TypeError("The 'realisations' key must be a list.")
+
+    if config["realisations"] == []:
+        raise ValueError("The 'realisations' key cannot be empty.")
+
+    if any(not isinstance(branch, dict) for branch in config["realisations"]):
+        raise TypeError("The 'realisations' key must contain dictionary objects.")
 
     if not isinstance(config["project"], str):
         raise TypeError("The 'project' key must be a string.")
@@ -40,16 +45,11 @@ def check_config(config: dict):
 
     # the "science_configurations" key is optional
     if "science_configurations" in config:
-        if not isinstance(config["science_configurations"], dict):
-            raise TypeError("The 'science_configurations' key must be a dictionary.")
-        if config["science_configurations"] == {}:
+        if not isinstance(config["science_configurations"], list):
+            raise TypeError("The 'science_configurations' key must be a list.")
+        if config["science_configurations"] == []:
             raise ValueError("The 'science_configurations' key cannot be empty.")
-        if not all(re.fullmatch("sci[0-9]+", key) for key in config["science_configurations"]):
-            raise ValueError(
-                "Science config keys must be in the format: "
-                "sci<count> where count = 0, 1, 2, ..."
-            )
-        if not all(isinstance(value, dict) for value in config["science_configurations"].values()):
+        if not all(isinstance(value, dict) for value in config["science_configurations"]):
             raise TypeError(
                 "Science config settings must be specified using a dictionary "
                 "that is compatible with the f90nml python package."
@@ -62,10 +62,7 @@ def check_config(config: dict):
             "Valid experiments are: " ", ".join(valid_experiments)
         )
 
-    if len(config["realisations"]) != 2:
-        raise ValueError("You need to list 2 branches in 'realisations'")
-
-    for branch_id, branch_config in config['realisations'].items():
+    for branch_id, branch_config in enumerate(config['realisations']):
         required_keys = ["name", "trunk", "share_branch"]
         if any(key not in branch_config for key in required_keys):
             raise ValueError(
@@ -101,17 +98,6 @@ def check_config(config: dict):
             )
 
 
-def get_science_config_id(key: str) -> str:
-    """Get ID from science config key."""
-    match = re.fullmatch("sci([0-9]+)", key)
-    if not match:
-        raise ValueError(
-            "Science config keys must be in the format: "
-            "sci<count> where count = 0, 1, 2, ..."
-        )
-    return match.group(1)
-
-
 def read_config(config_path: str) -> dict:
     """Reads the config file and returns a dictionary containing the configurations."""
 
@@ -120,14 +106,13 @@ def read_config(config_path: str) -> dict:
 
     check_config(config)
 
-    for branch in config['realisations'].values():
+    for branch in config['realisations']:
         # Add "revision" key if not provided and set to default value -1, i.e. HEAD of branch
         branch.setdefault('revision', -1)
         # Add "patch" key if not provided and set to default value {}
         branch.setdefault('patch', {})
 
     # Add "science_configurations" if not provided and set to default value
-    if "science_configurations" not in config:
-        config["science_configurations"] = DEFAULT_SCIENCE_CONFIGURATIONS
+    config.setdefault("science_configurations", DEFAULT_SCIENCE_CONFIGURATIONS)
 
     return config

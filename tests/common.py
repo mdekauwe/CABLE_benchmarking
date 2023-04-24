@@ -17,15 +17,15 @@ def make_barebones_config() -> dict:
             "openmpi/4.1.0",
             "netcdf/4.7.4",
         ],
-        "realisations": {
-            0: {
+        "realisations": [
+            {
                 "name": "trunk",
                 "revision": 9000,
                 "trunk": True,
                 "share_branch": False,
                 "patch": {},
             },
-            1: {
+            {
                 "name": "v3.0-YP-changes",
                 "revision": -1,
                 "trunk": False,
@@ -34,9 +34,9 @@ def make_barebones_config() -> dict:
                     "cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}
                 },
             },
-        },
-        "science_configurations": {
-            "sci0": {
+        ],
+        "science_configurations": [
+            {
                 "cable": {
                     "cable_user": {
                         "GS_SWITCH": "medlyn",
@@ -44,7 +44,7 @@ def make_barebones_config() -> dict:
                     }
                 }
             },
-            "sci1": {
+            {
                 "cable": {
                     "cable_user": {
                         "GS_SWITCH": "leuning",
@@ -52,6 +52,6 @@ def make_barebones_config() -> dict:
                     }
                 }
             },
-        }
+        ]
     }
     return conf
