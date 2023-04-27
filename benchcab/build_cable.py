@@ -177,7 +177,7 @@ def build_cable(config_build_script: str, branch_name: str, modules: list):
     os.chdir(build_script_path.parent)
     clean_if_needed()
     # The following add the "mpi" option to the build if we want to compile with MPI
-    cmd = f"{build_script_path.stem} {'mpi'*MPI}"
+    cmd = f"{build_script_path} {'mpi'*MPI}"
     error = subprocess.call(cmd, shell=True)
     if error == 1:
         raise ("Error building executable")
