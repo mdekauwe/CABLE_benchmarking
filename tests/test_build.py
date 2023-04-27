@@ -1,14 +1,11 @@
 """`pytest` tests for task.py"""
 
-import os
 from pathlib import Path
 
 import pytest
 
 from tests.common import TMP_DIR
-from benchcab.build_cable import prepare_build, adjust_build_script
-from benchcab import internal
-from benchcab.benchtree import setup_src_dir
+from benchcab.build_cable import prepare_build
 
 branch_name = "real1"
 compile_dir = "offline"

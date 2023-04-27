@@ -85,7 +85,7 @@ def change_build_lines(filelines, modules, filename=Path):
     outlines = add_module_load(outlines, nindent, modules)
 
     # add the end of the file as in the original file
-    outlines.extend(nomodulelines[purge_line + 1:])
+    outlines.extend(nomodulelines[purge_line + 1 :])
 
     return outlines
 
@@ -160,7 +160,7 @@ def prepare_build(
         )
         assert (
             default_script_path.is_file(),
-            f"The default build script, {default_script_path}, is not a valid file."
+            f"The default build script, {default_script_path}, could not be found."
             "Do you need to specify a different build script with the "
             "'build_script' option in config.yaml?",
         )
