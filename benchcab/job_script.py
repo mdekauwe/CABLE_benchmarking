@@ -52,7 +52,7 @@ def create_job_script(
         file.write("module load conda/analysis3-unstable\n")
         for module_name in modules:
             file.write(f"module add {module_name}\n")
-        file.write(f"benchsiterun --config={config_path}")
+        file.write(f"benchcab fluxnet-run-tasks --no-submit --config={config_path}")
         file.write("\n")
 
     os.chmod(QSUB_FNAME, 0o755)

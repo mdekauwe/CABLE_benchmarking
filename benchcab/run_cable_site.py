@@ -16,11 +16,42 @@ __email__ = "mdekauwe@gmail.com"
 import os
 import subprocess
 from pathlib import Path
+from multiprocessing import cpu_count, Process
 import netCDF4
+import numpy as np
 
 from benchcab.get_cable import svn_info_show_item
-from benchcab.internal import CWD, SRC_DIR, SITE_TASKS_DIR, SITE_OUTPUT_DIR, CABLE_EXE, CABLE_NML
+from benchcab.internal import (
+    CWD,
+    SRC_DIR,
+    SITE_TASKS_DIR,
+    SITE_OUTPUT_DIR,
+    CABLE_EXE,
+    CABLE_NML,
+    NUM_CORES
+)
 from benchcab.task import Task
+
+
+def run_tasks_in_parallel(tasks: list[Task]):
+    """Runs tasks in parallel by scattering tasks across multiple processes."""
+
+    num_cores = cpu_count() if NUM_CORES is None else NUM_CORES
+    chunk_size = int(np.ceil(len(tasks) / num_cores))
+
+    jobs = []
+    for i in range(num_cores):
+        start = chunk_size * i
+        end = min(chunk_size * (i + 1), len(tasks))
+
+        # setup a list of processes that we want to run
+        proc = Process(target=run_tasks, args=[tasks[start:end]])
+        proc.start()
+        jobs.append(proc)
+
+    # wait for all multiprocessing processes to finish
+    for j in jobs:
+        j.join()
 
 
 def run_tasks(tasks: list[Task], verbose=False):
