@@ -84,7 +84,10 @@ class Benchcab:
 
     def fluxnet(self):
         """Endpoint for `benchcab fluxnet`."""
-        self.checkout().build().fluxnet_setup_work_directory().fluxnet_run_tasks()
+        self.checkout()
+        self.build()
+        self.fluxnet_setup_work_directory()
+        self.fluxnet_run_tasks()
         return self
 
     def spatial(self):
@@ -93,7 +96,8 @@ class Benchcab:
 
     def run(self):
         """Endpoint for `benchcab run`."""
-        self.fluxnet().spatial()
+        self.fluxnet()
+        self.spatial()
         return self
 
     def main(self):
