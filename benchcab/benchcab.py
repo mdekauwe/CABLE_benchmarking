@@ -9,7 +9,14 @@ from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import build_cable_offline
 from benchcab.get_cable import checkout_cable, checkout_cable_auxiliary, archive_rev_number
-from benchcab.internal import validate_environment, get_met_sites, MULTIPROCESS
+from benchcab.internal import (
+    validate_environment,
+    get_met_sites,
+    MULTIPROCESS,
+    SITE_LOG_DIR,
+    SITE_TASKS_DIR,
+    SITE_OUTPUT_DIR
+)
 from benchcab.task import get_fluxnet_tasks, Task
 from benchcab.cli import generate_parser
 from benchcab.run_cable_site import run_tasks, run_tasks_in_parallel
@@ -36,42 +43,59 @@ class Benchcab():
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
         setup_src_dir()
+        print("Checking out repositories...")
         for branch in self.config['realisations'].values():
-            checkout_cable(branch_config=branch, user=self.config['user'])
-        checkout_cable_auxiliary()
+            checkout_cable(branch, self.config['user'], self.args.verbose)
+        checkout_cable_auxiliary(self.args.verbose)
         archive_rev_number()
         return self
 
     def build(self):
         """Endpoint for `benchcab build`."""
         for branch in self.config['realisations'].values():
-            build_cable_offline(branch['name'], self.config['modules'])
+            build_cable_offline(
+                branch['name'],
+                self.config['modules'],
+                self.args.verbose
+            )
         return self
 
     def fluxnet_setup_work_directory(self):
         """Endpoint for `benchcab fluxnet-setup-work-dir`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
-        setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
+        print("Setting up run directory tree for FLUXNET tests...")
+        setup_fluxnet_directory_tree(fluxnet_tasks=tasks, verbose=self.args.verbose)
+        print("Setting up tasks...")
         for task in tasks:
-            task.setup_task()
+            task.setup_task(verbose=self.args.verbose)
+        print("Successfully setup FLUXNET tasks")
         return self
 
     def fluxnet_run_tasks(self):
         """Endpoint for `benchcab fluxnet-run-tasks`."""
         if self.args.no_submit:
             tasks = self.tasks if self.tasks else self._initialise_tasks()
+            print("Running FLUXNET tasks...")
             if MULTIPROCESS:
-                run_tasks_in_parallel(tasks)
+                run_tasks_in_parallel(tasks, self.args.verbose)
             else:
-                run_tasks(tasks)
+                run_tasks(tasks, self.args.verbose)
+            print("Successfully ran FLUXNET tasks")
         else:
             create_job_script(
                 project=self.config['project'],
                 user=self.config['user'],
                 config_path=self.args.config,
-                modules=self.config['modules']
+                modules=self.config['modules'],
+                verbose=self.args.verbose,
             )
             submit_job()
+            print("The CABLE log file for each task is written to "
+                  f"{SITE_LOG_DIR}/<task_name>_log.txt")
+            print("The CABLE standard output for each task is written to "
+                  f"{SITE_TASKS_DIR}/<task_name>/out.txt")
+            print("The NetCDF output for each task is written to "
+                  f"{SITE_OUTPUT_DIR}/<task_name>_out.nc")
         return self
 
     def fluxnet(self):

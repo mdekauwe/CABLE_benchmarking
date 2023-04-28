@@ -81,6 +81,9 @@ CABLE_SOIL_NML = "cable_soilparm.nml"
 # CABLE fixed C02 concentration
 CABLE_FIXED_CO2_CONC = 400.0
 
+# CABLE standard output filename
+CABLE_STDOUT_FILENAME = "out.txt"
+
 # Contains the default science configurations used to run the CABLE test suite
 # (when a science config file is not provided by the user)
 DEFAULT_SCIENCE_CONFIGURATIONS = {

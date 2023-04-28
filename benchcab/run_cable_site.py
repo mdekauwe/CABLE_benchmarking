@@ -28,12 +28,13 @@ from benchcab.internal import (
     SITE_OUTPUT_DIR,
     CABLE_EXE,
     CABLE_NML,
+    CABLE_STDOUT_FILENAME,
     NUM_CORES
 )
 from benchcab.task import Task
 
 
-def run_tasks_in_parallel(tasks: list[Task]):
+def run_tasks_in_parallel(tasks: list[Task], verbose=False):
     """Runs tasks in parallel by scattering tasks across multiple processes."""
 
     num_cores = cpu_count() if NUM_CORES is None else NUM_CORES
@@ -45,7 +46,7 @@ def run_tasks_in_parallel(tasks: list[Task]):
         end = min(chunk_size * (i + 1), len(tasks))
 
         # setup a list of processes that we want to run
-        proc = Process(target=run_tasks, args=[tasks[start:end]])
+        proc = Process(target=run_tasks, args=[tasks[start:end], verbose])
         proc.start()
         jobs.append(proc)
 
@@ -59,23 +60,36 @@ def run_tasks(tasks: list[Task], verbose=False):
 
     for task in tasks:
         task_name = task.get_task_name()
-        os.chdir(CWD / SITE_TASKS_DIR / task_name)
-        cmd = f"./{CABLE_EXE} {CABLE_NML}"
-        if not verbose:
-            cmd += " > /dev/null 2>&1"
+        task_dir = CWD / SITE_TASKS_DIR / task_name
+        if verbose:
+            print(f"Running task {task_name}... CABLE standard output "
+                  f"saved in {task_dir / CABLE_STDOUT_FILENAME}")
+
+        if verbose:
+            print(f"cd {task_dir}")
+        os.chdir(task_dir)
+
+        cmd = f"./{CABLE_EXE} {CABLE_NML} > {CABLE_STDOUT_FILENAME}"
         try:
+            if verbose:
+                print(cmd)
             subprocess.run(cmd, shell=True, check=True)
         except subprocess.CalledProcessError as err:
             print("Job failed to submit: ", err.cmd)
 
+        output_file = CWD / SITE_OUTPUT_DIR / task.get_output_filename()
+        if verbose:
+            print(f"Adding attributes to output file: {output_file}")
         add_attributes_to_output_file(
-            output_file=Path(CWD / SITE_OUTPUT_DIR / f"{task_name}_out.nc"),
+            output_file=output_file,
             nml_file=Path(CWD / SITE_TASKS_DIR / task_name / CABLE_NML),
             sci_config=task.sci_config,
             url=svn_info_show_item(CWD / SRC_DIR / task.branch_name, "url"),
             rev=svn_info_show_item(CWD / SRC_DIR / task.branch_name, "revision"),
         )
 
+        if verbose:
+            print(f"cd {CWD}")
         os.chdir(CWD)
 
 

@@ -146,7 +146,9 @@ def clean_if_needed():
             raise ("Error cleaning previous compilation")
 
 
-def build_cable_offline(branch_name: str, modules: list):
+def build_cable_offline(branch_name: str, modules: list, verbose=False):
+    print(f"Compiling CABLE {'with MPI' if MPI else 'serially'} for "
+          f"realisation {branch_name}...")
     build_dir = Path(CWD, SRC_DIR, branch_name, "offline")
     os.chdir(build_dir)
 
@@ -162,10 +164,17 @@ def build_cable_offline(branch_name: str, modules: list):
     # The following add the "mpi" option to the build if we want to compile with MPI
     # cmd = "./%s" % (ofname)
     cmd = f"./{ofname} {'mpi'*MPI}"
-    error = subprocess.call(cmd, shell=True)
+    if verbose:
+        print(cmd)
+    error = subprocess.call(
+        cmd,
+        shell=True,
+        stdout=None if verbose else subprocess.DEVNULL
+    )
     if error == 1:
         raise ("Error building executable")
 
     os.remove(ofname)
 
     os.chdir(CWD)
+    print(f"Successfully compiled CABLE for realisation {branch_name}")

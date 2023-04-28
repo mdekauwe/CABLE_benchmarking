@@ -48,7 +48,9 @@ def archive_rev_number():
 
     revision_file = Path("rev_number.log")
     if revision_file.exists():
-        revision_file.replace(next_path("rev_number-*.log"))
+        new_revision_file = next_path("rev_number-*.log")
+        print(f"Writing revision number info to {new_revision_file}")
+        revision_file.replace(new_revision_file)
 
 
 def need_pass() -> bool:
@@ -71,7 +73,7 @@ def svn_info_show_item(path: Union[Path, str], item: str) -> str:
     return out.stdout.strip()
 
 
-def checkout_cable_auxiliary():
+def checkout_cable_auxiliary(verbose=False):
     """Checkout CABLE-AUX."""
     # TODO(Sean) we should archive revision numbers for CABLE-AUX
 
@@ -84,11 +86,15 @@ def checkout_cable_auxiliary():
     if need_pass():
         cmd += f" --password {get_password()}"
 
-    try:
-        subprocess.run(cmd, shell=True, check=True)
-    except subprocess.CalledProcessError as err:
-        print(f"Error checking out CABLE-AUX: {err.cmd}")
-        raise
+    if verbose:
+        print(cmd)
+
+    subprocess.run(
+        cmd,
+        shell=True,
+        check=True,
+        stdout=None if verbose else subprocess.DEVNULL
+    )
 
     # Check relevant files exist in repository:
 
@@ -103,8 +109,11 @@ def checkout_cable_auxiliary():
             f"Error checking out CABLE-AUX: cannot find file '{internal.CNPBIOME_FILE}'"
         )
 
+    rev_number = svn_info_show_item(f"{CABLE_SVN_ROOT}/branches/Share/CABLE-AUX", "revision")
+    print(f"Successfully checked out CABLE-AUX at revision {rev_number}")
 
-def checkout_cable(branch_config: dict, user: str):
+
+def checkout_cable(branch_config: dict, user: str, verbose=False):
     """Checkout a branch of CABLE."""
     # TODO(Sean) do nothing if the repository has already been checked out?
     # This also relates the 'clean' feature.
@@ -128,13 +137,20 @@ def checkout_cable(branch_config: dict, user: str):
     if need_pass():
         cmd += f" --password {get_password()}"
 
-    try:
-        subprocess.run(cmd, shell=True, check=True)
-    except subprocess.CalledProcessError as err:
-        print(f"Error checking out {branch_config['name']}: {err.cmd}")
-        raise
+    if verbose:
+        print(cmd)
+
+    subprocess.run(
+        cmd,
+        shell=True,
+        check=True,
+        stdout=None if verbose else subprocess.DEVNULL,
+    )
 
     # Write last change revision number to rev_number.log file
-    rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")
+    last_changed_rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")
     with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
-        fout.write(f"{branch_config['name']} last change revision: {rev_number}\n")
+        fout.write(f"{branch_config['name']} last changed revision: {last_changed_rev_number}\n")
+
+    rev_number = svn_info_show_item(path_to_repo, "revision")
+    print(f"Successfully checked out {branch_config['name']} at revision {rev_number}")

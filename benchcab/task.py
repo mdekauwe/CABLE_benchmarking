@@ -64,8 +64,11 @@ class Task:
         """Returns the file name convention used for the log file."""
         return f"{self.get_task_name()}_log.txt"
 
-    def clean_task(self, root_dir=internal.CWD):
+    def clean_task(self, root_dir=internal.CWD, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""
+
+        if verbose:
+            print("  Cleaning task")
 
         task_name = self.get_task_name()
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task_name)
@@ -92,7 +95,7 @@ class Task:
 
         return self
 
-    def fetch_files(self, root_dir=internal.CWD):
+    def fetch_files(self, root_dir=internal.CWD, verbose=False):
         """Retrieves all files necessary to run cable in the task directory.
 
         Namely:
@@ -101,15 +104,24 @@ class Task:
         """
 
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, self.get_task_name())
+
+        if verbose:
+            print(f"  Copying namelist files from {root_dir / internal.NAMELIST_DIR} "
+                  f"to {task_dir}")
+
         shutil.copytree(root_dir / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True)
-        shutil.copy(
-            root_dir / internal.SRC_DIR / self.branch_name / "offline" / internal.CABLE_EXE,
-            task_dir / internal.CABLE_EXE
-        )
+
+        exe_src = root_dir / internal.SRC_DIR / self.branch_name / "offline" / internal.CABLE_EXE
+        exe_dest = task_dir / internal.CABLE_EXE
+
+        if verbose:
+            print(f"  Copying CABLE executable from {exe_src} to {exe_dest}")
+
+        shutil.copy(exe_src, exe_dest)
 
         return self
 
-    def adjust_namelist_file(self, root_dir=internal.CWD):
+    def adjust_namelist_file(self, root_dir=internal.CWD, verbose=False):
         """Sets the base settings in the CABLE namelist file for this task."""
 
         patch_nml = {
@@ -135,11 +147,15 @@ class Task:
 
         patch_nml = deep_update(patch_nml, self.sci_config)
 
-        self.patch_namelist_file(patch_nml, root_dir=root_dir)
+        if verbose:
+            # remove new line as we prepend the next message in patch_namelist_file()
+            print("  Adjusting namelist file: ", end="")
+
+        self.patch_namelist_file(patch_nml, root_dir=root_dir, verbose=verbose)
 
         return self
 
-    def patch_namelist_file(self, patch: dict, root_dir=internal.CWD):
+    def patch_namelist_file(self, patch: dict, root_dir=internal.CWD, verbose=False):
         """Writes a patch to the CABLE namelist file for this task.
 
         The `patch` dictionary must comply with the `f90nml` api.
@@ -151,11 +167,16 @@ class Task:
         # remove namelist file as f90nml cannot write to an existing file
         os.remove(str(task_dir / internal.CABLE_NML))
 
+        if verbose:
+            # this message should not indent and start as lower case as we are
+            # appending to the previous message
+            print(f"applying patch to CABLE namelist file {task_dir / internal.CABLE_NML}")
+
         f90nml.write(deep_update(cable_nml, patch), str(task_dir / internal.CABLE_NML))
 
         return self
 
-    def setup_task(self, root_dir=internal.CWD):
+    def setup_task(self, root_dir=internal.CWD, verbose=False):
         """Does all file manipulations to run cable in the task directory.
 
         These include:
@@ -167,12 +188,18 @@ class Task:
         5. apply a branch patch if specified
         """
 
-        self.clean_task(root_dir=root_dir) \
-            .fetch_files(root_dir=root_dir) \
-            .adjust_namelist_file(root_dir=root_dir)
+        if verbose:
+            print(f"Setting up task: {self.get_task_name()}")
+
+        self.clean_task(root_dir=root_dir, verbose=verbose) \
+            .fetch_files(root_dir=root_dir, verbose=verbose) \
+            .adjust_namelist_file(root_dir=root_dir, verbose=verbose)
 
         if self.branch_patch:
-            self.patch_namelist_file(self.branch_patch, root_dir=root_dir)
+            if verbose:
+                # remove new line as we prepend the next message in patch_namelist_file()
+                print("  Adding branch specific namelist settings: ", end="")
+            self.patch_namelist_file(self.branch_patch, root_dir=root_dir, verbose=verbose)
 
 
 def get_fluxnet_tasks(realisations: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
