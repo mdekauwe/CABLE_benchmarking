@@ -19,17 +19,8 @@ def check_config(config: dict):
     if any(key not in config for key in required_keys):
         raise ValueError(
             "The config file does not list all required entries. "
-            "Those are 'realisations', 'project', 'user', 'modules'"
+            "Those are: " ", ".join(required_keys)
         )
-
-    if not isinstance(config["realisations"], list):
-        raise TypeError("The 'realisations' key must be a list.")
-
-    if config["realisations"] == []:
-        raise ValueError("The 'realisations' key cannot be empty.")
-
-    if any(not isinstance(branch, dict) for branch in config["realisations"]):
-        raise TypeError("The 'realisations' key must contain dictionary objects.")
 
     if not isinstance(config["project"], str):
         raise TypeError("The 'project' key must be a string.")
@@ -62,12 +53,20 @@ def check_config(config: dict):
             "Valid experiments are: " ", ".join(valid_experiments)
         )
 
+    if not isinstance(config["realisations"], list):
+        raise TypeError("The 'realisations' key must be a list.")
+
+    if config["realisations"] == []:
+        raise ValueError("The 'realisations' key cannot be empty.")
+
     for branch_id, branch_config in enumerate(config['realisations']):
+        if not isinstance(branch_config, dict):
+            raise TypeError(f"Realisation '{branch_id}' must be a dictionary object.")
         required_keys = ["name", "trunk", "share_branch"]
         if any(key not in branch_config for key in required_keys):
             raise ValueError(
                 f"Realisation '{branch_id}' does not list all required "
-                "entries. Those are 'name', 'trunk', 'share_branch'."
+                "entries. Those are: " ", ".join(required_keys)
             )
         if not isinstance(branch_config["name"], str):
             raise TypeError(
