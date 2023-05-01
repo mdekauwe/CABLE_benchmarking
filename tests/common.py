@@ -24,6 +24,7 @@ def make_barebones_config() -> dict:
                 "trunk": True,
                 "share_branch": False,
                 "patch": {},
+                "build_script": "",
             },
             {
                 "name": "v3.0-YP-changes",
@@ -33,6 +34,7 @@ def make_barebones_config() -> dict:
                 "patch": {
                     "cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}
                 },
+                "build_script": "",
             },
         ],
         "science_configurations": [
