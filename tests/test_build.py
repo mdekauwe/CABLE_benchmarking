@@ -13,16 +13,11 @@ compile_dir = "offline"
 
 @pytest.fixture()
 def mock_build():
-    """Create a fake `build3.ksh` file"""
+    """Create a fake build directory"""
 
     # Setup:
     build_path = Path(TMP_DIR, "src", branch_name, compile_dir)
     build_path.mkdir(parents=True)
-
-    build_name = build_path / "build3.sh"
-    fname = open(build_name, "w")
-    fname.writelines(["module purge\n", "module load something\n"])
-    fname.close()
 
     yield build_path
 
@@ -34,8 +29,21 @@ def mock_build():
             fname.rmdir()
     build_path.rmdir()
 
+def mock_build_script(mock_build):
+    """Create fake default script for build in the build directory"""
+    
+    build_name = mock_build / "build3.sh"
+    
+    if not build_name.is_file():
+        fname = open(build_name, "w")
+        fname.writelines(["module purge\n", "module load something\n"])
+        fname.close()
 
 def test_prepare_build(mock_build):
+
+    # Create default build script file
+    mock_build_script(mock_build)
+
     # Success case: uses a user-defined script
     user_script = "/".join([compile_dir, "specified_build.sh"])
     modules = []
@@ -68,3 +76,16 @@ def test_prepare_build(mock_build):
         prepare_build(user_script, branch_name, modules, root_dir=TMP_DIR)
         == target_path
     )
+
+    # Failure case: specified file does not exist
+    user_script = "wrong_script.sh"
+    with pytest.raises(RuntimeError):
+        prepare_build(user_script, branch_name, modules, root_dir=TMP_DIR)
+        
+    # Remove default file!!!!
+    (mock_build / "build3.sh").unlink(missing_ok=True)  
+    
+    # Failure case: default file is not found
+    user_script=[]
+    with pytest.raises(RuntimeError):
+        prepare_build(user_script, branch_name, modules, root_dir=TMP_DIR)

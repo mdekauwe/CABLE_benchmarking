@@ -39,7 +39,7 @@ def add_module_load(lines, nindent, modules):
     return loclines
 
 
-def find_purge_line(filelines, filename=Path):
+def find_purge_line(filelines, filename: Path):
     """Find the line with module purge in the list of file lines.
     Check there is only 1 such line. Return the index of the line.
 
@@ -58,7 +58,7 @@ def find_purge_line(filelines, filename=Path):
     return purge_line
 
 
-def change_build_lines(filelines, modules, filename=Path):
+def change_build_lines(filelines, modules, filename: Path):
     """Get the lines from the build script and modify them:
         - remove all the module load and module add lines
         - read in the environment file for Gadi
@@ -148,9 +148,9 @@ def prepare_build(
 
     if build_script:
         build_script_path = Path(root_dir, SRC_DIR, branch_name, build_script)
-        assert (
-            build_script_path.is_file(),
-            f"The build script specified in the config.yaml file, {build_script_path}, "
+        
+        if not build_script_path.is_file():
+            raise RuntimeError(f"The build script specified in the config.yaml file, {build_script_path}, "
             "is not a valid file.",
         )
 
@@ -158,9 +158,8 @@ def prepare_build(
         default_script_path = Path(
             root_dir, SRC_DIR, branch_name, "offline", "build3.sh"
         )
-        assert (
-            default_script_path.is_file(),
-            f"The default build script, {default_script_path}, could not be found."
+        if not default_script_path.is_file():
+            raise RuntimeError(f"The default build script, {default_script_path}, could not be found."
             "Do you need to specify a different build script with the "
             "'build_script' option in config.yaml?",
         )
