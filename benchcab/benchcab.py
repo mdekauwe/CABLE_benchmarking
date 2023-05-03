@@ -36,7 +36,7 @@ class Benchcab:
         """A helper method that initialises and returns the `tasks` attribute."""
         self.tasks = get_fluxnet_tasks(
             realisations=self.config["realisations"],
-            science_config=self.config["science_configurations"],
+            science_configurations=self.config["science_configurations"],
             met_sites=get_met_sites(self.config["experiment"]),
         )
         return self.tasks
@@ -44,7 +44,7 @@ class Benchcab:
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
         setup_src_dir()
-        for branch in self.config["realisations"].values():
+        for branch in self.config["realisations"]:
             checkout_cable(branch_config=branch, user=self.config["user"])
         checkout_cable_auxiliary()
         archive_rev_number()
@@ -52,7 +52,7 @@ class Benchcab:
 
     def build(self):
         """Endpoint for `benchcab build`."""
-        for branch in self.config["realisations"].values():
+        for branch in self.config["realisations"]:
             build_cable(branch["build_script"], branch["name"], self.config["modules"])
         return self
 

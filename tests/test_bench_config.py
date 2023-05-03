@@ -6,7 +6,7 @@ import yaml
 
 from tests.common import TMP_DIR
 from tests.common import make_barebones_config
-from benchcab.bench_config import check_config, read_config, get_science_config_id
+from benchcab.bench_config import check_config, read_config
 from benchcab.internal import DEFAULT_SCIENCE_CONFIGURATIONS
 
 
@@ -25,6 +25,23 @@ def test_check_config():
     # Success case: branch configuration with missing patch key
     config = make_barebones_config()
     config["realisations"][0].pop("patch")
+    check_config(config)
+
+    # Success case: test config when realisations contains more than two keys
+    config = make_barebones_config()
+    config["realisations"].append({
+        "name": "my_new_branch",
+        "revision": -1,
+        "trunk": False,
+        "share_branch": False,
+    })
+    assert len(config["realisations"]) > 2
+    check_config(config)
+
+    # Success case: test config when realisations contains less than two keys
+    config = make_barebones_config()
+    config["realisations"].pop()
+    assert len(config["realisations"]) < 2
     check_config(config)
 
     # Success case: test experiment with site id from the
@@ -56,6 +73,12 @@ def test_check_config():
         config.pop("realisations")
         check_config(config)
 
+    # Failure case: test config with empty realisations key raises an exception
+    with pytest.raises(ValueError):
+        config = make_barebones_config()
+        config["realisations"] = []
+        check_config(config)
+
     # Failure case: test config without modules key raises an exception
     with pytest.raises(ValueError):
         config = make_barebones_config()
@@ -81,23 +104,6 @@ def test_check_config():
         config["experiment"] = "CH-Dav"
         check_config(config)
 
-    # Failure case: test config when realisations contains more than two keys
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["realisations"][2] = {
-            "name": "my_new_branch",
-            "revision": -1,
-            "trunk": False,
-            "share_branch": False,
-        }
-        check_config(config)
-
-    # Failure case: test config when realisations contains less than two keys
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["realisations"].pop(1)
-        check_config(config)
-
     # Failure case: 'name' key is missing in branch configuration
     with pytest.raises(ValueError):
         config = make_barebones_config()
@@ -120,35 +126,7 @@ def test_check_config():
     # raises an exception
     with pytest.raises(ValueError):
         config = make_barebones_config()
-        config["science_configurations"] = {}
-        check_config(config)
-
-    # Failure case: science_configurations contains outer dictionary key
-    # with invalid naming convention
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["science_configurations"] = {"science1": {"some_setting": True}}
-        check_config(config)
-
-    # Failure case: science_configurations contains outer dictionary key
-    # with invalid naming convention
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["science_configurations"] = {"sci_0": {"some_setting": True}}
-        check_config(config)
-
-    # Failure case: science_configurations contains outer dictionary key
-    # with invalid naming convention
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["science_configurations"] = {"sci": {"some_setting": True}}
-        check_config(config)
-
-    # Failure case: science_configurations contains outer dictionary key
-    # with invalid naming convention
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["science_configurations"] = {"0": {"some_setting": True}}
+        config["science_configurations"] = []
         check_config(config)
 
     # Failure case: user key is not a string
@@ -163,7 +141,13 @@ def test_check_config():
         config["project"] = 123
         check_config(config)
 
-    # Failure case: realisations key is not a dictionary
+    # Failure case: realisations key is not a list
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"] = {"foo": "bar"}
+        check_config(config)
+
+    # Failure case: realisations key is not a list of dict
     with pytest.raises(TypeError):
         config = make_barebones_config()
         config["realisations"] = ["foo", "bar"]
@@ -202,11 +186,16 @@ def test_check_config():
         config["realisations"][1]["share_branch"] = "0"
         check_config(config)
 
-    # Failure case: type of config["science_configurations"] is
-    # not a dictionary
+    # Failure case: type of config["science_configurations"] is not a list
     with pytest.raises(TypeError):
         config = make_barebones_config()
         config["science_configurations"] = r"cable_user%GS_SWITCH = 'medlyn'"
+        check_config(config)
+
+    # Failure case: type of config["science_configurations"] is not a list of dict
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["science_configurations"] = [r"cable_user%GS_SWITCH = 'medlyn'"]
         check_config(config)
 
     # Failure case: type of patch key is not a dictionary
@@ -271,29 +260,3 @@ def test_read_config():
     os.remove(filename)
     assert config != res
     assert res["science_configurations"] == DEFAULT_SCIENCE_CONFIGURATIONS
-
-
-def test_get_science_config_id():
-    """Tests for `check_science_config()`."""
-
-    # Success case: single digit id
-    assert get_science_config_id("sci0") == "0"
-
-    # Success case: multi digit id
-    assert get_science_config_id("sci000") == "000"
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        get_science_config_id("science1")
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        get_science_config_id("sci_0")
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        get_science_config_id("sci")
-
-    # Failure case: outer dictionary key with invalid naming convention
-    with pytest.raises(ValueError):
-        get_science_config_id("0")
