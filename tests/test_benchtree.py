@@ -7,32 +7,35 @@ from tests.common import TMP_DIR
 from tests.common import make_barebones_config
 from benchcab.task import Task
 from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree, setup_src_dir
-from benchcab.bench_config import get_science_config_id
+
+
+def setup_mock_tasks() -> list[Task]:
+    """Return a mock list of fluxnet tasks."""
+
+    config = make_barebones_config()
+    (branch_id_a, branch_a), (branch_id_b, branch_b) = enumerate(config["realisations"])
+    met_site_a, met_site_b = "site_foo", "site_bar"
+    (sci_id_a, sci_config_a), (sci_id_b, sci_config_b) = enumerate(config["science_configurations"])
+
+    tasks = [
+        Task(branch_id_a, branch_a["name"], {}, met_site_a, sci_id_a, sci_config_a),
+        Task(branch_id_a, branch_a["name"], {}, met_site_a, sci_id_b, sci_config_b),
+        Task(branch_id_a, branch_a["name"], {}, met_site_b, sci_id_a, sci_config_a),
+        Task(branch_id_a, branch_a["name"], {}, met_site_b, sci_id_b, sci_config_b),
+        Task(branch_id_b, branch_b["name"], {}, met_site_a, sci_id_a, sci_config_a),
+        Task(branch_id_b, branch_b["name"], {}, met_site_a, sci_id_b, sci_config_b),
+        Task(branch_id_b, branch_b["name"], {}, met_site_b, sci_id_a, sci_config_a),
+        Task(branch_id_b, branch_b["name"], {}, met_site_b, sci_id_b, sci_config_b),
+    ]
+
+    return tasks
 
 
 def test_setup_directory_tree():
     """Tests for `setup_fluxnet_directory_tree()`."""
 
     # Success case: generate fluxnet directory structure
-    config = make_barebones_config()
-    science_config = config["science_configurations"]
-    branch_id_a, branch_id_b = config["realisations"]
-    branch_name_a, branch_name_b = [branch["name"] for branch in config["realisations"].values()]
-    met_site_a, met_site_b = "site_foo", "site_bar"
-    key_a, key_b = science_config
-    sci_id_a, sci_id_b = get_science_config_id(key_a), get_science_config_id(key_b)
-
-    tasks = [
-        Task(branch_id_a, branch_name_a, {}, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, {}, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_a, branch_name_a, {}, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, {}, met_site_b, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, {}, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, {}, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, {}, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, {}, met_site_b, key_b, science_config[key_b]),
-    ]
-
+    tasks = setup_mock_tasks()
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=TMP_DIR)
 
     assert len(list(TMP_DIR.glob("*"))) == 1
@@ -42,39 +45,23 @@ def test_setup_directory_tree():
     assert Path(TMP_DIR, "runs", "site", "outputs").exists()
     assert Path(TMP_DIR, "runs", "site", "tasks").exists()
 
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_a}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_a}_S{sci_id_b}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_a}_S{sci_id_a}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_a}_S{sci_id_b}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_b}_S{sci_id_a}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_foo_R{branch_id_b}_S{sci_id_b}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_b}_S{sci_id_a}").exists()
-    assert Path(TMP_DIR, "runs", "site", "tasks", f"site_bar_R{branch_id_b}_S{sci_id_b}").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_foo_R0_S0").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_foo_R0_S1").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_bar_R0_S0").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_bar_R0_S1").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_foo_R1_S0").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_foo_R1_S1").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_bar_R1_S0").exists()
+    assert Path(TMP_DIR, "runs", "site", "tasks", "site_bar_R1_S1").exists()
 
 
 def test_clean_directory_tree():
     """Tests for `clean_directory_tree()`."""
 
     # Success case: directory tree does not exist after clean
-    config = make_barebones_config()
-    science_config = config["science_configurations"]
-    branch_id_a, branch_id_b = config["realisations"]
-    branch_name_a, branch_name_b = [branch["name"] for branch in config["realisations"].values()]
-    met_site_a, met_site_b = "site_foo", "site_bar"
-    key_a, key_b = science_config
-
-    tasks = [
-        Task(branch_id_a, branch_name_a, {}, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, {}, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_a, branch_name_a, {}, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_a, branch_name_a, {}, met_site_b, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, {}, met_site_a, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, {}, met_site_a, key_b, science_config[key_b]),
-        Task(branch_id_b, branch_name_b, {}, met_site_b, key_a, science_config[key_a]),
-        Task(branch_id_b, branch_name_b, {}, met_site_b, key_b, science_config[key_b]),
-    ]
-
+    tasks = setup_mock_tasks()
     setup_fluxnet_directory_tree(fluxnet_tasks=tasks, root_dir=TMP_DIR)
+
     clean_directory_tree(root_dir=TMP_DIR)
     assert not Path(TMP_DIR, "runs").exists()
 

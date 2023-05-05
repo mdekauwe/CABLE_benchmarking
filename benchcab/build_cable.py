@@ -139,46 +139,54 @@ def clean_if_needed():
         if error == 1:
             raise ("Error cleaning previous compilation")
 
+def default_build(branch_name: str, modules: list, root_dir=CWD):
+    """Build CABLE using the default script. 
+    This loads the modules specified in the configuration file."""
+    
+    default_script_path = Path(
+        root_dir, SRC_DIR, branch_name, "offline", "build3.sh"
+    )
+    if not default_script_path.is_file():
+        raise RuntimeError(f"The default build script, {default_script_path}, could not be found."
+        "Do you need to specify a different build script with the "
+        "'build_script' option in config.yaml?",
+    )
 
-def prepare_build(
-    build_script: str, branch_name: str, modules: list, root_dir=CWD
-) -> Path:
-    """Prepare the build script depending if a build script was specified
-    in the configuration or not."""
-
-    if build_script:
-        build_script_path = Path(root_dir, SRC_DIR, branch_name, build_script)
-        
-        if not build_script_path.is_file():
-            raise RuntimeError(f"The build script specified in the config.yaml file, {build_script_path}, "
-            "is not a valid file.",
-        )
-
-    else:
-        default_script_path = Path(
-            root_dir, SRC_DIR, branch_name, "offline", "build3.sh"
-        )
-        if not default_script_path.is_file():
-            raise RuntimeError(f"The default build script, {default_script_path}, could not be found."
-            "Do you need to specify a different build script with the "
-            "'build_script' option in config.yaml?",
-        )
-
-        build_script_path = adjust_build_script(default_script_path, modules)
-
-    return build_script_path
-
-
-def build_cable(config_build_script: str, branch_name: str, modules: list):
-    build_script_path = prepare_build(config_build_script, branch_name, modules)
-
-    # move to the directory containing the build script and compile
+    build_script_path = adjust_build_script(default_script_path, modules)
+    
     os.chdir(build_script_path.parent)
     clean_if_needed()
-    # The following add the "mpi" option to the build if we want to compile with MPI
     cmd = f"{build_script_path} {'mpi'*MPI}"
     error = subprocess.call(cmd, shell=True)
     if error == 1:
-        raise ("Error building executable")
+        raise ("Error building executable with default script")
+    
+    os.chdir(CWD)
+    
+def custom_build(config_build_script: str, branch_name: str, root_dir=CWD):
+    """Build CABLE with a script provided in configuration file"""
+    
+    build_script_path = Path(root_dir, SRC_DIR, branch_name, config_build_script)
+        
+    if not build_script_path.is_file():
+        raise RuntimeError(f"The build script specified in the config.yaml file, {build_script_path}, "
+        "is not a valid file.")
+    
+    os.chdir(build_script_path.parent)
+    cmd = f"{build_script_path}"
+    error = subprocess.call(cmd, shell=True)
+    if error == 1:
+        raise ("Error building executable with custom script")
 
     os.chdir(CWD)
+
+def build_cable(config_build_script: str, branch_name: str, modules: list, root_dir=CWD):
+    
+    if config_build_script:
+        # Use provided script as is
+        custom_build(config_build_script, branch_name, root_dir)
+        
+    else:
+        # Use default script with provided module versions
+        default_build(branch_name, modules, root_dir)
+        

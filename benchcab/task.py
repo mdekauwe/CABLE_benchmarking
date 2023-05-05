@@ -7,7 +7,6 @@ from typing import TypeVar, Dict, Any
 import f90nml
 
 from benchcab import internal
-from benchcab.bench_config import get_science_config_id
 
 # pylint: disable=invalid-name,missing-function-docstring,line-too-long
 # ======================================================
@@ -40,21 +39,20 @@ class Task:
         branch_name: str,
         branch_patch: dict,
         met_forcing_file: str,
-        sci_conf_key: str,
+        sci_conf_id: int,
         sci_config: dict
     ) -> None:
         self.branch_id = branch_id
         self.branch_name = branch_name
         self.branch_patch = branch_patch
         self.met_forcing_file = met_forcing_file
-        self.sci_conf_key = sci_conf_key
+        self.sci_conf_id = sci_conf_id
         self.sci_config = sci_config
 
     def get_task_name(self) -> str:
         """Returns the file name convention used for this task."""
         met_forcing_base_filename = self.met_forcing_file.split(".")[0]
-        sci_conf_id = get_science_config_id(self.sci_conf_key)
-        return f"{met_forcing_base_filename}_R{self.branch_id}_S{sci_conf_id}"
+        return f"{met_forcing_base_filename}_R{self.branch_id}_S{self.sci_conf_id}"
 
     def get_output_filename(self) -> str:
         """Returns the file name convention used for the netcdf output file."""
@@ -175,20 +173,24 @@ class Task:
             self.patch_namelist_file(self.branch_patch, root_dir=root_dir)
 
 
-def get_fluxnet_tasks(realisations: dict, science_config: dict, met_sites: list[str]) -> list[Task]:
+def get_fluxnet_tasks(
+    realisations: list[dict],
+    science_configurations: list[dict],
+    met_sites: list[str]
+) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
     tasks = [
         Task(
-            branch_id=id,
+            branch_id=branch_id,
             branch_name=branch["name"],
             branch_patch=branch["patch"],
             met_forcing_file=site,
-            sci_conf_key=key,
-            sci_config=science_config[key]
+            sci_conf_id=sci_conf_id,
+            sci_config=sci_config
         )
-        for id, branch in realisations.items()
+        for branch_id, branch in enumerate(realisations)
         for site in met_sites
-        for key in science_config
+        for sci_conf_id, sci_config in enumerate(science_configurations)
     ]
     return tasks

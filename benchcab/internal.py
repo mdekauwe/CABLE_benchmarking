@@ -83,12 +83,12 @@ CABLE_FIXED_CO2_CONC = 400.0
 
 # Contains the default science configurations used to run the CABLE test suite
 # (when a science config file is not provided by the user)
-DEFAULT_SCIENCE_CONFIGURATIONS = {
-    "sci0": {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
-    "sci1": {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
-    "sci2": {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
-    "sci3": {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
-    "sci4": {
+DEFAULT_SCIENCE_CONFIGURATIONS = [
+    {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
+    {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
+    {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
+    {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
+    {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "medlyn",
@@ -96,7 +96,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-    "sci5": {
+    {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "leuning",
@@ -104,7 +104,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-    "sci6": {
+    {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "medlyn",
@@ -112,7 +112,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-    "sci7": {
+    {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "leuning",
@@ -120,7 +120,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-}
+]
 
 # Contains the site ids for each met forcing file associated with an experiment
 # on modelevaluation.org
