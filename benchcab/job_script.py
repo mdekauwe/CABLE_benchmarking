@@ -8,13 +8,14 @@ from pathlib import Path
 from benchcab.internal import QSUB_FNAME, NCPUS, MEM, WALL_TIME
 
 
-def create_job_script(
-    project: str,
-    user: str,
-    config_path: str,
-    modules: list
-):
-    """Creates a job script for executing `benchsiterun` on Gadi."""
+def create_job_script(project: str, user: str, config_path: str, modules: list):
+    """Creates a job script that executes all computationally expensive commands.
+
+    Executed commands are:
+    - benchcab fluxnet-run-tasks
+    - benchcab fluxnet-bitwise-cmp
+
+    """
 
     email_address = f"{user}@nci.org.au"
 
@@ -41,8 +42,10 @@ def create_job_script(
         file.write(f"#PBS -P {project}\n")
         file.write("#PBS -j oe\n")
         file.write(f"#PBS -M {email_address}\n")
-        file.write("#PBS -l storage=gdata/ks32+gdata/wd9+gdata/hh5"
-                   f"+gdata/{project}+{curdir_root}/{curdir_proj}\n")
+        file.write(
+            "#PBS -l storage=gdata/ks32+gdata/wd9+gdata/hh5"
+            f"+gdata/{project}+{curdir_root}/{curdir_proj}\n"
+        )
         file.write("\n")
         file.write("\n")
         file.write("\n")
@@ -52,7 +55,16 @@ def create_job_script(
         file.write("module load conda/analysis3-unstable\n")
         for module_name in modules:
             file.write(f"module add {module_name}\n")
-        file.write(f"benchcab fluxnet-run-tasks --no-submit --config={config_path}")
+        file.write(
+            f"benchcab fluxnet-run-tasks --config={config_path} "
+            "|| { echo 'Error: benchcab fluxnet-run-tasks failed. "
+            "Exiting...'; exit 1; }\n"
+        )
+        file.write(
+            f"benchcab fluxnet-bitwise-cmp --config={config_path} "
+            "|| { echo 'Error: benchcab fluxnet-bitwise-cmp failed. "
+            "Exiting...'; exit 1; }\n"
+        )
         file.write("\n")
 
     os.chmod(QSUB_FNAME, 0o755)

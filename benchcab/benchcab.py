@@ -14,9 +14,11 @@ from benchcab.get_cable import (
     archive_rev_number,
 )
 from benchcab.internal import validate_environment, get_met_sites, MULTIPROCESS
-from benchcab.task import get_fluxnet_tasks, Task
+from benchcab.task import get_fluxnet_tasks, get_fluxnet_comparisons, Task
 from benchcab.cli import generate_parser
 from benchcab.run_cable_site import run_tasks, run_tasks_in_parallel
+from benchcab.run_comparison import run_comparisons, run_comparisons_in_parallel
+from benchcab.environment_modules import module_load, module_is_loaded
 
 
 class Benchcab:
@@ -48,13 +50,11 @@ class Benchcab:
             checkout_cable(branch_config=branch, user=self.config["user"])
         checkout_cable_auxiliary()
         archive_rev_number()
-        return self
 
     def build(self):
         """Endpoint for `benchcab build`."""
         for branch in self.config["realisations"]:
             build_cable(branch["build_script"], branch["name"], self.config["modules"])
-        return self
 
     def fluxnet_setup_work_directory(self):
         """Endpoint for `benchcab fluxnet-setup-work-dir`."""
@@ -62,16 +62,37 @@ class Benchcab:
         setup_fluxnet_directory_tree(fluxnet_tasks=tasks)
         for task in tasks:
             task.setup_task()
-        return self
 
     def fluxnet_run_tasks(self):
         """Endpoint for `benchcab fluxnet-run-tasks`."""
+        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        if MULTIPROCESS:
+            run_tasks_in_parallel(tasks)
+        else:
+            run_tasks(tasks)
+
+    def fluxnet_bitwise_cmp(self):
+        """Endpoint for `benchcab fluxnet-bitwise-cmp`."""
+
+        if not module_is_loaded("nccmp"):
+            module_load("nccmp")  # use `nccmp -df` for bitwise comparisons
+
+        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        comparisons = get_fluxnet_comparisons(tasks)
+
+        if MULTIPROCESS:
+            run_comparisons_in_parallel(comparisons)
+        else:
+            run_comparisons(comparisons)
+
+    def fluxnet(self):
+        """Endpoint for `benchcab fluxnet`."""
+        self.checkout()
+        self.build()
+        self.fluxnet_setup_work_directory()
         if self.args.no_submit:
-            tasks = self.tasks if self.tasks else self._initialise_tasks()
-            if MULTIPROCESS:
-                run_tasks_in_parallel(tasks)
-            else:
-                run_tasks(tasks)
+            self.fluxnet_run_tasks()
+            self.fluxnet_bitwise_cmp()
         else:
             create_job_script(
                 project=self.config["project"],
@@ -80,25 +101,14 @@ class Benchcab:
                 modules=self.config["modules"],
             )
             submit_job()
-        return self
-
-    def fluxnet(self):
-        """Endpoint for `benchcab fluxnet`."""
-        self.checkout()
-        self.build()
-        self.fluxnet_setup_work_directory()
-        self.fluxnet_run_tasks()
-        return self
 
     def spatial(self):
         """Endpoint for `benchcab spatial`."""
-        return self
 
     def run(self):
         """Endpoint for `benchcab run`."""
         self.fluxnet()
         self.spatial()
-        return self
 
     def main(self):
         """Main function for `benchcab`."""
@@ -120,6 +130,9 @@ class Benchcab:
 
         if self.args.subcommand == "fluxnet-run-tasks":
             self.fluxnet_run_tasks()
+
+        if self.args.subcommand == "fluxnet-bitwise-cmp":
+            self.fluxnet_bitwise_cmp()
 
         if self.args.subcommand == "spatial":
             self.spatial()

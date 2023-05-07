@@ -22,7 +22,6 @@ requirements:
         - pbr
     run:
         - python >=3.9
-        - numpy
         - netCDF4
         - PyYAML
         - f90nml

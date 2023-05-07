@@ -49,6 +49,14 @@ def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CW
     if not site_tasks_dir.exists():
         os.makedirs(site_tasks_dir)
 
+    site_analysis_dir = Path(root_dir, internal.SITE_ANALYSIS_DIR)
+    if not site_analysis_dir.exists():
+        os.makedirs(site_analysis_dir)
+
+    site_bitwise_cmp_dir = Path(root_dir, internal.SITE_BITWISE_CMP_DIR)
+    if not site_bitwise_cmp_dir.exists():
+        os.makedirs(site_bitwise_cmp_dir)
+
     for task in fluxnet_tasks:
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task.get_task_name())
         if not task_dir.exists():
