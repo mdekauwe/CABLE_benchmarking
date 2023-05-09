@@ -8,6 +8,11 @@ In this guide, we will describe:
 
 `benchcab` has been designed to work on NCI machine exclusively. It might be extended later on to other systems.
 
+!!! warning "Limitations"
+    Currently, 
+
+    * `benchcab` can only run simulations at flux sites. 
+    * spin-up for CASA simulations are not supported.
 ## Pre-requisites
 
 To use `benchcab`, you need to join the following projects at NCI:
@@ -32,7 +37,13 @@ You need to load the module on each new session at NCI on login or compute nodes
 
 ## Usage
 
-`benchcab` will run the exact same configurations on two CABLE branches specified by the user, e.g. a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
+`benchcab` allows you to run an ensemble of configurations for CABLE using any number of code versions. `benchcab` can be used along 3 major modes:
+
+* *regression test:* running 2 versions of CABLE wih the same standard set of science configurations.
+* *new feature:* running 2 versions of CABLE with the same standard set of science configurations except one version is patched to use a new feature.
+* *ensemble run:* running any number of versions of CABLE with the same set of customised science configurations.
+
+The regression and new feature run modes should be used as necessary when evaluating new development in CABLE.
 
 The code will: (i) check out and (ii) build the code branches. Then it will run each executable across N standard science configurations for a given number of sites. It is possible to produce some plots locally from the output produced. But [the modelevaluation website](https://modelevaluation.org/) can be used for further benchmarking and evaluation.
 
@@ -55,6 +66,7 @@ git clone git@github.com:CABLE-LSM/bench_example.git
 
 Once the work directory is cloned, you will need to adapt the `config.yaml` file to your case. Refer to [the description of the options][config_options] for this file.
 
+
 ## Run the simulations
 
 Change directory into the cloned example work directory
@@ -63,20 +75,20 @@ cd bench_example
 ```
 
 !!! warning
-    `benchcab` will yell at you if it cannot find files in the current working directory.
+    `benchcab` will stop if it is not run within a work directory with the proper structure.
 
 
 Currently, `benchcab` can only run CABLE for flux sites. To run the flux site tests, run
 
 ```bash
-benchcab -f
+benchcab run
 ```
 
-The benchmarking will follow the steps:
+The tool will follow the steps:
 
-1. Checkout both branches. The codes will be stored under `src/` directory in your work directory. The sub-directories are created automatically.
-2. Compile the source code from both branches
-3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`.
+1. Checkout the code branches. The codes will be stored under `src/` directory in your work directory. The sub-directories are created automatically.
+2. Compile the source code from all branches
+3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`. `benchcab` will not warn you when the simulations are over.
 
 For help on the available options for `benchcab`:
 
@@ -84,9 +96,12 @@ For help on the available options for `benchcab`:
 benchcab -h
 ```
 
+!!! Tip
+    It is possible to run each step of the workflow separately using sub-commands for `benchcab`. Refer to the help message to learn more.
+
 ## Directory structure and files
 
-The following files and directories are created when `benchcab -f` executes successfully:
+The following files and directories are created when `benchcab run` executes successfully:
 ```
 .
 ├── benchmark_cable_qsub.sh
@@ -125,7 +140,7 @@ The `runs/site` directory contains the log files, output files, and tasks for ru
 ```
 where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
 
-The `runs/site/tasks/<task>` directory contains the executable and input files for each task.
+The `runs/site/tasks/<task>` directory contains the executable, the input files for each task and the recorded standard output from the CABLE model run.
 
 The output files and log files for all tasks are stored in the `runs/site/outputs` and `runs/site/logs` directories respectively.
 

@@ -1,9 +1,39 @@
 # config.yaml options
 
-!!! note
+!!! note "Required options"
     All keys listed here are required unless stated otherwise.
 
-## Technical details
+The different running modes of `benchcab` are solely dependent on the options used in `config.yaml`. The following gives some typical ways to configure `benchcab` for each mode, but the tool is not restricted to these choices of options:
+
+=== "Regression test"
+
+    For this test, you want to:
+
+    * specify the details of 2 branches of CABLE
+    * do not specify a `patch`
+    * use the default set of science options, i.e. do not specify science options in `config.yaml`
+    * choose the `experiment` suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
+
+=== "New feature test"
+
+    For this test, you want to:
+
+    * specify the details of 2 branches of CABLE
+    * specify a `patch` for **one** of the branches
+    * use the default set of science options, i.e. do not specify science options in `config.yaml`
+    * choose the `experiment` suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
+
+
+=== "Ensemble mode"
+
+    This running mode is quite open to customisations:
+
+    * specify the number of CABLE's branches you need
+    * use `patch` on branches as required
+    * specify the science configurations you want to run. `patch` will be applied on top of the science configurations listed.
+
+
+## Technical options
 
 `user`
 
@@ -17,11 +47,11 @@
 
 : NCI modules to use for compiling CABLE
 
-## Simulations details
+## Simulations options
 
 `realisations`
 
-: Entries for each of the two CABLE branches to use (specified by keys `0` and `1`). Each entry contains the following keys:
+: Entries for each CABLE branch to use. Each entry is a dictionary, {}, that contains the following keys:
 
     `name`
     : The base name of the branch on SVN, i.e. relative to:
@@ -30,15 +60,18 @@
         - `https://trac.nci.org.au/svn/cable/branches/Share` for a shared branch
         - `https://trac.nci.org.au/svn/cable/branches/Users/{user_id}` for a user branch
 
-    `revision`
-    : The revision number to use for the branch.
-    : This key is **optional** and can be omitted from the config file. By default `revision` is set to `-1` which indicates the HEAD of the branch to be used. The user may also explicitly specify `-1` to use the HEAD of the branch.
-
     `trunk`
     : Boolean value set to `True` if this branch is the trunk for CABLE. Else set to `False`.
 
     `share_branch`
     : Boolean value set to `True` if this branch is under `branches/Share` in the CABLE SVN repository. Else set to `False`.
+
+    `build_script`
+    : This key is **optional**. The path to a custom script to build the code in that branch, relative to the name of the branch. E.g: "offline/build.sh" to specify a build script under <name of branch>/offline/. The script specified with this option will run as is, ignoring the entries in the `modules` key of `config.yaml` file.
+
+    `revision`
+    : The revision number to use for the branch.
+    : This key is **optional** and can be omitted from the config file. By default `revision` is set to `-1` which indicates the HEAD of the branch to be used. The user may also explicitly specify `-1` to use the HEAD of the branch.
 
     `patch`
     : Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
@@ -47,14 +80,14 @@
 
     Example:
     ```yaml
-    realisations: {
-      0: { # head of the trunk
+    realisations: [
+      { # head of the trunk
         name: "trunk",
         revision: -1,
         trunk: True,
         share_branch: False,
       },
-      1: { # some development branch
+      { # some development branch
         name: "test-branch",
         revision: -1,
         trunk: False,
@@ -67,7 +100,7 @@
           }
         }
       }
-    }
+    ]
     ```
 
 `experiment`
@@ -84,7 +117,7 @@
 
 `science_configurations`
 
-: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace the default science configurations.
+: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace [the default science configurations](default_science_configurations.md).
 : Example:
 ```yaml
 science_configurations: {
@@ -104,48 +137,6 @@ science_configurations: {
       }
     }
   }
-}
-```
-
-: Currently, the default science configurations are defined internally by the following data structure:
-```python
-DEFAULT_SCIENCE_CONFIGURATIONS = {
-    "sci0": {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
-    "sci1": {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
-    "sci2": {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
-    "sci3": {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
-    "sci4": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "medlyn",
-                "FWSOIL_SWITCH": "Haverd2013",
-            }
-        }
-    },
-    "sci5": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "leuning",
-                "FWSOIL_SWITCH": "Haverd2013",
-            }
-        }
-    },
-    "sci6": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "medlyn",
-                "FWSOIL_SWITCH": "standard",
-            }
-        }
-    },
-    "sci7": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "leuning",
-                "FWSOIL_SWITCH": "standard",
-            }
-        }
-    },
 }
 ```
 
