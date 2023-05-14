@@ -163,14 +163,14 @@ class Task:
 
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, self.get_task_name())
 
-        cable_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
-        # remove namelist file as f90nml cannot write to an existing file
-        os.remove(str(task_dir / internal.CABLE_NML))
-
         if verbose:
             # this message should not indent and start as lower case as we are
             # appending to the previous message
             print(f"applying patch to CABLE namelist file {task_dir / internal.CABLE_NML}")
+
+        cable_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
+        # remove namelist file as f90nml cannot write to an existing file
+        os.remove(str(task_dir / internal.CABLE_NML))
 
         f90nml.write(deep_update(cable_nml, patch), str(task_dir / internal.CABLE_NML))
 

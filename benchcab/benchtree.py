@@ -23,11 +23,13 @@ def setup_src_dir(root_dir=internal.CWD):
 
     src_dir = Path(root_dir, internal.SRC_DIR)
     if not src_dir.exists():
-        print(f"Creating src directory: {src_dir}")
+        print(f"Creating {src_dir.relative_to(root_dir)} directory: {src_dir}")
         os.makedirs(src_dir)
 
 
-def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CWD, verbose=False):
+def setup_fluxnet_directory_tree(
+    fluxnet_tasks: list[Task], root_dir=internal.CWD, verbose=False
+):
     """Generate the directory structure used of `benchcab`."""
 
     run_dir = Path(root_dir, internal.RUN_DIR)
@@ -40,17 +42,23 @@ def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CW
 
     site_log_dir = Path(root_dir, internal.SITE_LOG_DIR)
     if not site_log_dir.exists():
-        print(f"Creating {internal.SITE_LOG_DIR} directory: {site_log_dir}")
+        print(
+            f"Creating {site_log_dir.relative_to(root_dir)} directory: {site_log_dir}"
+        )
         os.makedirs(site_log_dir)
 
     site_output_dir = Path(root_dir, internal.SITE_OUTPUT_DIR)
     if not site_output_dir.exists():
-        print(f"Creating {internal.SITE_OUTPUT_DIR} directory: {site_output_dir}")
+        print(
+            f"Creating {site_output_dir.relative_to(root_dir)} directory: {site_output_dir}"
+        )
         os.makedirs(site_output_dir)
 
     site_tasks_dir = Path(root_dir, internal.SITE_TASKS_DIR)
     if not site_tasks_dir.exists():
-        print(f"Creating {internal.SITE_TASKS_DIR} directory: {site_tasks_dir}")
+        print(
+            f"Creating {site_tasks_dir.relative_to(root_dir)} directory: {site_tasks_dir}"
+        )
         os.makedirs(site_tasks_dir)
 
     print("Creating task directories...")
@@ -58,6 +66,5 @@ def setup_fluxnet_directory_tree(fluxnet_tasks: list[Task], root_dir=internal.CW
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task.get_task_name())
         if not task_dir.exists():
             if verbose:
-                print(f"Creating {internal.SITE_TASKS_DIR / task.get_task_name()}: "
-                      f"{task_dir}")
+                print(f"Creating {task_dir.relative_to(root_dir)}: " f"{task_dir}")
             os.makedirs(task_dir)

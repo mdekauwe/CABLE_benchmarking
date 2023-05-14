@@ -221,7 +221,7 @@ def validate_environment(project: str, modules: list):
         print("Error: cannot find 'namelists' directory in current working directory")
         sys.exit(1)
 
-    required_groups = [project, "ks32", "wd9", "hh5"]
+    required_groups = [project, "ks32", "hh5"]
     groups = [grp.getgrgid(gid).gr_name for gid in os.getgroups()]
     if not set(required_groups).issubset(groups):
         print(
