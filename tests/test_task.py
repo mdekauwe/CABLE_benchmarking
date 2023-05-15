@@ -1,6 +1,5 @@
 """`pytest` tests for task.py"""
 
-import os
 from pathlib import Path
 import f90nml
 
@@ -9,13 +8,6 @@ from benchcab.task import Task
 from benchcab import internal
 from benchcab.benchtree import setup_fluxnet_directory_tree
 
-
-def touch(path):
-    """Mimics the unix `touch` command."""
-    with open(path, 'a', encoding="utf-8"):
-        os.utime(path, None)
-
-
 def setup_mock_task() -> Task:
     """Returns a mock `Task` instance."""
     task = Task(
@@ -23,7 +15,7 @@ def setup_mock_task() -> Task:
         branch_name="test-branch",
         branch_patch={"cable": {"some_branch_specific_setting": True}},
         met_forcing_file="forcing-file.nc",
-        sci_conf_key="sci0",
+        sci_conf_id=0,
         sci_config={"cable": {"some_setting": True}}
     )
     return task
@@ -34,15 +26,15 @@ def setup_mock_namelists_directory():
     Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
 
     cable_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML)
-    touch(cable_nml_path)
+    cable_nml_path.touch()
     assert cable_nml_path.exists()
 
     cable_soil_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML)
-    touch(cable_soil_nml_path)
+    cable_soil_nml_path.touch()
     assert cable_soil_nml_path.exists()
 
     cable_vegetation_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML)
-    touch(cable_vegetation_nml_path)
+    cable_vegetation_nml_path.touch()
     assert cable_vegetation_nml_path.exists()
 
 
@@ -51,18 +43,18 @@ def do_mock_checkout_and_build():
     Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
 
     cable_exe_path = Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE)
-    touch(cable_exe_path)
+    cable_exe_path.touch()
     assert cable_exe_path.exists()
 
 
 def do_mock_run(task: Task):
     """Make mock log files and output files as if benchcab has just been run."""
     output_path = Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename())
-    touch(output_path)
+    output_path.touch()
     assert output_path.exists()
 
     log_path = Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename())
-    touch(log_path)
+    log_path.touch()
     assert log_path.exists()
 
 

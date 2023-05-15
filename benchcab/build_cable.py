@@ -11,6 +11,7 @@ __version__ = "1.0 (09.03.2019)"
 __email__ = "mdekauwe@gmail.com"
 
 import os
+import stat
 import subprocess
 from pathlib import Path
 
@@ -38,7 +39,7 @@ def add_module_load(lines, nindent, modules):
     return loclines
 
 
-def find_purge_line(filelines, filename=""):
+def find_purge_line(filelines, filename: Path):
     """Find the line with module purge in the list of file lines.
     Check there is only 1 such line. Return the index of the line.
 
@@ -57,7 +58,7 @@ def find_purge_line(filelines, filename=""):
     return purge_line
 
 
-def change_build_lines(filelines, modules, filename=""):
+def change_build_lines(filelines, modules, filename: Path):
     """Get the lines from the build script and modify them:
         - remove all the module load and module add lines
         - read in the environment file for Gadi
@@ -84,43 +85,36 @@ def change_build_lines(filelines, modules, filename=""):
     outlines = add_module_load(outlines, nindent, modules)
 
     # add the end of the file as in the original file
-    outlines.extend(nomodulelines[purge_line + 1:])
+    outlines.extend(nomodulelines[purge_line + 1 :])
 
     return outlines
 
 
-def adjust_build_script(modules):
+def adjust_build_script(build_file_path: Path, modules: list):
+    """Customise the build script with the modules listed in the configuration file."""
 
-    cmd = "echo `uname -n | cut -c 1-4`"
-    p = subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    )
-    host, error = p.communicate()
-    host = str(host, "utf-8").strip()
-    if error == 1:
-        raise ("Error checking if repo exists")
-
-    # Need to customise the build script with the modules
-    # we want to use.
-    fname = "build3.sh"
-    f = open(fname, "r")
+    f = open(build_file_path, "r")
     lines = f.readlines()
     f.close()
 
     if MPI:
-        ofname = "my_build_mpi.ksh"
+        ofname = build_file_path.parent / "my_build_mpi.ksh"
     else:
-        ofname = "my_build.ksh"
+        ofname = build_file_path.parent / "my_build.ksh"
     of = open(ofname, "w")
 
     # We find all the "module load" lines and remove them from
     # the list of lines.
     # Then after the line "module purge", we add a line for
     # each module listed in gadi_env.sh
-    outlines = change_build_lines(lines, modules=modules, filename=fname)
+    outlines = change_build_lines(lines, modules=modules, filename=build_file_path)
 
     of.writelines(outlines)
     of.close()
+
+    # Add executable permissions to the new build script for the user
+    st = os.stat(ofname)
+    os.chmod(ofname, st.st_mode | stat.S_IEXEC)
 
     return ofname
 
@@ -146,35 +140,81 @@ def clean_if_needed():
             raise ("Error cleaning previous compilation")
 
 
-def build_cable_offline(branch_name: str, modules: list, verbose=False):
-    print(f"Compiling CABLE {'with MPI' if MPI else 'serially'} for "
-          f"realisation {branch_name}...")
-    build_dir = Path(CWD, SRC_DIR, branch_name, "offline")
-    os.chdir(build_dir)
+def default_build(branch_name: str, modules: list, root_dir=CWD, verbose=False):
+    """Build CABLE using the default script.
+    This loads the modules specified in the configuration file."""
 
+    default_script_path = Path(root_dir, SRC_DIR, branch_name, "offline", "build3.sh")
+    if not default_script_path.is_file():
+        raise RuntimeError(
+            f"The default build script, {default_script_path}, could not be found."
+            "Do you need to specify a different build script with the "
+            "'build_script' option in config.yaml?",
+        )
+
+    build_script_path = adjust_build_script(default_script_path, modules)
+
+    os.chdir(build_script_path.parent)
     clean_if_needed()
-    ofname = adjust_build_script(modules)
-
-    cmd = "chmod +x %s" % (ofname)
-    error = subprocess.call(cmd, shell=True)
-    if error == 1:
-        raise ("Error changing file to executable")
-
-    # cmd = "./%s clean" % (ofname)
-    # The following add the "mpi" option to the build if we want to compile with MPI
-    # cmd = "./%s" % (ofname)
-    cmd = f"./{ofname} {'mpi'*MPI}"
+    cmd = f"{build_script_path} {'mpi'*MPI}"
     if verbose:
         print(cmd)
     error = subprocess.call(
-        cmd,
-        shell=True,
-        stdout=None if verbose else subprocess.DEVNULL
+        cmd, shell=True, stdout=None if verbose else subprocess.DEVNULL
     )
     if error == 1:
-        raise ("Error building executable")
-
-    os.remove(ofname)
+        raise ("Error building executable with default script")
 
     os.chdir(CWD)
+
+
+def custom_build(
+    config_build_script: str, branch_name: str, root_dir=CWD, verbose=False
+):
+    """Build CABLE with a script provided in configuration file"""
+
+    build_script_path = Path(root_dir, SRC_DIR, branch_name, config_build_script)
+
+    if not build_script_path.is_file():
+        raise RuntimeError(
+            f"The build script specified in the config.yaml file, {build_script_path}, "
+            "is not a valid file."
+        )
+
+    os.chdir(build_script_path.parent)
+    cmd = f"{build_script_path}"
+    if verbose:
+        print(cmd)
+    error = subprocess.call(
+        cmd, shell=True, stdout=None if verbose else subprocess.DEVNULL
+    )
+    if error == 1:
+        raise ("Error building executable with custom script")
+
+    os.chdir(CWD)
+
+
+def build_cable(
+    config_build_script: str,
+    branch_name: str,
+    modules: list,
+    root_dir=CWD,
+    verbose=False,
+):
+    if config_build_script:
+        # Use provided script as is
+        print(
+            "Compiling CABLE using custom build script for "
+            f"realisation {branch_name}..."
+        )
+        custom_build(config_build_script, branch_name, root_dir, verbose=verbose)
+
+    else:
+        # Use default script with provided module versions
+        print(
+            f"Compiling CABLE {'with MPI' if MPI else 'serially'} for "
+            f"realisation {branch_name}..."
+        )
+        default_build(branch_name, modules, root_dir, verbose=verbose)
+
     print(f"Successfully compiled CABLE for realisation {branch_name}")
