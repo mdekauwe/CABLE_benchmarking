@@ -69,3 +69,4 @@ nav:
       - user_guide/index.md
       - user_guide/config_options.md
       - user_guide/default_science_configurations.md
+      - user_guide/expected_output.md

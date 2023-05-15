@@ -78,7 +78,7 @@ cd bench_example
     `benchcab` will stop if it is not run within a work directory with the proper structure.
 
 
-Currently, `benchcab` can only run CABLE for flux sites. To run the flux site tests, run
+Currently, `benchcab` can only run CABLE for flux sites. **To run the whole workflow**, run
 
 ```bash
 benchcab run
@@ -90,13 +90,17 @@ The tool will follow the steps:
 2. Compile the source code from all branches
 3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`. `benchcab` will not warn you when the simulations are over.
 
-For help on the available options for `benchcab`:
+!!! tip "Expected output"
+    
+    You can see [an example of the expected output](expected_output.md) printed out to the screen by `benchcab run` to check if the tool has worked as expected.
+
+For help on the **available options** for `benchcab`:
 
 ```bash
 benchcab -h
 ```
 
-!!! Tip
+!!! Tip "Running parts of the workflow"
     It is possible to run each step of the workflow separately using sub-commands for `benchcab`. Refer to the help message to learn more.
 
 ## Directory structure and files
