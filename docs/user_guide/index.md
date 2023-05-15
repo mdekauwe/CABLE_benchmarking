@@ -131,22 +131,41 @@ The following files and directories are created when `benchcab run` executes suc
     ├── <realisation-0>
     └── <realisation-1>
 ```
+`benchmark_cable_qsub.sh`
 
-The `benchmark_cable_qsub.sh` file is the job script submitted to run the test suite and `benchmark_cable_qsub.sh.o<jobid>` contains the job's standard output/error stream.
+:   the job script submitted to run the test suite and `benchmark_cable_qsub.sh.o<jobid>` contains the job's standard output/error stream.
 
-The `rev_number-*.log` file keeps a record of the revision numbers used for each realisation specified in the config file.
+`rev_number-*.log`
 
-The `src` directory contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
+:   file to keep a record of the revision numbers used for each realisation specified in the config file.
 
-The `runs/site` directory contains the log files, output files, and tasks for running CABLE. CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
+`src/`
+
+:   directory that contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
+
+`runs/site/` 
+
+:   directory that contains the log files, output files, and tasks for running CABLE. 
+
+`tasks`
+
+:   CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
 ```
 <met_file_basename>_R<realisation_key>_S<science_config_key>
 ```
-where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
+:   where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
 
-The `runs/site/tasks/<task>` directory contains the executable, the input files for each task and the recorded standard output from the CABLE model run.
+`runs/site/tasks/<task>/`
 
-The output files and log files for all tasks are stored in the `runs/site/outputs` and `runs/site/logs` directories respectively.
+:   directory that contains the executable, the input files for each task and the recorded standard output from the CABLE model run.
+
+`runs/site/outputs/`
+
+:   directory that contains the netCDF output files for all tasks
+
+`runs/site/logs/`
+
+:   directory that contains the log files produced by all tasks
 
 !!! warning "Re-running `benchcab` multiple times in the same working directory"
     We recommend the user to manually delete the generated files when re-running `benchcab`. Re-running `benchcab` multiple times in the same working directory is currently not yet supported (see issue [CABLE-LSM/benchcab#20](https://github.com/CABLE-LSM/benchcab/issues/20)). To clean the current working directory, run the following command in the working directory
