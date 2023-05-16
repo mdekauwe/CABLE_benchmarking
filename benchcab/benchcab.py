@@ -56,6 +56,7 @@ class Benchcab:
             checkout_cable(branch, self.config["user"], verbose=self.args.verbose)
         checkout_cable_auxiliary(self.args.verbose)
         archive_rev_number()
+        print("")
         return self
 
     def build(self):
@@ -67,6 +68,7 @@ class Benchcab:
                 self.config["modules"],
                 verbose=self.args.verbose,
             )
+        print("")
         return self
 
     def fluxnet_setup_work_directory(self):
@@ -78,6 +80,7 @@ class Benchcab:
         for task in tasks:
             task.setup_task(verbose=self.args.verbose)
         print("Successfully setup FLUXNET tasks")
+        print("")
         return self
 
     def fluxnet_run_tasks(self):
@@ -111,6 +114,7 @@ class Benchcab:
                 "The NetCDF output for each task is written to "
                 f"{SITE_OUTPUT_DIR}/<task_name>_out.nc"
             )
+        print("")
         return self
 
     def fluxnet(self):

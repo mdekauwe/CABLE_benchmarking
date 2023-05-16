@@ -66,20 +66,20 @@ def run_tasks(tasks: list[Task], verbose=False):
                   f"saved in {task_dir / CABLE_STDOUT_FILENAME}")
 
         if verbose:
-            print(f"cd {task_dir}")
+            print(f"  cd {task_dir}")
         os.chdir(task_dir)
 
         cmd = f"./{CABLE_EXE} {CABLE_NML} > {CABLE_STDOUT_FILENAME}"
         try:
             if verbose:
-                print(cmd)
+                print(f"  {cmd}")
             subprocess.run(cmd, shell=True, check=True)
         except subprocess.CalledProcessError as err:
             print("Job failed to submit: ", err.cmd)
 
         output_file = CWD / SITE_OUTPUT_DIR / task.get_output_filename()
         if verbose:
-            print(f"Adding attributes to output file: {output_file}")
+            print(f"  Adding attributes to output file: {output_file}")
         add_attributes_to_output_file(
             output_file=output_file,
             nml_file=Path(CWD / SITE_TASKS_DIR / task_name / CABLE_NML),
@@ -89,7 +89,7 @@ def run_tasks(tasks: list[Task], verbose=False):
         )
 
         if verbose:
-            print(f"cd {CWD}")
+            print(f"  cd {CWD}")
         os.chdir(CWD)
 
 
