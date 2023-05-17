@@ -8,12 +8,9 @@ from pathlib import Path
 from benchcab.internal import QSUB_FNAME, NCPUS, MEM, WALL_TIME
 
 
-def create_job_script(
-    project: str, user: str, config_path: str, modules: list, verbose=False
-):
+def create_job_script(project: str, config_path: str, modules: list, verbose=False):
     """Creates a job script for executing `benchsiterun` on Gadi."""
 
-    email_address = f"{user}@nci.org.au"
     module_load_lines = "\n".join(
         f"module add {module_name}" for module_name in modules
     )
@@ -44,7 +41,6 @@ def create_job_script(
 #PBS -q normal
 #PBS -P {project}
 #PBS -j oe
-#PBS -M {email_address}
 #PBS -l storage=gdata/ks32+gdata/hh5+gdata/{project}+{curdir_root}/{curdir_proj}
 
 module purge

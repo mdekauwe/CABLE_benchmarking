@@ -53,7 +53,7 @@ class Benchcab:
         setup_src_dir()
         print("Checking out repositories...")
         for branch in self.config["realisations"]:
-            checkout_cable(branch, self.config["user"], verbose=self.args.verbose)
+            checkout_cable(branch, verbose=self.args.verbose)
         checkout_cable_auxiliary(self.args.verbose)
         archive_rev_number()
         print("")
@@ -96,7 +96,6 @@ class Benchcab:
         else:
             create_job_script(
                 project=self.config["project"],
-                user=self.config["user"],
                 config_path=self.args.config,
                 modules=self.config["modules"],
                 verbose=self.args.verbose,
