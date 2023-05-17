@@ -34,13 +34,13 @@ You need to load the module on each new session at NCI on login or compute nodes
 
 `benchcab` will run the exact same configurations on two CABLE branches specified by the user, e.g. a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
 
-The code will: (i) check out and (ii) build the code branches. Then it will run each executable across N standard science configurations for a given number of sites. It is possible to produce some plots locally from the output produced. But [the modelevaluation website](https://modelevaluation.org/) can be used for further benchmarking and evaluation.
+The code will: (i) check out and (ii) build the code branches. Then it will run each executable across N standard science configurations for a given number of sites. It is possible to produce some plots locally from the output produced. But [the modelevaluation website][meorg] can be used for further benchmarking and evaluation.
 
 ### Create a work directory
 
 #### Choose a location
 
-You can run the benchmark from any directory you want under `/scratch` or `/g/data`. `/scratch` is preferred as the data in the run directory does not need to be preserved for a long time. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary, until you upload them to [modelevaluation.org](https://modelevaluation.org/). You will need about 33GB for the outputs for the `forty-two-site` experiment (with 8 different science configurations).
+You can run the benchmark from any directory you want under `/scratch` or `/g/data`. `/scratch` is preferred as the data in the run directory does not need to be preserved for a long time. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary, until you upload them to [modelevaluation.org][meorg]. You will need about 33GB for the outputs for the `forty-two-site` experiment (with 8 different science configurations).
 
 !!! Warning "The HOME directory is unsuitable"
     
@@ -135,15 +135,24 @@ The output files and log files for all tasks are stored in the `runs/site/output
     rm benchmark_cable_qsub.sh* rev_number-*; rm -rf runs/ src/
     ```
 
-## Analyse the output with modelevaluation.org
+## Analyse the output with [modelevaluation.org][meorg]
 
-Once the benchmarking has finished running all the simulations, you need to upload the output files to modelevaluation.org:
+<!-- **Prerequisite**: To run the model evaluation step, you will need to create an account on [modelevaluation.org][meorg]. -->
 
-1. Open and log into modelevaluation.org
-1. Navigate to the `NRI Land testing` workspace
-1. Create a model profile for the two model branches you are using
-1. Create a model output and upload the outputs in `runs/sites/outputs/` under your work directory
-1. Launch the analysis
+Once the benchmarking has finished running all the simulations, you need to upload the output files to [modelevaluation.org][meorg] via the web interface. To do this:
+
+1. Go to [modelevaluation.org][meorg] and login or create a new account.
+2. Navigate to the `benchcab-evaluation` workspace. To do this, click the **Current Workspace** button at the top of the page, and select `benchcab-evaluation` under "Workspaces Shared With Me".
+3. Create a model profile for your set of model outputs. To do this, select the **Model Profiles** tab and click **Create Model Profile**. The model profile should describe the versions of CABLE used to generate the model outputs and any details that can be used to reproduce the model outputs. For example, you may want to include the URL to the Github repository containing the benchcab configuration file used to run `benchcab` but this is not required.
+4. Upload model outputs by doing the following:
+    1. Transfer model outputs from the `runs/site/outputs/` directory to your local computer so that they can be uploaded via the web interface.
+    2. Select the **Model Outputs** tab on [modelevaluation.org](meorg) and click **Upload Model Output**.
+    3. Fill out the fields for "Name", "Experiment" and "Model" ("State Selection", "Parameter Selection" and "Comments" are optional). The experiment should correspond to the experiment specified in the [configuration file](config_options) used to run `benchcab`. The model should correspond to the model profile created in the previous step.
+    4. Under "Model Output Files", click **Upload Files**. This should prompt you to select the model outputs you want to upload from your file system. We recommend users to make their model outputs public to download by checking **Downloadable by other users**.
+    5. Under "Benchmarks", select any available benchmark as these are currently ignored by the analysis script. Currently, a benchmark is required to run the analysis. If no benchmarks are available, you will have to first upload a redundant set of model outputs for the same experiment, and then select these model outputs as your benchmark.
+5. Once the model outputs have been uploaded you can then start the analysis. The model outputs should be viewable by selecting the **Model Outputs** tab and clicking **Owned By Me**. Select the model output that has been uploaded and click the **Run Analysis** button at the bottom of the page.
+6. Once the analysis has completed, view the generated plots by clicking **view plots** under "Analyses".
+
 
 ## Contacts
 
@@ -157,3 +166,4 @@ Alternatively, you can also post discussions or questions on [the ACCESS-Hive fo
 [config_options]: config_options.md
 [hive-forum]: https://forum.access-hive.org.au
 [issues-benchcab]: https://github.com/CABLE-LSM/benchcab/issues
+[meorg]: https://modelevaluation.org/
