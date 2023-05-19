@@ -9,28 +9,28 @@ The different running modes of `benchcab` are solely dependent on the options us
 
     For this test, you want to:
 
-    * specify the details of 2 branches of CABLE
-    * do not specify a `patch`
-    * use the default set of science options, i.e. do not specify science options in `config.yaml`
-    * choose the `experiment` suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
+    * Specify the details of two branches of CABLE
+    * Do not specify a [`patch`](#`patch`)
+    * Use the default set of science options, i.e. do not specify [`science_configurations`](#`science_configurations`) in `config.yaml`
+    * Choose the [`experiment`](#`experiment`) suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
 
 === "New feature test"
 
     For this test, you want to:
 
-    * specify the details of 2 branches of CABLE
-    * specify a `patch` for **one** of the branches
-    * use the default set of science options, i.e. do not specify science options in `config.yaml`
-    * choose the `experiment` suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
+    * Specify the details of two branches of CABLE
+    * Specify a [`patch`](#`patch`) for **one** of the branches
+    * Use the default set of science options, i.e. do not specify [`science_configurations`](#`science_configurations`) in `config.yaml`
+    * Choose the [`experiment`](#`experiment`) suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
 
 
 === "Ensemble mode"
 
     This running mode is quite open to customisations:
 
-    * specify the number of CABLE's branches you need
-    * use `patch` on branches as required
-    * specify the science configurations you want to run. `patch` will be applied on top of the science configurations listed.
+    * Specify the number of CABLE's branches you need
+    * Use [`patch`](#`patch`) on branches as required
+    * Specify the [science configurations](#`science_configurations`) you want to run. [`patch`](#`patch`) will be applied on top of the science configurations listed.
 
 
 ## Technical options
@@ -51,7 +51,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 ### `realisations`
 
-: Entries for each CABLE branch to use. Each entry is a dictionary, {}, that contains the following keys:
+: Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys:
 
 #### `name`
 
@@ -65,16 +65,16 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 : Boolean value set to `True` if this branch is the trunk for CABLE. Else set to `False`.
 
-
 #### `share_branch`
 
 : Boolean value set to `True` if this branch is under `branches/Share` in the CABLE SVN repository. Else set to `False`.
 
 #### `build_script`
 
-: This key is **optional**. The path to a custom script to build the code in that branch, relative to the name of the branch. E.g: "offline/build.sh" to specify a build script under <name of branch>/offline/. The script specified with this option will run as is, ignoring the entries in the `modules` key of `config.yaml` file.
+: This key is **optional**. The path to a custom script to build the code in that branch, relative to the name of the branch.  The script specified with this option will run as is, ignoring the entries in the `modules` key of `config.yaml` file.
+: Example: `build_script: offline/build.sh` to specify a build script under `<name_of_branch>/offline/`.
 
-##### `revision`
+#### `revision`
 
 : The revision number to use for the branch.
 : This key is **optional** and can be omitted from the config file. By default `revision` is set to `-1` which indicates the HEAD of the branch to be used. The user may also explicitly specify `-1` to use the HEAD of the branch.

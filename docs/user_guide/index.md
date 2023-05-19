@@ -39,9 +39,9 @@ You need to load the module on each new session at NCI on login or compute nodes
 
 `benchcab` allows you to run an ensemble of configurations for CABLE using any number of code versions. `benchcab` can be used along 3 major modes:
 
-* *regression test:* running 2 versions of CABLE wih the same standard set of science configurations.
-* *new feature:* running 2 versions of CABLE with the same standard set of science configurations except one version is patched to use a new feature.
-* *ensemble run:* running any number of versions of CABLE with the same set of customised science configurations.
+* *Regression test:* running two versions of CABLE with the same standard set of science configurations.
+* *New feature:* running two versions of CABLE with the same standard set of science configurations except one version is patched to use a new feature.
+* *Ensemble run:* running any number of versions of CABLE with the same set of customised science configurations.
 
 The regression and new feature run modes should be used as necessary when evaluating new development in CABLE.
 
@@ -77,7 +77,6 @@ cd bench_example
 !!! warning
     `benchcab` will stop if it is not run within a work directory with the proper structure.
 
-
 Currently, `benchcab` can only run CABLE for flux sites. **To run the whole workflow**, run
 
 ```bash
@@ -98,6 +97,7 @@ For help on the **available options** for `benchcab`:
 
 ```bash
 benchcab -h
+benchcab <command> -h
 ```
 
 !!! Tip "Running parts of the workflow"
