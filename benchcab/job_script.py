@@ -41,6 +41,7 @@ def create_job_script(project: str, config_path: str, modules: list, verbose=Fal
 #PBS -q normal
 #PBS -P {project}
 #PBS -j oe
+#PBS -m e
 #PBS -l storage=gdata/ks32+gdata/hh5+gdata/{project}+{curdir_root}/{curdir_proj}
 
 module purge
