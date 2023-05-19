@@ -77,7 +77,7 @@ def run_tasks(tasks: list[Task], verbose=False):
                 print(f"  {cmd}")
             subprocess.run(cmd, shell=True, check=True)
         except subprocess.CalledProcessError:
-            print(f"Error: CABLE returned a non-zero exit code for task {task_name}")
+            print(f"Error: CABLE returned an error for task {task_name}")
             continue
 
         output_file = CWD / SITE_OUTPUT_DIR / task.get_output_filename()
