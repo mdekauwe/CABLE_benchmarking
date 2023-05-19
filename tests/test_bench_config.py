@@ -17,6 +17,11 @@ def test_check_config():
     config = make_barebones_config()
     check_config(config)
 
+    # Success case: branch configuration with missing name key
+    config = make_barebones_config()
+    config["realisations"][0].pop("name")
+    check_config(config)
+
     # Success case: branch configuration with missing revision key
     config = make_barebones_config()
     config["realisations"][0].pop("revision")
@@ -31,7 +36,6 @@ def test_check_config():
     config = make_barebones_config()
     config["realisations"].append(
         {
-            "name": "my_new_branch",
             "path": "path/to/my_new_branch",
         }
     )
@@ -96,12 +100,6 @@ def test_check_config():
     with pytest.raises(ValueError):
         config = make_barebones_config()
         config["experiment"] = "CH-Dav"
-        check_config(config)
-
-    # Failure case: 'name' key is missing in branch configuration
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["realisations"][1].pop("name")
         check_config(config)
 
     # Failure case: 'path' key is missing in branch configuration
@@ -203,6 +201,23 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config == res
+
+    # Success case: a specified branch with a missing name key
+    # should return a config with name set to the base name of
+    # the path key
+    config = make_barebones_config()
+    config["realisations"][0].pop("name")
+    filename = TMP_DIR / "config-barebones.yaml"
+
+    with open(filename, "w", encoding="utf-8") as file:
+        yaml.dump(config, file)
+
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert res["realisations"][0]["name"] == os.path.basename(
+        config["realisations"][0]["path"]
+    )
 
     # Success case: a specified branch with a missing revision number
     # should return a config with the default revision number

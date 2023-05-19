@@ -63,20 +63,18 @@ def check_config(config: dict):
     for branch_id, branch_config in enumerate(config["realisations"]):
         if not isinstance(branch_config, dict):
             raise TypeError(f"Realisation '{branch_id}' must be a dictionary object.")
-        required_keys = ["name", "path"]
-        if any(key not in branch_config for key in required_keys):
+        if "path" not in branch_config:
             raise ValueError(
-                f"Realisation '{branch_id}' does not list all required "
-                "entries. Those are: "
-                ", ".join(required_keys)
-            )
-        if not isinstance(branch_config["name"], str):
-            raise TypeError(
-                f"The 'name' field in realisation '{branch_id}' must be a " "string."
+                f"Realisation '{branch_id}' must specify the `path` field."
             )
         if not isinstance(branch_config["path"], str):
             raise TypeError(
-                f"The 'path' field in realisation '{branch_id}' must be a " "string."
+                f"The 'path' field in realisation '{branch_id}' must be a string."
+            )
+        # the "name" key is optional
+        if "name" in branch_config and not isinstance(branch_config["name"], str):
+            raise TypeError(
+                f"The 'name' field in realisation '{branch_id}' must be a string."
             )
         # the "revision" key is optional
         if "revision" in branch_config and not isinstance(
@@ -111,6 +109,8 @@ def read_config(config_path: str) -> dict:
     check_config(config)
 
     for branch in config["realisations"]:
+        # Add "name" key if not provided and set to base name of "path" key
+        branch.setdefault("name", Path(branch["path"]).name)
         # Add "revision" key if not provided and set to default value -1, i.e. HEAD of branch
         branch.setdefault("revision", -1)
         # Add "patch" key if not provided and set to default value {}
