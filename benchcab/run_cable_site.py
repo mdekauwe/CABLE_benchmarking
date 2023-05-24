@@ -29,7 +29,7 @@ from benchcab.internal import (
     CABLE_EXE,
     CABLE_NML,
     CABLE_STDOUT_FILENAME,
-    NUM_CORES
+    NUM_CORES,
 )
 from benchcab.task import Task
 
@@ -62,20 +62,23 @@ def run_tasks(tasks: list[Task], verbose=False):
         task_name = task.get_task_name()
         task_dir = CWD / SITE_TASKS_DIR / task_name
         if verbose:
-            print(f"Running task {task_name}... CABLE standard output "
-                  f"saved in {task_dir / CABLE_STDOUT_FILENAME}")
+            print(
+                f"Running task {task_name}... CABLE standard output "
+                f"saved in {task_dir / CABLE_STDOUT_FILENAME}"
+            )
 
         if verbose:
             print(f"  cd {task_dir}")
         os.chdir(task_dir)
 
-        cmd = f"./{CABLE_EXE} {CABLE_NML} > {CABLE_STDOUT_FILENAME}"
+        cmd = f"./{CABLE_EXE} {CABLE_NML} > {CABLE_STDOUT_FILENAME} 2>&1"
         try:
             if verbose:
                 print(f"  {cmd}")
             subprocess.run(cmd, shell=True, check=True)
-        except subprocess.CalledProcessError as err:
-            print("Job failed to submit: ", err.cmd)
+        except subprocess.CalledProcessError:
+            print(f"Error: CABLE returned an error for task {task_name}")
+            continue
 
         output_file = CWD / SITE_OUTPUT_DIR / task.get_output_filename()
         if verbose:
