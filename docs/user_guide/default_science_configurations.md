@@ -7,11 +7,7 @@ The science configurations are given as patches to apply to a default namelist f
 Currently, the default science configurations are defined internally by the following data structure:
 ```python
 DEFAULT_SCIENCE_CONFIGURATIONS = {
-    "sci0": {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
-    "sci1": {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
-    "sci2": {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
-    "sci3": {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
-    "sci4": {
+    "sci0": {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "medlyn",
@@ -19,7 +15,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-    "sci5": {
+    "sci1": {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "leuning",
@@ -27,7 +23,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-    "sci6": {
+    "sci2": {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "medlyn",
@@ -35,7 +31,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = {
             }
         }
     },
-    "sci7": {
+    "sci3": {
         "cable": {
             "cable_user": {
                 "GS_SWITCH": "leuning",
