@@ -180,7 +180,9 @@ Once the benchmarking has finished running all the simulations, you need to uplo
         </figure>
 
     5. Under "Benchmarks", you may need to add a benchmark depending on the experiment chosen. This is an error and will be fixed soon.
-        - **Five site test** and **Forty two site test**: a benchmark is required to run the analysis for the `Five site test` experiment. You can use [this model profile][benchmark_eg] as a benchmark for this experiment.
+        - **Five site test** and **Forty two site test**: a benchmark is required to run the analysis for the `Five site test` experiment. You can use:
+            - [this model profile][benchmark_5] as a benchmark for the **five site experiment**.
+            - [this model profile][benchmark_42] as a benchmark for the **forty-two site experiment**.
         - **single site experiments**: No benchmark is required. You can add your own if you would like to. You can use [this example][benchmark_eg] to know how to set up your own model output as a benchmark.
 
     6. **Save** your model output!
@@ -212,3 +214,5 @@ Alternatively, you can also post discussions or questions on [the ACCESS-Hive fo
 [meorg]: https://modelevaluation.org/
 [model_profile_eg]: https://modelevaluation.org/model/display/fd5GFaJGYu7H4JpP5
 [model_output_eg]: https://modelevaluation.org/modelOutput/display/GnDhhmaehoxcF2nEd
+[benchmark_5]: https://modelevaluation.org/modelOutput/display/diLdf49PfpEwZemTz
+[benchmark_42]: https://modelevaluation.org/modelOutput/display/pvkuY5gpR2n4FKZw3
