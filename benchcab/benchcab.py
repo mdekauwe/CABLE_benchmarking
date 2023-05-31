@@ -87,9 +87,9 @@ class Benchcab:
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         print("Running FLUXNET tasks...")
         if MULTIPROCESS:
-            run_tasks_in_parallel(tasks, self.args.verbose)
+            run_tasks_in_parallel(tasks, verbose=self.args.verbose)
         else:
-            run_tasks(tasks, self.args.verbose)
+            run_tasks(tasks, verbose=self.args.verbose)
         print("Successfully ran FLUXNET tasks")
         print("")
 
@@ -102,10 +102,12 @@ class Benchcab:
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         comparisons = get_fluxnet_comparisons(tasks)
 
+        print("Running comparison tasks...")
         if MULTIPROCESS:
-            run_comparisons_in_parallel(comparisons)
+            run_comparisons_in_parallel(comparisons, verbose=self.args.verbose)
         else:
-            run_comparisons(comparisons)
+            run_comparisons(comparisons, verbose=self.args.verbose)
+        print("Successfully ran comparison tasks")
 
     def fluxnet(self):
         """Endpoint for `benchcab fluxnet`."""
