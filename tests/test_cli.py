@@ -11,15 +11,20 @@ def test_cli_parser():
 
     # Success case: default benchcab command
     res = vars(parser.parse_args(["run"]))
-    assert res == {"subcommand": "run", "config": "config.yaml", "no_submit": False}
+    assert res == {
+        "subcommand": "run",
+        "config": "config.yaml",
+        "no_submit": False,
+        "verbose": False,
+    }
 
     # Success case: default checkout command
     res = vars(parser.parse_args(["checkout"]))
-    assert res == {"subcommand": "checkout", "config": "config.yaml"}
+    assert res == {"subcommand": "checkout", "config": "config.yaml", "verbose": False}
 
     # Success case: default build command
     res = vars(parser.parse_args(["build"]))
-    assert res == {"subcommand": "build", "config": "config.yaml"}
+    assert res == {"subcommand": "build", "config": "config.yaml", "verbose": False}
 
     # Success case: default fluxnet command
     res = vars(parser.parse_args(["fluxnet"]))
@@ -27,6 +32,7 @@ def test_cli_parser():
         "subcommand": "fluxnet",
         "config": "config.yaml",
         "no_submit": False,
+        "verbose": False,
     }
 
     # Success case: default fluxnet-setup-work-dir command
@@ -34,6 +40,7 @@ def test_cli_parser():
     assert res == {
         "subcommand": "fluxnet-setup-work-dir",
         "config": "config.yaml",
+        "verbose": False,
     }
 
     # Success case: default fluxnet run-tasks command
@@ -41,6 +48,7 @@ def test_cli_parser():
     assert res == {
         "subcommand": "fluxnet-run-tasks",
         "config": "config.yaml",
+        "verbose": False,
     }
 
     # Success case: default fluxnet-bitwise-cmp command
@@ -48,6 +56,7 @@ def test_cli_parser():
     assert res == {
         "subcommand": "fluxnet-bitwise-cmp",
         "config": "config.yaml",
+        "verbose": False,
     }
 
     # Success case: default spatial command
@@ -55,6 +64,7 @@ def test_cli_parser():
     assert res == {
         "subcommand": "spatial",
         "config": "config.yaml",
+        "verbose": False,
     }
 
     # Failure case: pass --no-submit to a non 'run' command

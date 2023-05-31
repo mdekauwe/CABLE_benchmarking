@@ -8,6 +8,11 @@ In this guide, we will describe:
 
 `benchcab` has been designed to work on NCI machine exclusively. It might be extended later on to other systems.
 
+!!! warning "Limitations"
+    Currently, 
+
+    * `benchcab` can only run simulations at flux sites. 
+    * spin-up for CASA simulations are not supported.
 ## Pre-requisites
 
 To use `benchcab`, you need to join the following projects at NCI:
@@ -32,15 +37,21 @@ You need to load the module on each new session at NCI on login or compute nodes
 
 ## Usage
 
-`benchcab` will run the exact same configurations on two CABLE branches specified by the user, e.g. a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
+`benchcab` allows you to run an ensemble of configurations for CABLE using any number of code versions. `benchcab` can be used along 3 major modes:
 
-The code will: (i) check out and (ii) build the code branches. Then it will run each executable across N standard science configurations for a given number of sites. It is possible to produce some plots locally from the output produced. But [the modelevaluation website](https://modelevaluation.org/) can be used for further benchmarking and evaluation.
+* *Regression test:* running two versions of CABLE with the same standard set of science configurations.
+* *New feature:* running two versions of CABLE with the same standard set of science configurations except one version is patched to use a new feature.
+* *Ensemble run:* running any number of versions of CABLE with the same set of customised science configurations.
+
+The regression and new feature run modes should be used as necessary when evaluating new development in CABLE.
+
+The code will: (i) check out and (ii) build the code branches. Then it will run each executable across N standard science configurations for a given number of sites. It is possible to produce some plots locally from the output produced. But [the modelevaluation website][meorg] can be used for further benchmarking and evaluation.
 
 ### Create a work directory
 
 #### Choose a location
 
-You can run the benchmark from any directory you want under `/scratch` or `/g/data`. `/scratch` is preferred as the data in the run directory does not need to be preserved for a long time. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary, until you upload them to [modelevaluation.org](https://modelevaluation.org/). You will need about 33GB for the outputs for the `forty-two-site` experiment (with 8 different science configurations).
+You can run the benchmark from any directory you want under `/scratch` or `/g/data`. `/scratch` is preferred as the data in the run directory does not need to be preserved for a long time. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary, until you upload them to [modelevaluation.org][meorg]. You will need about 33GB for the outputs for the `forty-two-site` experiment (with 8 different science configurations).
 
 !!! Warning "The HOME directory is unsuitable"
     
@@ -55,6 +66,7 @@ git clone git@github.com:CABLE-LSM/bench_example.git
 
 Once the work directory is cloned, you will need to adapt the `config.yaml` file to your case. Refer to [the description of the options][config_options] for this file.
 
+
 ## Run the simulations
 
 Change directory into the cloned example work directory
@@ -63,30 +75,37 @@ cd bench_example
 ```
 
 !!! warning
-    `benchcab` will yell at you if it cannot find files in the current working directory.
+    `benchcab` will stop if it is not run within a work directory with the proper structure.
 
-
-Currently, `benchcab` can only run CABLE for flux sites. To run the flux site tests, run
+Currently, `benchcab` can only run CABLE for flux sites. **To run the whole workflow**, run
 
 ```bash
-benchcab -f
+benchcab run
 ```
 
-The benchmarking will follow the steps:
+The tool will follow the steps:
 
-1. Checkout both branches. The codes will be stored under `src/` directory in your work directory. The sub-directories are created automatically.
-2. Compile the source code from both branches
-3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`.
+1. Checkout the code branches. The codes will be stored under `src/` directory in your work directory. The sub-directories are created automatically.
+2. Compile the source code from all branches
+3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`. `benchcab` will not warn you when the simulations are over.
 
-For help on the available options for `benchcab`:
+!!! tip "Expected output"
+    
+    You can see [an example of the expected output](expected_output.md) printed out to the screen by `benchcab run` to check if the tool has worked as expected.
+
+For help on the **available options** for `benchcab`:
 
 ```bash
 benchcab -h
+benchcab <command> -h
 ```
+
+!!! Tip "Running parts of the workflow"
+    It is possible to run each step of the workflow separately using sub-commands for `benchcab`. Refer to the help message to learn more.
 
 ## Directory structure and files
 
-The following files and directories are created when `benchcab -f` executes successfully:
+The following files and directories are created when `benchcab run` executes successfully:
 ```
 .
 ├── benchmark_cable_qsub.sh
@@ -112,22 +131,41 @@ The following files and directories are created when `benchcab -f` executes succ
     ├── <realisation-0>
     └── <realisation-1>
 ```
+`benchmark_cable_qsub.sh`
 
-The `benchmark_cable_qsub.sh` file is the job script submitted to run the test suite and `benchmark_cable_qsub.sh.o<jobid>` contains the job's standard output/error stream.
+:   the job script submitted to run the test suite and `benchmark_cable_qsub.sh.o<jobid>` contains the job's standard output/error stream.
 
-The `rev_number-*.log` file keeps a record of the revision numbers used for each realisation specified in the config file.
+`rev_number-*.log`
 
-The `src` directory contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
+:   file to keep a record of the revision numbers used for each realisation specified in the config file.
 
-The `runs/site` directory contains the log files, output files, and tasks for running CABLE. CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
+`src/`
+
+:   directory that contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
+
+`runs/site/` 
+
+:   directory that contains the log files, output files, and tasks for running CABLE. 
+
+`tasks`
+
+:   CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
 ```
 <met_file_basename>_R<realisation_key>_S<science_config_key>
 ```
-where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
+:   where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
 
-The `runs/site/tasks/<task>` directory contains the executable and input files for each task.
+`runs/site/tasks/<task>/`
 
-The output files and log files for all tasks are stored in the `runs/site/outputs` and `runs/site/logs` directories respectively.
+:   directory that contains the executable, the input files for each task and the recorded standard output from the CABLE model run.
+
+`runs/site/outputs/`
+
+:   directory that contains the netCDF output files for all tasks
+
+`runs/site/logs/`
+
+:   directory that contains the log files produced by all tasks
 
 !!! warning "Re-running `benchcab` multiple times in the same working directory"
     We recommend the user to manually delete the generated files when re-running `benchcab`. Re-running `benchcab` multiple times in the same working directory is currently not yet supported (see issue [CABLE-LSM/benchcab#20](https://github.com/CABLE-LSM/benchcab/issues/20)). To clean the current working directory, run the following command in the working directory
@@ -135,15 +173,69 @@ The output files and log files for all tasks are stored in the `runs/site/output
     rm benchmark_cable_qsub.sh* rev_number-*; rm -rf runs/ src/
     ```
 
-## Analyse the output with modelevaluation.org
+## Analyse the output with [modelevaluation.org][meorg]
 
-Once the benchmarking has finished running all the simulations, you need to upload the output files to modelevaluation.org:
+<!-- **Prerequisite**: To run the model evaluation step, you will need to create an account on [modelevaluation.org][meorg]. -->
 
-1. Open and log into modelevaluation.org
-1. Navigate to the `NRI Land testing` workspace
-1. Create a model profile for the two model branches you are using
-1. Create a model output and upload the outputs in `runs/sites/outputs/` under your work directory
-1. Launch the analysis
+Once the benchmarking has finished running all the simulations, you need to upload the output files to [modelevaluation.org][meorg] via the web interface. To do this:
+
+1. Go to [modelevaluation.org][meorg] and login or create a new account.
+2. Navigate to the `benchcab-evaluation` workspace. To do this, click the **Current Workspace** button at the top of the page, and select `benchcab-evaluation` under "Workspaces Shared With Me".
+    <figure markdown>
+      ![Workspace Button](../assets/model_evaluation/Current%20Workspace%20button.png){ width="500" }
+      <figcaption>Button to choose workspace</figcaption>
+    </figure>
+    <figure markdown>
+      ![Workspace Choice](../assets/model_evaluation/Choose%20workspace.png){ width="500" }
+      <figcaption>Workspaces available to you</figcaption>
+    </figure>
+
+3. Create a model profile for your set of model outputs. You can see [this example][model_profile_eg] to get started. To create your own, select the **Model Profiles** tab and click **Create Model Profile**.
+    <figure markdown>
+      ![Model profile](../assets/model_evaluation/Create%20model%20profile.png){ width="500" }
+      <figcaption>Create model profile</figcaption>
+    </figure>
+
+    The model profile should describe the versions of CABLE used to generate the model outputs and the URLs to the repository pointing to the code versions. You are free to set the name as you like.
+
+4. Upload model outputs created by `benchcab` by doing the following:
+    1. Transfer model outputs from the `runs/site/outputs/` directory to your local computer so that they can be uploaded via the web interface.
+    2. Create a new model output form. You can see [this example][model_output_eg] to get started. To create your own, select the **Model Outputs** tab on [modelevaluation.org][meorg] and click **Upload Model Output**.
+        <figure markdown>
+          ![Model output](../assets/model_evaluation/New%20model%20output.png){ width="500" }
+          <figcaption>Create model output</figcaption>
+        </figure>
+
+    3. Fill out the fields for "Name", "Experiment" and "Model" ("State Selection", "Parameter Selection" and "Comments" are optional):
+        - **The experiment** should correspond to the experiment specified in the [configuration file][config_options] used to run `benchcab`. 
+        - **The model** should correspond to the Model Profile created in the previous step.
+        - Optionally, in **the comments**, you may also want to include the URL to the Github repository containing the benchcab configuration file used to run `benchcab` and any other information needed to reproduce the outputs.
+
+    4. Under "Model Output Files", click **Upload Files**. This should prompt you to select the model outputs you want to upload from your file system. We recommend users to make their model outputs public to download by checking **Downloadable by other users**.
+        <figure markdown>
+          ![Public output](../assets/model_evaluation/Public%20output.png){ width="300" }
+          <figcaption>Make model output public</figcaption>
+        </figure>
+
+    5. Under "Benchmarks", you may need to add a benchmark depending on the experiment chosen. This is an error and will be fixed soon.
+        - **Five site test** and **Forty two site test**: a benchmark is required to run the analysis for the `Five site test` experiment. You can use:
+            - [this model profile][benchmark_5] as a benchmark for the **five site experiment**.
+            - [this model profile][benchmark_42] as a benchmark for the **forty-two site experiment**.
+        - **single site experiments**: No benchmark is required. You can add your own if you would like to. You can use [this example][benchmark_eg] to know how to set up your own model output as a benchmark.
+
+    6. **Save** your model output!
+
+5. Once the model outputs have been uploaded you can then start the analysis by clicking the **Run Analysis** button at the top of the page. The same button is also found at the bottom of the page.
+    <figure markdown>
+      ![Run analysis](../assets/model_evaluation/Run%20analysis.png){ width="700" }
+      <figcaption>Run analysis button</figcaption>
+    </figure>
+
+6. Once the analysis has completed, view the generated plots by clicking **view plots** under "Analyses".
+    <figure markdown>
+      ![View plots](../assets/model_evaluation/View%20plot.png){ width="500" }
+      <figcaption>Link to plots</figcaption>
+    </figure>
 
 ## Contacts
 
@@ -157,3 +249,8 @@ Alternatively, you can also post discussions or questions on [the ACCESS-Hive fo
 [config_options]: config_options.md
 [hive-forum]: https://forum.access-hive.org.au
 [issues-benchcab]: https://github.com/CABLE-LSM/benchcab/issues
+[meorg]: https://modelevaluation.org/
+[model_profile_eg]: https://modelevaluation.org/model/display/fd5GFaJGYu7H4JpP5
+[model_output_eg]: https://modelevaluation.org/modelOutput/display/GnDhhmaehoxcF2nEd
+[benchmark_5]: https://modelevaluation.org/modelOutput/display/diLdf49PfpEwZemTz
+[benchmark_42]: https://modelevaluation.org/modelOutput/display/pvkuY5gpR2n4FKZw3

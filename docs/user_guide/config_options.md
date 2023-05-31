@@ -1,76 +1,103 @@
 # config.yaml options
 
-!!! note
+!!! note "Required options"
     All keys listed here are required unless stated otherwise.
 
-## Technical details
+The different running modes of `benchcab` are solely dependent on the options used in `config.yaml`. The following gives some typical ways to configure `benchcab` for each mode, but the tool is not restricted to these choices of options:
 
-`user`
+=== "Regression test"
 
-: NCI user ID to find the CABLE branch on SVN and run the simulations.
+    For this test, you want to:
 
-`project`
+    * Specify the details of two branches of CABLE
+    * Do not specify a [`patch`](#`patch`)
+    * Use the default set of science options, i.e. do not specify [`science_configurations`](#`science_configurations`) in `config.yaml`
+    * Choose the [`experiment`](#`experiment`) suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
+
+=== "New feature test"
+
+    For this test, you want to:
+
+    * Specify the details of two branches of CABLE
+    * Specify a [`patch`](#`patch`) for **one** of the branches
+    * Use the default set of science options, i.e. do not specify [`science_configurations`](#`science_configurations`) in `config.yaml`
+    * Choose the [`experiment`](#`experiment`) suitable for your stage of development. A run with the `forty-two-site-test` will be required for submissions of new development to CABLE.
+
+
+=== "Ensemble mode"
+
+    This running mode is quite open to customisations:
+
+    * Specify the number of CABLE's branches you need
+    * Use [`patch`](#`patch`) on branches as required
+    * Specify the [science configurations](#`science_configurations`) you want to run. [`patch`](#`patch`) will be applied on top of the science configurations listed.
+
+
+## Technical options
+
+### `project`
 
 : NCI project ID to charge the simulations to.
 
-`modules`
+### `modules`
 
 : NCI modules to use for compiling CABLE
 
-## Simulations details
+## Simulations options
 
-`realisations`
+### `realisations`
 
-: Entries for each of the two CABLE branches to use (specified by keys `0` and `1`). Each entry contains the following keys:
+: Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys:
 
-    `name`
-    : The base name of the branch on SVN, i.e. relative to:
+#### `path`
 
-        - `https://trac.nci.org.au/svn/cable` for the trunk
-        - `https://trac.nci.org.au/svn/cable/branches/Share` for a shared branch
-        - `https://trac.nci.org.au/svn/cable/branches/Users/{user_id}` for a user branch
+: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
+: Example:
 
-    `revision`
-    : The revision number to use for the branch.
-    : This key is **optional** and can be omitted from the config file. By default `revision` is set to `-1` which indicates the HEAD of the branch to be used. The user may also explicitly specify `-1` to use the HEAD of the branch.
+    - to checkout `https://trac.nci.org.au/svn/cable/trunk`, set `path: "trunk"`
+    - to checkout `https://trac.nci.org.au/svn/cable/branches/Users/foo/my_branch`, set `path: "branches/Users/foo/my_branch"`
 
-    `trunk`
-    : Boolean value set to `True` if this branch is the trunk for CABLE. Else set to `False`.
+#### `name`
 
-    `share_branch`
-    : Boolean value set to `True` if this branch is under `branches/Share` in the CABLE SVN repository. Else set to `False`.
+: An alias name used internally by `benchcab` for the branch. The `name` key also specifies the directory name when checking out the branch, that is, `name` is the optional `PATH` argument to `svn checkout`.
+: This key is **optional** and can be omitted from the config file. By default `name` is set to the base name of [`path`](#`path`).
 
-    `patch`
-    : Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
-    : The `patch` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
-    : This key is **optional** and can be omitted from the config file. By default `patch` is empty and does not modify the namelist file.
+#### `build_script`
 
-    Example:
-    ```yaml
-    realisations: {
-      0: { # head of the trunk
-        name: "trunk",
-        revision: -1,
-        trunk: True,
-        share_branch: False,
-      },
-      1: { # some development branch
-        name: "test-branch",
-        revision: -1,
-        trunk: False,
-        share_branch: False,
-        patch: {
-          cable: {
-            cable_user: {
-              FWSOIL_SWITCH: "Lai and Ktaul 2000"
-            }
-          }
+: This key is **optional**. The path to a custom script to build the code in that branch, relative to the name of the branch.  The script specified with this option will run as is, ignoring the entries in the `modules` key of `config.yaml` file.
+: Example: `build_script: offline/build.sh` to specify a build script under `<name_of_branch>/offline/`.
+
+#### `revision`
+
+: The revision number to use for the branch.
+: This key is **optional** and can be omitted from the config file. By default `revision` is set to `-1` which indicates the HEAD of the branch to be used. The user may also explicitly specify `-1` to use the HEAD of the branch.
+
+#### `patch`
+
+: Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
+: The `patch` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
+: This key is **optional** and can be omitted from the config file. By default `patch` is empty and does not modify the namelist file.
+
+Example:
+```yaml
+realisations: [
+  { # head of the trunk
+    path: "trunk",
+  },
+  { # some development branch
+    path: "branches/Users/foo/my_branch",
+    patch: {
+      cable: {
+        cable_user: {
+          FWSOIL_SWITCH: "Lai and Ktaul 2000"
         }
       }
     }
-    ```
+  }
+]
+```
 
-`experiment`
+### `experiment`
 
 : Type of experiment to run. Experiments are defined in the **NRI Land testing** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
 
@@ -82,9 +109,9 @@
     - `US-Var`: to run simulations at the Vaira Ranch-Ione (US) site
     - `US-Whs`: to run simulations at the Walnut Gulch Lucky Hills Shrub (US) site
 
-`science_configurations`
+### `science_configurations`
 
-: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace the default science configurations.
+: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace [the default science configurations](default_science_configurations.md).
 : Example:
 ```yaml
 science_configurations: {
@@ -104,48 +131,6 @@ science_configurations: {
       }
     }
   }
-}
-```
-
-: Currently, the default science configurations are defined internally by the following data structure:
-```python
-DEFAULT_SCIENCE_CONFIGURATIONS = {
-    "sci0": {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
-    "sci1": {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
-    "sci2": {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
-    "sci3": {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
-    "sci4": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "medlyn",
-                "FWSOIL_SWITCH": "Haverd2013",
-            }
-        }
-    },
-    "sci5": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "leuning",
-                "FWSOIL_SWITCH": "Haverd2013",
-            }
-        }
-    },
-    "sci6": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "medlyn",
-                "FWSOIL_SWITCH": "standard",
-            }
-        }
-    },
-    "sci7": {
-        "cable": {
-            "cable_user": {
-                "GS_SWITCH": "leuning",
-                "FWSOIL_SWITCH": "standard",
-            }
-        }
-    },
 }
 ```
 

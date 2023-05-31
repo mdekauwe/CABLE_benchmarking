@@ -22,6 +22,12 @@ def generate_parser() -> argparse.ArgumentParser:
     args_subcommand.add_argument(
         "-c", "--config", help="Config filename.", default="config.yaml"
     )
+    args_subcommand.add_argument(
+        "-v",
+        "--verbose",
+        help="Enable more detailed output in the command line.",
+        action="store_true"
+    )
 
     # parent parser that contains arguments common to all run specific subcommands
     args_run_subcommand = argparse.ArgumentParser(add_help=False)

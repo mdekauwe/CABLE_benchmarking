@@ -28,18 +28,19 @@ from benchcab.internal import (
     SITE_OUTPUT_DIR,
     CABLE_EXE,
     CABLE_NML,
+    CABLE_STDOUT_FILENAME,
     NUM_CORES,
 )
 from benchcab.task import Task
 
 
-def run_tasks(tasks: list[Task]):
+def run_tasks(tasks: list[Task], verbose=False):
     """Runs tasks in `tasks` serially."""
     for task in tasks:
-        run_task(task)
+        run_task(task, verbose=verbose)
 
 
-def run_tasks_in_parallel(tasks: list[Task]):
+def run_tasks_in_parallel(tasks: list[Task], verbose=False):
     """Runs tasks in `tasks` in parallel across multiple processes."""
 
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
@@ -49,7 +50,7 @@ def run_tasks_in_parallel(tasks: list[Task]):
     processes = []
     num_cores = multiprocessing.cpu_count() if NUM_CORES is None else NUM_CORES
     for _ in range(num_cores):
-        proc = multiprocessing.Process(target=worker, args=[task_queue])
+        proc = multiprocessing.Process(target=worker, args=[task_queue, verbose])
         proc.start()
         processes.append(proc)
 
@@ -57,36 +58,52 @@ def run_tasks_in_parallel(tasks: list[Task]):
         proc.join()
 
 
-def worker(task_queue: multiprocessing.Queue):
+def worker(task_queue: multiprocessing.Queue, verbose=False):
     """Runs tasks in `task_queue` until the queue is emptied."""
     while True:
         try:
             task = task_queue.get_nowait()
         except queue.Empty:
             return
-        run_task(task)
+        run_task(task, verbose=verbose)
 
 
 def run_task(task: Task, verbose=False):
     """Run the CABLE executable for the given task."""
     task_name = task.get_task_name()
-    os.chdir(CWD / SITE_TASKS_DIR / task_name)
-    cmd = f"./{CABLE_EXE} {CABLE_NML}"
-    if not verbose:
-        cmd += " > /dev/null 2>&1"
-    try:
-        subprocess.run(cmd, shell=True, check=True)
-    except subprocess.CalledProcessError as err:
-        print("Job failed to submit: ", err.cmd)
+    task_dir = CWD / SITE_TASKS_DIR / task_name
+    if verbose:
+        print(
+            f"Running task {task_name}... CABLE standard output "
+            f"saved in {task_dir / CABLE_STDOUT_FILENAME}"
+        )
 
+    if verbose:
+        print(f"  cd {task_dir}")
+    os.chdir(task_dir)
+
+    cmd = f"./{CABLE_EXE} {CABLE_NML} > {CABLE_STDOUT_FILENAME} 2>&1"
+    try:
+        if verbose:
+            print(f"  {cmd}")
+        subprocess.run(cmd, shell=True, check=True)
+    except subprocess.CalledProcessError:
+        print(f"Error: CABLE returned an error for task {task_name}")
+        return
+
+    output_file = CWD / SITE_OUTPUT_DIR / task.get_output_filename()
+    if verbose:
+        print(f"  Adding attributes to output file: {output_file}")
     add_attributes_to_output_file(
-        output_file=Path(CWD / SITE_OUTPUT_DIR / f"{task_name}_out.nc"),
+        output_file=output_file,
         nml_file=Path(CWD / SITE_TASKS_DIR / task_name / CABLE_NML),
         sci_config=task.sci_config,
         url=svn_info_show_item(CWD / SRC_DIR / task.branch_name, "url"),
         rev=svn_info_show_item(CWD / SRC_DIR / task.branch_name, "revision"),
     )
 
+    if verbose:
+        print(f"  cd {CWD}")
     os.chdir(CWD)
 
 
