@@ -56,12 +56,12 @@ module load conda/analysis3-unstable
 {module_load_lines}
 
 benchcab fluxnet-run-tasks --config={config_path} {verbose_flag}
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
     exit 1
 fi
 benchcab fluxnet-bitwise-cmp --config={config_path} {verbose_flag}
-if [ $? -ne 0]; then
+if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxnet-bitwise-cmp failed. Exiting...'
     exit 1
 fi
