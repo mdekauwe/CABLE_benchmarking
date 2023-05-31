@@ -17,6 +17,11 @@ def test_check_config():
     config = make_barebones_config()
     check_config(config)
 
+    # Success case: branch configuration with missing name key
+    config = make_barebones_config()
+    config["realisations"][0].pop("name")
+    check_config(config)
+
     # Success case: branch configuration with missing revision key
     config = make_barebones_config()
     config["realisations"][0].pop("revision")
@@ -29,12 +34,11 @@ def test_check_config():
 
     # Success case: test config when realisations contains more than two keys
     config = make_barebones_config()
-    config["realisations"].append({
-        "name": "my_new_branch",
-        "revision": -1,
-        "trunk": False,
-        "share_branch": False,
-    })
+    config["realisations"].append(
+        {
+            "path": "path/to/my_new_branch",
+        }
+    )
     assert len(config["realisations"]) > 2
     check_config(config)
 
@@ -59,12 +63,6 @@ def test_check_config():
     with pytest.raises(ValueError):
         config = make_barebones_config()
         config.pop("project")
-        check_config(config)
-
-    # Failure case: test config without user key raises an exception
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config.pop("user")
         check_config(config)
 
     # Failure case: test config without realisations key raises an exception
@@ -104,22 +102,10 @@ def test_check_config():
         config["experiment"] = "CH-Dav"
         check_config(config)
 
-    # Failure case: 'name' key is missing in branch configuration
+    # Failure case: 'path' key is missing in branch configuration
     with pytest.raises(ValueError):
         config = make_barebones_config()
-        config["realisations"][1].pop("name")
-        check_config(config)
-
-    # Failure case: 'trunk' key is missing in branch configuration
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["realisations"][1].pop("trunk")
-        check_config(config)
-
-    # Failure case: 'share_branch' key is missing in branch configuration
-    with pytest.raises(ValueError):
-        config = make_barebones_config()
-        config["realisations"][1].pop("share_branch")
+        config["realisations"][1].pop("path")
         check_config(config)
 
     # Failure case: test config with empty science_configurations key
@@ -127,12 +113,6 @@ def test_check_config():
     with pytest.raises(ValueError):
         config = make_barebones_config()
         config["science_configurations"] = []
-        check_config(config)
-
-    # Failure case: user key is not a string
-    with pytest.raises(TypeError):
-        config = make_barebones_config()
-        config["user"] = 123
         check_config(config)
 
     # Failure case: project key is not a string
@@ -153,6 +133,36 @@ def test_check_config():
         config["realisations"] = ["foo", "bar"]
         check_config(config)
 
+    # Failure case: type of name is not a string
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"][1]["name"] = 1234
+        check_config(config)
+
+    # Failure case: type of path is not a string
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"][1]["path"] = 1234
+        check_config(config)
+
+    # Failure case: type of revision key is not an integer
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"][1]["revision"] = "-1"
+        check_config(config)
+
+    # Failure case: type of patch key is not a dictionary
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"][1]["patch"] = r"cable_user%ENABLE_SOME_FEATURE = .FALSE."
+        check_config(config)
+
+    # Failure case: type of build_script key is not a string
+    with pytest.raises(TypeError):
+        config = make_barebones_config()
+        config["realisations"][1]["build_script"] = ["echo", "hello"]
+        check_config(config)
+
     # Failure case: modules key is not a list
     with pytest.raises(TypeError):
         config = make_barebones_config()
@@ -165,27 +175,6 @@ def test_check_config():
         config["experiment"] = 0
         check_config(config)
 
-    # Failure case: type of config["branch"]["revision"] is
-    # not an integer
-    with pytest.raises(TypeError):
-        config = make_barebones_config()
-        config["realisations"][1]["revision"] = "-1"
-        check_config(config)
-
-    # Failure case: type of config["branch"]["trunk"] is
-    # not an boolean
-    with pytest.raises(TypeError):
-        config = make_barebones_config()
-        config["realisations"][1]["trunk"] = 0
-        check_config(config)
-
-    # Failure case: type of config["branch"]["share_branch"] is
-    # not a boolean
-    with pytest.raises(TypeError):
-        config = make_barebones_config()
-        config["realisations"][1]["share_branch"] = "0"
-        check_config(config)
-
     # Failure case: type of config["science_configurations"] is not a list
     with pytest.raises(TypeError):
         config = make_barebones_config()
@@ -196,12 +185,6 @@ def test_check_config():
     with pytest.raises(TypeError):
         config = make_barebones_config()
         config["science_configurations"] = [r"cable_user%GS_SWITCH = 'medlyn'"]
-        check_config(config)
-
-    # Failure case: type of patch key is not a dictionary
-    with pytest.raises(TypeError):
-        config = make_barebones_config()
-        config["realisations"][1]["patch"] = r"cable_user%ENABLE_SOME_FEATURE = .FALSE."
         check_config(config)
 
 
@@ -218,6 +201,23 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config == res
+
+    # Success case: a specified branch with a missing name key
+    # should return a config with name set to the base name of
+    # the path key
+    config = make_barebones_config()
+    config["realisations"][0].pop("name")
+    filename = TMP_DIR / "config-barebones.yaml"
+
+    with open(filename, "w", encoding="utf-8") as file:
+        yaml.dump(config, file)
+
+    res = read_config(filename)
+    os.remove(filename)
+    assert config != res
+    assert res["realisations"][0]["name"] == os.path.basename(
+        config["realisations"][0]["path"]
+    )
 
     # Success case: a specified branch with a missing revision number
     # should return a config with the default revision number
