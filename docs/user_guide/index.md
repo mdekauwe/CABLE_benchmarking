@@ -119,6 +119,8 @@ The following files and directories are created when `benchcab run` executes suc
 │       ├── outputs
 │       │   ├── <task>_out.nc
 │       │   └── ...
+│       ├── analysis
+│       │   └── bitwise-comparisons
 │       └── tasks
 │           ├── <task>
 │           │   ├── cable (executable)
@@ -166,6 +168,10 @@ The following files and directories are created when `benchcab run` executes suc
 `runs/site/logs/`
 
 :   directory that contains the log files produced by all tasks
+
+`runs/site/analysis/bitwise-comparisons`
+
+:   directory that contains the standard output produced by the bitwise comparison command: `benchcab fluxnet-bitwise-cmp`. Standard output is only saved when the netcdf files being compared differ from each other
 
 !!! warning "Re-running `benchcab` multiple times in the same working directory"
     We recommend the user to manually delete the generated files when re-running `benchcab`. Re-running `benchcab` multiple times in the same working directory is currently not yet supported (see issue [CABLE-LSM/benchcab#20](https://github.com/CABLE-LSM/benchcab/issues/20)). To clean the current working directory, run the following command in the working directory
