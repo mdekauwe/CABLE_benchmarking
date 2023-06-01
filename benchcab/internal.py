@@ -19,7 +19,6 @@ MEM = "30GB"
 WALL_TIME = "6:00:00"
 MPI = False
 MULTIPROCESS = True
-NUM_CORES = NCPUS  # set to a number, if None it will use all cores...!
 
 # DIRECTORY PATHS/STRUCTURE:
 

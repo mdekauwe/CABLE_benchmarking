@@ -5,7 +5,7 @@ import multiprocessing
 import queue
 
 from benchcab.task import Task
-from benchcab.internal import CWD, SITE_OUTPUT_DIR, SITE_BITWISE_CMP_DIR
+from benchcab.internal import CWD, SITE_OUTPUT_DIR, SITE_BITWISE_CMP_DIR, NCPUS
 
 
 def get_comparison_name(task_a: Task, task_b: Task) -> str:
@@ -35,8 +35,7 @@ def run_comparisons_in_parallel(comparisons: list[tuple[Task, Task]], verbose=Fa
         task_queue.put(pair)
 
     processes = []
-    num_cores = multiprocessing.cpu_count()  # use all available processors for now
-    for _ in range(num_cores):
+    for _ in range(NCPUS):
         proc = multiprocessing.Process(target=worker, args=[task_queue, verbose])
         proc.start()
         processes.append(proc)

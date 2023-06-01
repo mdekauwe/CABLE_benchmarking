@@ -29,7 +29,7 @@ from benchcab.internal import (
     CABLE_EXE,
     CABLE_NML,
     CABLE_STDOUT_FILENAME,
-    NUM_CORES,
+    NCPUS,
 )
 from benchcab.task import Task
 
@@ -48,8 +48,7 @@ def run_tasks_in_parallel(tasks: list[Task], verbose=False):
         task_queue.put(task)
 
     processes = []
-    num_cores = multiprocessing.cpu_count() if NUM_CORES is None else NUM_CORES
-    for _ in range(num_cores):
+    for _ in range(NCPUS):
         proc = multiprocessing.Process(target=worker, args=[task_queue, verbose])
         proc.start()
         processes.append(proc)
