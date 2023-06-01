@@ -111,11 +111,11 @@ realisations: [
 
 ### `science_configurations`
 
-: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace [the default science configurations](default_science_configurations.md).
+: User defined science configurations. This key is **optional** and can be omitted from the config file. Science configurations that are specified here will replace [the default science configurations](default_science_configurations.md). In the output filenames, each configuration is identified with S<N> where N is an integer starting from 0 for the first listed configuration and increasing by 1 for each subsequent configuration.
 : Example:
 ```yaml
-science_configurations: {
-  sci0: {
+science_configurations: [
+  { # S0 configuration
     cable: {
       cable_user: {
         GS_SWITCH: "medlyn",
@@ -123,7 +123,7 @@ science_configurations: {
       }
     }
   },
-  sci1: {
+  { # S1 configuration
     cable: {
       cable_user: {
         GS_SWITCH: "leuning",
@@ -131,7 +131,7 @@ science_configurations: {
       }
     }
   }
-}
+]
 ```
 
 [meorg]: https://modelevaluation.org/
