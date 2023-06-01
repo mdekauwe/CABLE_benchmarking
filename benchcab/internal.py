@@ -87,10 +87,6 @@ CABLE_STDOUT_FILENAME = "out.txt"
 # Contains the default science configurations used to run the CABLE test suite
 # (when a science config file is not provided by the user)
 DEFAULT_SCIENCE_CONFIGURATIONS = [
-    {"cable": {"cable_user": {"GS_SWITCH": "medlyn"}}},
-    {"cable": {"cable_user": {"GS_SWITCH": "leuning"}}},
-    {"cable": {"cable_user": {"FWSOIL_SWITCH": "Haverd2013"}}},
-    {"cable": {"cable_user": {"FWSOIL_SWITCH": "standard"}}},
     {
         "cable": {
             "cable_user": {
