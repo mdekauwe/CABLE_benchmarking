@@ -35,7 +35,7 @@ def next_path(path_pattern, sep="-"):
     new_file_index = 1
     common_filename, _ = loc_pattern.stem.split(sep)
 
-    pattern_files_sorted = sorted(Path('.').glob(path_pattern))
+    pattern_files_sorted = sorted(Path(".").glob(path_pattern))
     if len(pattern_files_sorted):
         common_filename, last_file_index = pattern_files_sorted[-1].stem.split(sep)
         new_file_index = int(last_file_index) + 1
@@ -90,30 +90,33 @@ def checkout_cable_auxiliary(verbose=False):
         print(cmd)
 
     subprocess.run(
-        cmd,
-        shell=True,
-        check=True,
-        stdout=None if verbose else subprocess.DEVNULL
+        cmd, shell=True, check=True, stdout=None if verbose else subprocess.DEVNULL
     )
 
     # Check relevant files exist in repository:
 
     if not Path.exists(CWD / internal.GRID_FILE):
-        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.GRID_FILE}'")
+        raise RuntimeError(
+            f"Error checking out CABLE-AUX: cannot find file '{internal.GRID_FILE}'"
+        )
 
     if not Path.exists(CWD / internal.PHEN_FILE):
-        raise RuntimeError(f"Error checking out CABLE-AUX: cannot find file '{internal.PHEN_FILE}'")
+        raise RuntimeError(
+            f"Error checking out CABLE-AUX: cannot find file '{internal.PHEN_FILE}'"
+        )
 
     if not Path.exists(CWD / internal.CNPBIOME_FILE):
         raise RuntimeError(
             f"Error checking out CABLE-AUX: cannot find file '{internal.CNPBIOME_FILE}'"
         )
 
-    rev_number = svn_info_show_item(f"{CABLE_SVN_ROOT}/branches/Share/CABLE-AUX", "revision")
+    rev_number = svn_info_show_item(
+        f"{CABLE_SVN_ROOT}/branches/Share/CABLE-AUX", "revision"
+    )
     print(f"Successfully checked out CABLE-AUX at revision {rev_number}")
 
 
-def checkout_cable(branch_config: dict, user: str, verbose=False):
+def checkout_cable(branch_config: dict, verbose=False):
     """Checkout a branch of CABLE."""
     # TODO(Sean) do nothing if the repository has already been checked out?
     # This also relates the 'clean' feature.
@@ -124,18 +127,11 @@ def checkout_cable(branch_config: dict, user: str, verbose=False):
     if branch_config["revision"] > 0:
         cmd += f" -r {branch_config['revision']}"
 
-    if branch_config["trunk"]:
-        path_to_repo = Path(CWD, SRC_DIR, "trunk")
-        cmd += f" {CABLE_SVN_ROOT}/trunk {path_to_repo}"
-    elif branch_config["share_branch"]:
-        path_to_repo = Path(CWD, SRC_DIR, branch_config["name"])
-        cmd += f" {CABLE_SVN_ROOT}/branches/Share/{branch_config['name']} {path_to_repo}"
-    else:
-        path_to_repo = Path(CWD, SRC_DIR, branch_config["name"])
-        cmd += f" {CABLE_SVN_ROOT}/branches/Users/{user}/{branch_config['name']} {path_to_repo}"
-
     if need_pass():
         cmd += f" --password {get_password()}"
+
+    path_to_repo = Path(CWD, SRC_DIR, branch_config["name"])
+    cmd += f" {CABLE_SVN_ROOT}/{branch_config['path']} {path_to_repo}"
 
     if verbose:
         print(cmd)
@@ -150,7 +146,9 @@ def checkout_cable(branch_config: dict, user: str, verbose=False):
     # Write last change revision number to rev_number.log file
     last_changed_rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")
     with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
-        fout.write(f"{branch_config['name']} last changed revision: {last_changed_rev_number}\n")
+        fout.write(
+            f"{branch_config['name']} last changed revision: {last_changed_rev_number}\n"
+        )
 
     rev_number = svn_info_show_item(path_to_repo, "revision")
     print(f"Successfully checked out {branch_config['name']} at revision {rev_number}")

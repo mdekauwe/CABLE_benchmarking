@@ -9,7 +9,6 @@ TMP_DIR = Path(os.environ["TMPDIR"], "benchcab_tests")
 def make_barebones_config() -> dict:
     """Returns a valid mock config."""
     conf = {
-        "user": "foo1234",
         "project": "bar",
         "experiment": "five-site-test",
         "modules": [
@@ -21,19 +20,15 @@ def make_barebones_config() -> dict:
             {
                 "name": "trunk",
                 "revision": 9000,
-                "trunk": True,
-                "share_branch": False,
+                "path": "trunk",
                 "patch": {},
                 "build_script": "",
             },
             {
                 "name": "v3.0-YP-changes",
                 "revision": -1,
-                "trunk": False,
-                "share_branch": False,
-                "patch": {
-                    "cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}
-                },
+                "path": "branches/Users/sean/my-branch",
+                "patch": {"cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}},
                 "build_script": "",
             },
         ],
@@ -54,6 +49,6 @@ def make_barebones_config() -> dict:
                     }
                 }
             },
-        ]
+        ],
     }
     return conf

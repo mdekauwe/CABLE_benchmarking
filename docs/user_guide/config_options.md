@@ -35,10 +35,6 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 ## Technical options
 
-### `user`
-
-: NCI user ID to find the CABLE branch on SVN and run the simulations.
-
 ### `project`
 
 : NCI project ID to charge the simulations to.
@@ -53,21 +49,18 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 : Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys:
 
+#### `path`
+
+: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
+: Example:
+
+    - to checkout `https://trac.nci.org.au/svn/cable/trunk`, set `path: "trunk"`
+    - to checkout `https://trac.nci.org.au/svn/cable/branches/Users/foo/my_branch`, set `path: "branches/Users/foo/my_branch"`
+
 #### `name`
 
-: The base name of the branch on SVN, i.e. relative to:
-
-    - `https://trac.nci.org.au/svn/cable` for the trunk
-    - `https://trac.nci.org.au/svn/cable/branches/Share` for a shared branch
-    - `https://trac.nci.org.au/svn/cable/branches/Users/{user_id}` for a user branch
-
-#### `trunk`
-
-: Boolean value set to `True` if this branch is the trunk for CABLE. Else set to `False`.
-
-#### `share_branch`
-
-: Boolean value set to `True` if this branch is under `branches/Share` in the CABLE SVN repository. Else set to `False`.
+: An alias name used internally by `benchcab` for the branch. The `name` key also specifies the directory name when checking out the branch, that is, `name` is the optional `PATH` argument to `svn checkout`.
+: This key is **optional** and can be omitted from the config file. By default `name` is set to the base name of [`path`](#`path`).
 
 #### `build_script`
 
@@ -89,16 +82,10 @@ Example:
 ```yaml
 realisations: [
   { # head of the trunk
-    name: "trunk",
-    revision: -1,
-    trunk: True,
-    share_branch: False,
+    path: "trunk",
   },
   { # some development branch
-    name: "test-branch",
-    revision: -1,
-    trunk: False,
-    share_branch: False,
+    path: "branches/Users/foo/my_branch",
     patch: {
       cable: {
         cable_user: {
