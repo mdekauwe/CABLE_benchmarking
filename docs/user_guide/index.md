@@ -4,15 +4,16 @@ In this guide, we will describe:
 
 - how to install the package
 - how to use the software, including any requirements
-- the different modes supported by the software
+- the different running modes supported by the software
 
 `benchcab` has been designed to work on NCI machine exclusively. It might be extended later on to other systems.
 
 !!! warning "Limitations"
-    Currently, 
+    Currently,
 
     * `benchcab` can only run simulations at flux sites. 
     * spin-up for CASA simulations are not supported.
+
 ## Pre-requisites
 
 To use `benchcab`, you need to join the following projects at NCI:
@@ -39,9 +40,9 @@ You need to load the module on each new session at NCI on login or compute nodes
 
 `benchcab` allows you to run an ensemble of configurations for CABLE using any number of code versions. `benchcab` can be used along 3 major modes:
 
-* *Regression test:* running two versions of CABLE with the same standard set of science configurations.
-* *New feature:* running two versions of CABLE with the same standard set of science configurations except one version is patched to use a new feature.
-* *Ensemble run:* running any number of versions of CABLE with the same set of customised science configurations.
+- *Regression test:* running two versions of CABLE with the same standard set of science configurations.
+- *New feature:* running two versions of CABLE with the same standard set of science configurations except one version is patched to use a new feature.
+- *Ensemble run:* running any number of versions of CABLE with the same set of customised science configurations.
 
 The regression and new feature run modes should be used as necessary when evaluating new development in CABLE.
 
@@ -51,25 +52,30 @@ The code will: (i) check out and (ii) build the code branches. Then it will run 
 
 #### Choose a location
 
-You can run the benchmark from any directory you want under `/scratch` or `/g/data`. `/scratch` is preferred as the data in the run directory does not need to be preserved for a long time. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary, until you upload them to [modelevaluation.org][meorg]. You will need about 33GB for the outputs for the `forty-two-site` experiment (with 8 different science configurations).
+You can run the benchmark from any directory you want under `/scratch` or `/g/data`. `/scratch` is preferred as the data in the run directory does not need to be preserved for a long time. The code will create sub-directories as needed. Please ensure you have enough space to store the CABLE outputs in your directory, at least temporary, until you upload them to [modelevaluation.org][meorg]. You will need about 16GB for the outputs for the `forty-two-site` experiment (with 4 different science configurations).
 
 !!! Warning "The HOME directory is unsuitable"
-    
+
     Do not use your $HOME directory to contain the work directory as it does not have enough space to contain the outputs.
 
 #### Setup the work directory
 
 The simplest is to clone an existing work directory with git and then adapt it to your case. Such [an example work directory][bench_example] is available on GitHub under the CABLE-LSM organisation.
+
 ```bash
 git clone git@github.com:CABLE-LSM/bench_example.git
 ```
 
 Once the work directory is cloned, you will need to adapt the `config.yaml` file to your case. Refer to [the description of the options][config_options] for this file.
 
+!!! info "Running with CABLE v2.x"
+
+    Defaults in `benchcab` are set to run version 3 of CABLE. To run with version 2, check the ["running with CABLE version 2.x"][run_CABLE_v2] page for information on specific setup required. 
 
 ## Run the simulations
 
 Change directory into the cloned example work directory
+
 ```bash
 cd bench_example
 ```
@@ -90,7 +96,7 @@ The tool will follow the steps:
 3. Setup and launch a PBS job to run the simulations in parallel. When `benchcab` launches the PBS job, it will print out the job ID to the terminal. You can check the status of the job with `qstat`. `benchcab` will not warn you when the simulations are over.
 
 !!! tip "Expected output"
-    
+
     You can see [an example of the expected output](expected_output.md) printed out to the screen by `benchcab run` to check if the tool has worked as expected.
 
 For help on the **available options** for `benchcab`:
@@ -106,6 +112,7 @@ benchcab <command> -h
 ## Directory structure and files
 
 The following files and directories are created when `benchcab run` executes successfully:
+
 ```
 .
 ├── benchmark_cable_qsub.sh
@@ -133,6 +140,7 @@ The following files and directories are created when `benchcab run` executes suc
     ├── <realisation-0>
     └── <realisation-1>
 ```
+
 `benchmark_cable_qsub.sh`
 
 :   the job script submitted to run the test suite and `benchmark_cable_qsub.sh.o<jobid>` contains the job's standard output/error stream.
@@ -145,16 +153,18 @@ The following files and directories are created when `benchcab run` executes suc
 
 :   directory that contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
 
-`runs/site/` 
+`runs/site/`
 
 :   directory that contains the log files, output files, and tasks for running CABLE. 
 
 `tasks`
 
 :   CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
+
 ```
 <met_file_basename>_R<realisation_key>_S<science_config_key>
 ```
+
 :   where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
 
 `runs/site/tasks/<task>/`
@@ -175,6 +185,7 @@ The following files and directories are created when `benchcab run` executes suc
 
 !!! warning "Re-running `benchcab` multiple times in the same working directory"
     We recommend the user to manually delete the generated files when re-running `benchcab`. Re-running `benchcab` multiple times in the same working directory is currently not yet supported (see issue [CABLE-LSM/benchcab#20](https://github.com/CABLE-LSM/benchcab/issues/20)). To clean the current working directory, run the following command in the working directory
+
     ```bash
     rm benchmark_cable_qsub.sh* rev_number-*; rm -rf runs/ src/
     ```
@@ -260,3 +271,4 @@ Alternatively, you can also post discussions or questions on [the ACCESS-Hive fo
 [model_output_eg]: https://modelevaluation.org/modelOutput/display/GnDhhmaehoxcF2nEd
 [benchmark_5]: https://modelevaluation.org/modelOutput/display/diLdf49PfpEwZemTz
 [benchmark_42]: https://modelevaluation.org/modelOutput/display/pvkuY5gpR2n4FKZw3
+[run_CABLE_v2]: running_CABLE_v2.md
