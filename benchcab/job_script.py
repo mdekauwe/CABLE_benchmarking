@@ -8,7 +8,13 @@ from pathlib import Path
 from benchcab.internal import QSUB_FNAME, NCPUS, MEM, WALL_TIME
 
 
-def create_job_script(project: str, config_path: str, modules: list, verbose=False):
+def create_job_script(
+    project: str,
+    config_path: str,
+    modules: list,
+    verbose=False,
+    skip_bitwise_cmp=False,
+):
     """Creates a job script that executes all computationally expensive commands.
 
     Executed commands are:
@@ -60,11 +66,12 @@ if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
     exit 1
 fi
+{'' if skip_bitwise_cmp else f'''
 benchcab fluxnet-bitwise-cmp --config={config_path} {verbose_flag}
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxnet-bitwise-cmp failed. Exiting...'
     exit 1
-fi
+fi''' }
 """
         )
 

@@ -16,6 +16,7 @@ def test_cli_parser():
         "config": "config.yaml",
         "no_submit": False,
         "verbose": False,
+        "skip": [],
     }
 
     # Success case: default checkout command
@@ -33,6 +34,7 @@ def test_cli_parser():
         "config": "config.yaml",
         "no_submit": False,
         "verbose": False,
+        "skip": [],
     }
 
     # Success case: default fluxnet-setup-work-dir command
@@ -70,3 +72,7 @@ def test_cli_parser():
     # Failure case: pass --no-submit to a non 'run' command
     with pytest.raises(SystemExit):
         parser.parse_args(["fluxnet-setup-work-dir", "--no-submit"])
+
+    # Failure case: pass non-optional command to --skip
+    with pytest.raises(SystemExit):
+        parser.parse_args(["run", "--skip", "checkout"])

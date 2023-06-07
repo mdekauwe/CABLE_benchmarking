@@ -116,13 +116,15 @@ class Benchcab:
         self.fluxnet_setup_work_directory()
         if self.args.no_submit:
             self.fluxnet_run_tasks()
-            self.fluxnet_bitwise_cmp()
+            if "fluxnet-bitwise-cmp" not in self.args.skip:
+                self.fluxnet_bitwise_cmp()
         else:
             create_job_script(
                 project=self.config["project"],
                 config_path=self.args.config,
                 modules=self.config["modules"],
                 verbose=self.args.verbose,
+                skip_bitwise_cmp="fluxnet-bitwise-cmp" in self.args.skip,
             )
             submit_job()
             print(

@@ -192,6 +192,8 @@ MEORG_EXPERIMENTS = {
     ],
 }
 
+OPTIONAL_COMMANDS = ["fluxnet-bitwise-cmp"]
+
 
 def get_met_sites(experiment: str) -> list[str]:
     """Get a list of met forcing file basenames specified by an experiment

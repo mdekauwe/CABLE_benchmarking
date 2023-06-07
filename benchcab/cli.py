@@ -4,6 +4,9 @@ import argparse
 import benchcab
 
 
+from benchcab.internal import OPTIONAL_COMMANDS
+
+
 def generate_parser() -> argparse.ArgumentParser:
     """Returns the instance of `argparse.ArgumentParser` used for `benchcab`."""
 
@@ -26,7 +29,7 @@ def generate_parser() -> argparse.ArgumentParser:
         "-v",
         "--verbose",
         help="Enable more detailed output in the command line.",
-        action="store_true"
+        action="store_true",
     )
 
     # parent parser that contains arguments common to all run specific subcommands
@@ -35,6 +38,14 @@ def generate_parser() -> argparse.ArgumentParser:
         "--no-submit",
         action="store_true",
         help="Force benchcab to execute tasks on the current compute node.",
+    )
+    args_run_subcommand.add_argument(
+        "--skip",
+        action="append",
+        default=[],
+        choices=OPTIONAL_COMMANDS,
+        help="""Specify subcommand to skip in the workflow. Note, only optional commands
+        can be skipped.""",
     )
 
     # main parser
