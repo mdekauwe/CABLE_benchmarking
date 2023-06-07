@@ -1,0 +1,26 @@
+name: PyTest
+
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    # This is required to activate conda environment in GitHub Actions:
+    # See https://stackoverflow.com/questions/72703363/how-to-activate-conda-environment-in-github-actions
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: '3.9'
+          auto-activate-base: false
+          activate-environment: benchcab-dev
+          environment-file: benchcab-dev.yaml
+      - name: Test with pytest
+        run: |
+          TMPDIR=${{ runner.temp }} pytest
