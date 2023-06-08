@@ -20,7 +20,7 @@ jobs:
           python-version: '3.9'
           auto-activate-base: false
           activate-environment: benchcab-dev
-          environment-file: benchcab-dev.yaml
+          environment-file: .conda/benchcab-dev.yaml
       - name: Test with pytest
         run: |
           TMPDIR=${{ runner.temp }} pytest
