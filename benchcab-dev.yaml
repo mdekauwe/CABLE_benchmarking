@@ -1,0 +1,11 @@
+name: benchcab-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - f90nml
+  - netcdf4
+  - numpy
+  - pytest
+  - pyyaml
