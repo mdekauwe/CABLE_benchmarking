@@ -6,7 +6,11 @@ from pathlib import Path
 from tests.common import TMP_DIR
 from tests.common import make_barebones_config
 from benchcab.task import Task
-from benchcab.benchtree import setup_fluxnet_directory_tree, clean_directory_tree, setup_src_dir
+from benchcab.benchtree import (
+    setup_fluxnet_directory_tree,
+    clean_directory_tree,
+    setup_src_dir,
+)
 
 
 def setup_mock_tasks() -> list[Task]:
@@ -15,7 +19,9 @@ def setup_mock_tasks() -> list[Task]:
     config = make_barebones_config()
     (branch_id_a, branch_a), (branch_id_b, branch_b) = enumerate(config["realisations"])
     met_site_a, met_site_b = "site_foo", "site_bar"
-    (sci_id_a, sci_config_a), (sci_id_b, sci_config_b) = enumerate(config["science_configurations"])
+    (sci_id_a, sci_config_a), (sci_id_b, sci_config_b) = enumerate(
+        config["science_configurations"]
+    )
 
     tasks = [
         Task(branch_id_a, branch_a["name"], {}, met_site_a, sci_id_a, sci_config_a),
@@ -43,6 +49,7 @@ def test_setup_directory_tree():
     assert Path(TMP_DIR, "runs", "site").exists()
     assert Path(TMP_DIR, "runs", "site", "logs").exists()
     assert Path(TMP_DIR, "runs", "site", "outputs").exists()
+    assert Path(TMP_DIR, "runs", "site", "analysis", "bitwise-comparisons").exists()
     assert Path(TMP_DIR, "runs", "site", "tasks").exists()
 
     assert Path(TMP_DIR, "runs", "site", "tasks", "site_foo_R0_S0").exists()

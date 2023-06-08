@@ -10,64 +10,69 @@ def test_cli_parser():
     parser = generate_parser()
 
     # Success case: default benchcab command
-    res = vars(parser.parse_args(['run']))
+    res = vars(parser.parse_args(["run"]))
     assert res == {
-        'subcommand': 'run',
-        'config': 'config.yaml',
-        'no_submit': False,
-        'verbose': False,
+        "subcommand": "run",
+        "config": "config.yaml",
+        "no_submit": False,
+        "verbose": False,
+        "skip": [],
     }
 
     # Success case: default checkout command
-    res = vars(parser.parse_args(['checkout']))
-    assert res == {
-        'subcommand': 'checkout',
-        'config': 'config.yaml',
-        'verbose': False,
-    }
+    res = vars(parser.parse_args(["checkout"]))
+    assert res == {"subcommand": "checkout", "config": "config.yaml", "verbose": False}
 
     # Success case: default build command
-    res = vars(parser.parse_args(['build']))
-    assert res == {
-        'subcommand': 'build',
-        'config': 'config.yaml',
-        'verbose': False,
-    }
+    res = vars(parser.parse_args(["build"]))
+    assert res == {"subcommand": "build", "config": "config.yaml", "verbose": False}
 
     # Success case: default fluxnet command
-    res = vars(parser.parse_args(['fluxnet']))
+    res = vars(parser.parse_args(["fluxnet"]))
     assert res == {
-        'subcommand': 'fluxnet',
-        'config': 'config.yaml',
-        'no_submit': False,
-        'verbose': False,
+        "subcommand": "fluxnet",
+        "config": "config.yaml",
+        "no_submit": False,
+        "verbose": False,
+        "skip": [],
     }
 
     # Success case: default fluxnet-setup-work-dir command
-    res = vars(parser.parse_args(['fluxnet-setup-work-dir']))
+    res = vars(parser.parse_args(["fluxnet-setup-work-dir"]))
     assert res == {
-        'subcommand': 'fluxnet-setup-work-dir',
-        'config': 'config.yaml',
-        'verbose': False,
+        "subcommand": "fluxnet-setup-work-dir",
+        "config": "config.yaml",
+        "verbose": False,
     }
 
     # Success case: default fluxnet run-tasks command
-    res = vars(parser.parse_args(['fluxnet-run-tasks']))
+    res = vars(parser.parse_args(["fluxnet-run-tasks"]))
     assert res == {
-        'subcommand': 'fluxnet-run-tasks',
-        'config': 'config.yaml',
-        'no_submit': False,
-        'verbose': False,
+        "subcommand": "fluxnet-run-tasks",
+        "config": "config.yaml",
+        "verbose": False,
+    }
+
+    # Success case: default fluxnet-bitwise-cmp command
+    res = vars(parser.parse_args(["fluxnet-bitwise-cmp"]))
+    assert res == {
+        "subcommand": "fluxnet-bitwise-cmp",
+        "config": "config.yaml",
+        "verbose": False,
     }
 
     # Success case: default spatial command
-    res = vars(parser.parse_args(['spatial']))
+    res = vars(parser.parse_args(["spatial"]))
     assert res == {
-        'subcommand': 'spatial',
-        'config': 'config.yaml',
-        'verbose': False,
+        "subcommand": "spatial",
+        "config": "config.yaml",
+        "verbose": False,
     }
 
     # Failure case: pass --no-submit to a non 'run' command
     with pytest.raises(SystemExit):
-        parser.parse_args(['fluxnet-setup-work-dir', '--no-submit'])
+        parser.parse_args(["fluxnet-setup-work-dir", "--no-submit"])
+
+    # Failure case: pass non-optional command to --skip
+    with pytest.raises(SystemExit):
+        parser.parse_args(["run", "--skip", "checkout"])

@@ -4,47 +4,55 @@ import argparse
 import benchcab
 
 
+from benchcab.internal import OPTIONAL_COMMANDS
+
+
 def generate_parser() -> argparse.ArgumentParser:
     """Returns the instance of `argparse.ArgumentParser` used for `benchcab`."""
 
     # parent parser that contains the help argument
     args_help = argparse.ArgumentParser(add_help=False)
     args_help.add_argument(
-        '-h',
-        '--help',
-        action='help',
+        "-h",
+        "--help",
+        action="help",
         default=argparse.SUPPRESS,
-        help='Show this help message and exit.'
+        help="Show this help message and exit.",
     )
 
     # parent parser that contains arguments common to all subcommands
     args_subcommand = argparse.ArgumentParser(add_help=False)
     args_subcommand.add_argument(
-        "-c",
-        "--config",
-        help="Config filename.",
-        default="config.yaml"
+        "-c", "--config", help="Config filename.", default="config.yaml"
     )
     args_subcommand.add_argument(
         "-v",
         "--verbose",
         help="Enable more detailed output in the command line.",
-        action="store_true"
+        action="store_true",
     )
 
     # parent parser that contains arguments common to all run specific subcommands
     args_run_subcommand = argparse.ArgumentParser(add_help=False)
     args_run_subcommand.add_argument(
-        '--no-submit',
-        action='store_true',
-        help="Force benchcab to execute tasks on the current compute node."
+        "--no-submit",
+        action="store_true",
+        help="Force benchcab to execute tasks on the current compute node.",
+    )
+    args_run_subcommand.add_argument(
+        "--skip",
+        action="append",
+        default=[],
+        choices=OPTIONAL_COMMANDS,
+        help="""Specify subcommand to skip in the workflow. Note, only optional commands
+        can be skipped.""",
     )
 
     # main parser
     main_parser = argparse.ArgumentParser(
         description="benchcab is a tool for evaluation of the CABLE land surface model.",
         parents=[args_help],
-        add_help=False
+        add_help=False,
     )
 
     main_parser.add_argument(
@@ -52,79 +60,93 @@ def generate_parser() -> argparse.ArgumentParser:
         "--version",
         action="version",
         version=f"benchcab {benchcab.__version__}",
-        help="Show program's version number and exit."
+        help="Show program's version number and exit.",
     )
 
-    subparsers = main_parser.add_subparsers(dest='subcommand', metavar="command")
+    subparsers = main_parser.add_subparsers(dest="subcommand", metavar="command")
 
     # subcommand: 'benchcab run'
     subparsers.add_parser(
-        'run',
+        "run",
         parents=[args_help, args_subcommand, args_run_subcommand],
         help="Run all test suites for CABLE.",
         description="""Runs all test suites for CABLE: fluxnet sites and spatial test suites. This
         command runs the full default set of tests for CABLE.""",
-        add_help=False
+        add_help=False,
     )
 
     # subcommand: 'benchcab fluxnet'
     subparsers.add_parser(
-        'fluxnet',
+        "fluxnet",
         parents=[args_help, args_subcommand, args_run_subcommand],
         help="Run the fluxnet test suite for CABLE.",
         description="""Runs the default fluxnet test suite for CABLE. This command is the
         equivalent of running 'benchcab checkout', 'benchcab build', 'benchcab
         fluxnet-setup-work-dir', and 'benchcab fluxnet-run-tasks' sequentially.""",
-        add_help=False
+        add_help=False,
     )
 
     # subcommand: 'benchcab checkout'
     subparsers.add_parser(
-        'checkout',
+        "checkout",
         parents=[args_help, args_subcommand],
         help="Run the checkout step in the benchmarking workflow.",
         description="""Checkout CABLE repositories specified in the config file and the CABLE-AUX
         repository.""",
-        add_help=False
+        add_help=False,
     )
 
     # subcommand: 'benchcab build'
     subparsers.add_parser(
-        'build',
+        "build",
         parents=[args_help, args_subcommand],
         help="Run the build step in the benchmarking workflow.",
         description="""Build the CABLE offline executable for each repository specified in the
         config file.""",
-        add_help=False
+        add_help=False,
     )
 
     # subcommand: 'benchcab fluxnet-setup-work-dir'
     subparsers.add_parser(
-        'fluxnet-setup-work-dir',
+        "fluxnet-setup-work-dir",
         parents=[args_help, args_subcommand],
         help="Run the work directory setup step of the fluxnet command.",
         description="""Generates the benchcab site/run directory tree in the current working
         directory so that tasks can be run.""",
-        add_help=False
+        add_help=False,
     )
 
     # subcommand: 'benchcab fluxnet-run-tasks'
     subparsers.add_parser(
-        'fluxnet-run-tasks',
-        parents=[args_help, args_subcommand, args_run_subcommand],
+        "fluxnet-run-tasks",
+        parents=[args_help, args_subcommand],
         help="Run the fluxnet tasks of the main fluxnet command.",
-        description="""Runs the fluxnet tasks for the fluxnet test suite. By default, this
-        command generates a PBS job script and submits it to the queue.""",
-        add_help=False
+        description="""Runs the fluxnet tasks for the fluxnet test suite. Note, this command should
+        ideally be run inside a PBS job. This command is invoked by the PBS job script generated by
+        `benchcab run`.""",
+        add_help=False,
+    )
+
+    # subcommand: 'benchcab fluxnet-bitwise-cmp'
+    subparsers.add_parser(
+        "fluxnet-bitwise-cmp",
+        parents=[args_help, args_subcommand],
+        help="Run the bitwise comparison step of the main fluxnet command.",
+        description="""Runs the bitwise comparison step for the fluxnet test suite. Bitwise
+        comparisons are done on NetCDF output files using the `nccmp -df` command. Comparisons
+        are made between outputs that differ in their realisation and are matching in
+        all other configurations. Note, this command should ideally be run inside a PBS job.
+        This command is invoked by the PBS job script generated by `benchcab run`""",
+        add_help=False,
     )
 
     # subcommand: 'benchcab spatial'
     subparsers.add_parser(
-        'spatial',
+        "spatial",
         parents=[args_help, args_subcommand],
         help="Run the spatial tests only.",
         description="""Runs the default spatial test suite for CABLE.""",
-        add_help=False
+        add_help=False,
     )
 
     return main_parser

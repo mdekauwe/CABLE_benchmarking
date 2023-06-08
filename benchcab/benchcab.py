@@ -21,9 +21,11 @@ from benchcab.internal import (
     SITE_TASKS_DIR,
     SITE_OUTPUT_DIR,
 )
-from benchcab.task import get_fluxnet_tasks, Task
+from benchcab.task import get_fluxnet_tasks, get_fluxnet_comparisons, Task
 from benchcab.cli import generate_parser
 from benchcab.run_cable_site import run_tasks, run_tasks_in_parallel
+from benchcab.run_comparison import run_comparisons, run_comparisons_in_parallel
+from benchcab.environment_modules import module_load, module_is_loaded
 
 
 class Benchcab:
@@ -57,7 +59,6 @@ class Benchcab:
         checkout_cable_auxiliary(self.args.verbose)
         archive_rev_number()
         print("")
-        return self
 
     def build(self):
         """Endpoint for `benchcab build`."""
@@ -69,7 +70,6 @@ class Benchcab:
                 verbose=self.args.verbose,
             )
         print("")
-        return self
 
     def fluxnet_setup_work_directory(self):
         """Endpoint for `benchcab fluxnet-setup-work-dir`."""
@@ -81,24 +81,50 @@ class Benchcab:
             task.setup_task(verbose=self.args.verbose)
         print("Successfully setup FLUXNET tasks")
         print("")
-        return self
 
     def fluxnet_run_tasks(self):
         """Endpoint for `benchcab fluxnet-run-tasks`."""
+        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        print("Running FLUXNET tasks...")
+        if MULTIPROCESS:
+            run_tasks_in_parallel(tasks, verbose=self.args.verbose)
+        else:
+            run_tasks(tasks, verbose=self.args.verbose)
+        print("Successfully ran FLUXNET tasks")
+        print("")
+
+    def fluxnet_bitwise_cmp(self):
+        """Endpoint for `benchcab fluxnet-bitwise-cmp`."""
+
+        if not module_is_loaded("nccmp"):
+            module_load("nccmp")  # use `nccmp -df` for bitwise comparisons
+
+        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        comparisons = get_fluxnet_comparisons(tasks)
+
+        print("Running comparison tasks...")
+        if MULTIPROCESS:
+            run_comparisons_in_parallel(comparisons, verbose=self.args.verbose)
+        else:
+            run_comparisons(comparisons, verbose=self.args.verbose)
+        print("Successfully ran comparison tasks")
+
+    def fluxnet(self):
+        """Endpoint for `benchcab fluxnet`."""
+        self.checkout()
+        self.build()
+        self.fluxnet_setup_work_directory()
         if self.args.no_submit:
-            tasks = self.tasks if self.tasks else self._initialise_tasks()
-            print("Running FLUXNET tasks...")
-            if MULTIPROCESS:
-                run_tasks_in_parallel(tasks, self.args.verbose)
-            else:
-                run_tasks(tasks, self.args.verbose)
-            print("Successfully ran FLUXNET tasks")
+            self.fluxnet_run_tasks()
+            if "fluxnet-bitwise-cmp" not in self.args.skip:
+                self.fluxnet_bitwise_cmp()
         else:
             create_job_script(
                 project=self.config["project"],
                 config_path=self.args.config,
                 modules=self.config["modules"],
                 verbose=self.args.verbose,
+                skip_bitwise_cmp="fluxnet-bitwise-cmp" in self.args.skip,
             )
             submit_job()
             print(
@@ -113,26 +139,14 @@ class Benchcab:
                 "The NetCDF output for each task is written to "
                 f"{SITE_OUTPUT_DIR}/<task_name>_out.nc"
             )
-        print("")
-        return self
-
-    def fluxnet(self):
-        """Endpoint for `benchcab fluxnet`."""
-        self.checkout()
-        self.build()
-        self.fluxnet_setup_work_directory()
-        self.fluxnet_run_tasks()
-        return self
 
     def spatial(self):
         """Endpoint for `benchcab spatial`."""
-        return self
 
     def run(self):
         """Endpoint for `benchcab run`."""
         self.fluxnet()
         self.spatial()
-        return self
 
     def main(self):
         """Main function for `benchcab`."""
@@ -154,6 +168,9 @@ class Benchcab:
 
         if self.args.subcommand == "fluxnet-run-tasks":
             self.fluxnet_run_tasks()
+
+        if self.args.subcommand == "fluxnet-bitwise-cmp":
+            self.fluxnet_bitwise_cmp()
 
         if self.args.subcommand == "spatial":
             self.spatial()

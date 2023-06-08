@@ -5,6 +5,8 @@ import sys
 import grp
 from pathlib import Path
 
+from .environment_modules import module_is_avail
+
 _, NODENAME, _, _, _ = os.uname()
 
 # Default config file names
@@ -17,7 +19,6 @@ MEM = "30GB"
 WALL_TIME = "6:00:00"
 MPI = False
 MULTIPROCESS = True
-NUM_CORES = NCPUS  # set to a number, if None it will use all cores...!
 
 # DIRECTORY PATHS/STRUCTURE:
 
@@ -46,7 +47,9 @@ GRID_FILE = CABLE_AUX_DIR / "offline" / "gridinfo_CSIRO_1x1.nc"
 PHEN_FILE = CABLE_AUX_DIR / "core" / "biogeochem" / "modis_phenology_csiro.txt"
 
 # Relative path to pftlookup_csiro_v16_17tiles.csv
-CNPBIOME_FILE = CABLE_AUX_DIR / "core" / "biogeochem" / "pftlookup_csiro_v16_17tiles.csv"
+CNPBIOME_FILE = (
+    CABLE_AUX_DIR / "core" / "biogeochem" / "pftlookup_csiro_v16_17tiles.csv"
+)
 
 # Relative path to root directory for CABLE site runs
 SITE_RUN_DIR = RUN_DIR / "site"
@@ -59,6 +62,12 @@ SITE_OUTPUT_DIR = SITE_RUN_DIR / "outputs"
 
 # Relative path to tasks directory where cable executables are run from
 SITE_TASKS_DIR = SITE_RUN_DIR / "tasks"
+
+# Relative path to directory that stores results of analysis on model output
+SITE_ANALYSIS_DIR = SITE_RUN_DIR / "analysis"
+
+# Relative path to directory that stores bitwise comparison results
+SITE_BITWISE_CMP_DIR = SITE_ANALYSIS_DIR / "bitwise-comparisons"
 
 # Path to met files:
 MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
@@ -180,18 +189,20 @@ MEORG_EXPERIMENTS = {
         "US-Var",
         "US-Whs",
         "US-Wkg",
-    ]
+    ],
 }
+
+OPTIONAL_COMMANDS = ["fluxnet-bitwise-cmp"]
 
 
 def get_met_sites(experiment: str) -> list[str]:
-    '''Get a list of met forcing file basenames specified by an experiment
+    """Get a list of met forcing file basenames specified by an experiment
 
     The `experiment` argument either specifies a key in `MEORG_EXPERIMENTS` or a site id
     within the five-site-test experiment.
 
     Assume all site ids map uniquely to a met file in MET_DIR.
-    '''
+    """
 
     if experiment in MEORG_EXPERIMENTS["five-site-test"]:
         # the user is specifying a single met site
@@ -206,7 +217,7 @@ def get_met_sites(experiment: str) -> list[str]:
 
 
 def validate_environment(project: str, modules: list):
-    '''Performs checks on current user environment'''
+    """Performs checks on current user environment"""
 
     if "gadi.nci" not in NODENAME:
         print("Error: benchcab is currently implemented only on Gadi")
@@ -222,26 +233,28 @@ def validate_environment(project: str, modules: list):
     if not set(required_groups).issubset(groups):
         print(
             "Error: user does not have the required group permissions.",
-            "The required groups are:", ", ".join(required_groups)
+            "The required groups are:",
+            ", ".join(required_groups),
         )
         sys.exit(1)
 
-    sys.path.append("/opt/Modules/v4.3.0/init")
-    from python import module  # pylint: disable=import-error, import-outside-toplevel
     for modname in modules:
-        if not module("is-avail", modname):
+        if not module_is_avail(modname):
             print(f"Error: module ({modname}) is not available.")
             sys.exit(1)
 
     all_site_ids = set(
-        MEORG_EXPERIMENTS["five-site-test"] +
-        MEORG_EXPERIMENTS["forty-two-site-test"]
+        MEORG_EXPERIMENTS["five-site-test"] + MEORG_EXPERIMENTS["forty-two-site-test"]
     )
     for site_id in all_site_ids:
         paths = list(MET_DIR.glob(f"{site_id}*"))
         if not paths:
-            print(f"Error: failed to infer met file for site id '{site_id}' in {MET_DIR}.")
+            print(
+                f"Error: failed to infer met file for site id '{site_id}' in {MET_DIR}."
+            )
             sys.exit(1)
         if len(paths) > 1:
-            print(f"Error: multiple paths infered for site id: '{site_id}' in {MET_DIR}.")
+            print(
+                f"Error: multiple paths infered for site id: '{site_id}' in {MET_DIR}."
+            )
             sys.exit(1)

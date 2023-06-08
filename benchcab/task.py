@@ -8,6 +8,7 @@ import f90nml
 
 from benchcab import internal
 
+# fmt: off
 # pylint: disable=invalid-name,missing-function-docstring,line-too-long
 # ======================================================
 # Copyright (c) 2017 - 2022 Samuel Colvin and other contributors
@@ -28,6 +29,7 @@ def deep_update(mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, A
 
 # ======================================================
 # pylint: enable=invalid-name,missing-function-docstring,line-too-long
+# fmt: on
 
 
 class Task:
@@ -40,7 +42,7 @@ class Task:
         branch_patch: dict,
         met_forcing_file: str,
         sci_conf_id: int,
-        sci_config: dict
+        sci_config: dict,
     ) -> None:
         self.branch_id = branch_id
         self.branch_name = branch_name
@@ -104,12 +106,20 @@ class Task:
         task_dir = Path(root_dir, internal.SITE_TASKS_DIR, self.get_task_name())
 
         if verbose:
-            print(f"  Copying namelist files from {root_dir / internal.NAMELIST_DIR} "
-                  f"to {task_dir}")
+            print(
+                f"  Copying namelist files from {root_dir / internal.NAMELIST_DIR} "
+                f"to {task_dir}"
+            )
 
         shutil.copytree(root_dir / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True)
 
-        exe_src = root_dir / internal.SRC_DIR / self.branch_name / "offline" / internal.CABLE_EXE
+        exe_src = (
+            root_dir
+            / internal.SRC_DIR
+            / self.branch_name
+            / "offline"
+            / internal.CABLE_EXE
+        )
         exe_dest = task_dir / internal.CABLE_EXE
 
         if verbose:
@@ -126,8 +136,12 @@ class Task:
             "cable": {
                 "filename": {
                     "met": str(internal.MET_DIR / self.met_forcing_file),
-                    "out": str(root_dir / internal.SITE_OUTPUT_DIR / self.get_output_filename()),
-                    "log": str(root_dir / internal.SITE_LOG_DIR / self.get_log_filename()),
+                    "out": str(
+                        root_dir / internal.SITE_OUTPUT_DIR / self.get_output_filename()
+                    ),
+                    "log": str(
+                        root_dir / internal.SITE_LOG_DIR / self.get_log_filename()
+                    ),
                     "restart_out": " ",
                     "type": str(root_dir / internal.GRID_FILE),
                 },
@@ -164,7 +178,9 @@ class Task:
         if verbose:
             # this message should not indent and start as lower case as we are
             # appending to the previous message
-            print(f"applying patch to CABLE namelist file {task_dir / internal.CABLE_NML}")
+            print(
+                f"applying patch to CABLE namelist file {task_dir / internal.CABLE_NML}"
+            )
 
         cable_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
         # remove namelist file as f90nml cannot write to an existing file
@@ -189,21 +205,21 @@ class Task:
         if verbose:
             print(f"Setting up task: {self.get_task_name()}")
 
-        self.clean_task(root_dir=root_dir, verbose=verbose) \
-            .fetch_files(root_dir=root_dir, verbose=verbose) \
-            .adjust_namelist_file(root_dir=root_dir, verbose=verbose)
+        self.clean_task(root_dir=root_dir, verbose=verbose)
+        self.fetch_files(root_dir=root_dir, verbose=verbose)
+        self.adjust_namelist_file(root_dir=root_dir, verbose=verbose)
 
         if self.branch_patch:
             if verbose:
                 # remove new line as we prepend the next message in patch_namelist_file()
                 print("  Adding branch specific namelist settings: ", end="")
-            self.patch_namelist_file(self.branch_patch, root_dir=root_dir, verbose=verbose)
+            self.patch_namelist_file(
+                self.branch_patch, root_dir=root_dir, verbose=verbose
+            )
 
 
 def get_fluxnet_tasks(
-    realisations: list[dict],
-    science_configurations: list[dict],
-    met_sites: list[str]
+    realisations: list[dict], science_configurations: list[dict], met_sites: list[str]
 ) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
     # TODO(Sean) convert this to a generator
@@ -214,10 +230,37 @@ def get_fluxnet_tasks(
             branch_patch=branch["patch"],
             met_forcing_file=site,
             sci_conf_id=sci_conf_id,
-            sci_config=sci_config
+            sci_config=sci_config,
         )
         for branch_id, branch in enumerate(realisations)
         for site in met_sites
         for sci_conf_id, sci_config in enumerate(science_configurations)
     ]
     return tasks
+
+
+def get_fluxnet_comparisons(tasks: list[Task]) -> list[tuple[Task, Task]]:
+    """Returns a list of pairs of fluxnet tasks to run comparisons with.
+
+    Pairs should be matching in science configurations and meteorological
+    forcing, but differ in realisations. When multiple realisations are
+    specified, return all pair wise combinations between all realisations.
+    """
+    return [
+        (task_a, task_b)
+        for task_a in tasks
+        for task_b in tasks
+        if task_a.met_forcing_file == task_b.met_forcing_file
+        and task_a.sci_conf_id == task_b.sci_conf_id
+        and task_a.branch_id < task_b.branch_id
+        # TODO(Sean): Review later - the following code avoids using a double
+        # for loop to generate pair wise combinations, however we would have
+        # to re-initialize task instances to get access to the output file path
+        # for each task. There is probably a better way but should be fine for
+        # now...
+        # for site in met_sites
+        # for sci_conf_id in range(len(science_configurations))
+        # for branch_id_first, branch_id_second in itertools.combinations(
+        #     range(len(realisations)), 2
+        # )
+    ]

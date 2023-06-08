@@ -5,3 +5,4 @@ __pycache__/*
 benchcab.egg-info
 /build/
 .eggs
+.vscode
