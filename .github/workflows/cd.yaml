@@ -22,6 +22,7 @@ jobs:
         uses: uibcdf/action-build-and-upload-conda-packages@v1.2.0
         with:
           python-version: '3.9'
+          meta_yaml_dir: .conda
           user: accessnri
           label: main
           token: ${{ secrets.ANACONDA_TOKEN }}
