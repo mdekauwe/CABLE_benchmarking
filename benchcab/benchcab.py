@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Contains the main program entry point for `benchcab`."""
 
 import sys
@@ -7,24 +5,32 @@ import sys
 from benchcab.job_script import create_job_script, submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
-from benchcab.build_cable import build_cable
+from benchcab.build_cable import default_build, custom_build
 from benchcab.get_cable import (
     checkout_cable,
     checkout_cable_auxiliary,
-    archive_rev_number,
+    svn_info_show_item,
+    next_path,
 )
 from benchcab.internal import (
     validate_environment,
     get_met_sites,
+    CWD,
     MULTIPROCESS,
     SITE_LOG_DIR,
     SITE_TASKS_DIR,
     SITE_OUTPUT_DIR,
 )
-from benchcab.task import get_fluxnet_tasks, get_fluxnet_comparisons, Task
+from benchcab.task import (
+    get_fluxnet_tasks,
+    get_fluxnet_comparisons,
+    run_tasks,
+    run_tasks_in_parallel,
+    run_comparisons,
+    run_comparisons_in_parallel,
+    Task,
+)
 from benchcab.cli import generate_parser
-from benchcab.run_cable_site import run_tasks, run_tasks_in_parallel
-from benchcab.run_comparison import run_comparisons, run_comparisons_in_parallel
 from benchcab.environment_modules import module_load, module_is_loaded
 
 
@@ -52,23 +58,42 @@ class Benchcab:
 
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
+
         setup_src_dir()
+
         print("Checking out repositories...")
+        rev_number_log = ""
         for branch in self.config["realisations"]:
-            checkout_cable(branch, verbose=self.args.verbose)
+            path_to_repo = checkout_cable(branch, verbose=self.args.verbose)
+            rev_number_log += (
+                f"{branch['name']} last changed revision: "
+                f"{svn_info_show_item(path_to_repo, 'last-changed-revision')}\n"
+            )
+
+        # TODO(Sean) we should archive revision numbers for CABLE-AUX
         checkout_cable_auxiliary(self.args.verbose)
-        archive_rev_number()
+
+        rev_number_log_path = CWD / next_path("rev_number-*.log")
+        print(f"Writing revision number info to {rev_number_log_path.relative_to(CWD)}")
+        with open(rev_number_log_path, "w", encoding="utf-8") as file:
+            file.write(rev_number_log)
+
         print("")
 
     def build(self):
         """Endpoint for `benchcab build`."""
         for branch in self.config["realisations"]:
-            build_cable(
-                branch["build_script"],
-                branch["name"],
-                self.config["modules"],
-                verbose=self.args.verbose,
-            )
+            if branch["build_script"]:
+                custom_build(
+                    branch["build_script"], branch["name"], verbose=self.args.verbose
+                )
+            else:
+                default_build(
+                    branch["name"],
+                    self.config["modules"],
+                    verbose=self.args.verbose,
+                )
+            print(f"Successfully compiled CABLE for realisation {branch['name']}")
         print("")
 
     def fluxnet_setup_work_directory(self):

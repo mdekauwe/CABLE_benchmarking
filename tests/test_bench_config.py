@@ -7,7 +7,7 @@ import yaml
 from tests.common import TMP_DIR
 from tests.common import make_barebones_config
 from benchcab.bench_config import check_config, read_config
-from benchcab.internal import DEFAULT_SCIENCE_CONFIGURATIONS
+from benchcab import internal
 
 
 def test_check_config():
@@ -34,11 +34,7 @@ def test_check_config():
 
     # Success case: test config when realisations contains more than two keys
     config = make_barebones_config()
-    config["realisations"].append(
-        {
-            "path": "path/to/my_new_branch",
-        }
-    )
+    config["realisations"].append({"path": "path/to/my_new_branch"})
     assert len(config["realisations"]) > 2
     check_config(config)
 
@@ -60,129 +56,183 @@ def test_check_config():
     check_config(config)
 
     # Failure case: test config without project key raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="The config file does not list all required entries. "
+        "Those are: " + ", ".join(internal.CONFIG_REQUIRED_KEYS),
+    ):
         config = make_barebones_config()
         config.pop("project")
         check_config(config)
 
     # Failure case: test config without realisations key raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="The config file does not list all required entries. "
+        "Those are: " + ", ".join(internal.CONFIG_REQUIRED_KEYS),
+    ):
         config = make_barebones_config()
         config.pop("realisations")
         check_config(config)
 
     # Failure case: test config with empty realisations key raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The 'realisations' key cannot be empty."):
         config = make_barebones_config()
         config["realisations"] = []
         check_config(config)
 
     # Failure case: test config without modules key raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="The config file does not list all required entries. "
+        "Those are: " + ", ".join(internal.CONFIG_REQUIRED_KEYS),
+    ):
         config = make_barebones_config()
         config.pop("modules")
         check_config(config)
 
     # Failure case: test config without experiment key raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="The config file does not list all required entries. "
+        "Those are: " + ", ".join(internal.CONFIG_REQUIRED_KEYS),
+    ):
         config = make_barebones_config()
         config.pop("experiment")
         check_config(config)
 
     # Failure case: test config with invalid experiment key raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="The 'experiment' key is invalid.\n"
+        "Valid experiments are: "
+        + ", ".join(
+            list(internal.MEORG_EXPERIMENTS)
+            + internal.MEORG_EXPERIMENTS["five-site-test"]
+        ),
+    ):
         config = make_barebones_config()
         config["experiment"] = "foo"
         check_config(config)
 
     # Failure case: test config with invalid experiment key (not a subset of
     # five-site-test) raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="The 'experiment' key is invalid.\n"
+        "Valid experiments are: "
+        + ", ".join(
+            list(internal.MEORG_EXPERIMENTS)
+            + internal.MEORG_EXPERIMENTS["five-site-test"]
+        ),
+    ):
         config = make_barebones_config()
         config["experiment"] = "CH-Dav"
         check_config(config)
 
     # Failure case: 'path' key is missing in branch configuration
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Realisation '1' must specify the `path` field."
+    ):
         config = make_barebones_config()
         config["realisations"][1].pop("path")
         check_config(config)
 
     # Failure case: test config with empty science_configurations key
     # raises an exception
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="The 'science_configurations' key cannot be empty."
+    ):
         config = make_barebones_config()
         config["science_configurations"] = []
         check_config(config)
 
     # Failure case: project key is not a string
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="The 'project' key must be a string."):
         config = make_barebones_config()
         config["project"] = 123
         check_config(config)
 
     # Failure case: realisations key is not a list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="The 'realisations' key must be a list."):
         config = make_barebones_config()
         config["realisations"] = {"foo": "bar"}
         check_config(config)
 
     # Failure case: realisations key is not a list of dict
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Realisation '0' must be a dictionary object."):
         config = make_barebones_config()
-        config["realisations"] = ["foo", "bar"]
+        config["realisations"] = ["foo"]
         check_config(config)
 
     # Failure case: type of name is not a string
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="The 'name' field in realisation '1' must be a string."
+    ):
         config = make_barebones_config()
         config["realisations"][1]["name"] = 1234
         check_config(config)
 
     # Failure case: type of path is not a string
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="The 'path' field in realisation '1' must be a string."
+    ):
         config = make_barebones_config()
         config["realisations"][1]["path"] = 1234
         check_config(config)
 
     # Failure case: type of revision key is not an integer
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="The 'revision' field in realisation '1' must be an integer."
+    ):
         config = make_barebones_config()
         config["realisations"][1]["revision"] = "-1"
         check_config(config)
 
     # Failure case: type of patch key is not a dictionary
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match="The 'patch' field in realisation '1' must be a dictionary that is "
+        "compatible with the f90nml python package.",
+    ):
         config = make_barebones_config()
         config["realisations"][1]["patch"] = r"cable_user%ENABLE_SOME_FEATURE = .FALSE."
         check_config(config)
 
     # Failure case: type of build_script key is not a string
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="The 'build_script' field in realisation '1' must be a string."
+    ):
         config = make_barebones_config()
         config["realisations"][1]["build_script"] = ["echo", "hello"]
         check_config(config)
 
     # Failure case: modules key is not a list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="The 'modules' key must be a list."):
         config = make_barebones_config()
         config["modules"] = "netcdf"
         check_config(config)
 
     # Failure case: experiment key is not a string
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="The 'experiment' key must be a string."):
         config = make_barebones_config()
         config["experiment"] = 0
         check_config(config)
 
     # Failure case: type of config["science_configurations"] is not a list
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError, match="The 'science_configurations' key must be a list."
+    ):
         config = make_barebones_config()
         config["science_configurations"] = r"cable_user%GS_SWITCH = 'medlyn'"
         check_config(config)
 
     # Failure case: type of config["science_configurations"] is not a list of dict
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match="Science config settings must be specified using a dictionary "
+        "that is compatible with the f90nml python package.",
+    ):
         config = make_barebones_config()
         config["science_configurations"] = [r"cable_user%GS_SWITCH = 'medlyn'"]
         check_config(config)
@@ -259,4 +309,4 @@ def test_read_config():
     res = read_config(filename)
     os.remove(filename)
     assert config != res
-    assert res["science_configurations"] == DEFAULT_SCIENCE_CONFIGURATIONS
+    assert res["science_configurations"] == internal.DEFAULT_SCIENCE_CONFIGURATIONS

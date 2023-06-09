@@ -9,8 +9,7 @@ from .environment_modules import module_is_avail
 
 _, NODENAME, _, _, _ = os.uname()
 
-# Default config file names
-DEFAULT_CONFIG = "config.yaml"
+CONFIG_REQUIRED_KEYS = ["realisations", "project", "modules", "experiment"]
 
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"

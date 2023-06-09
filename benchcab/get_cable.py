@@ -1,23 +1,10 @@
-#!/usr/bin/env python
+"""A module containing functions for checking out CABLE repositories."""
 
-"""
-Get the head of the CABLE trunk, the user branch and CABLE-AUX
-
-That's all folks.
-"""
-
-__author__ = "Martin De Kauwe"
-__version__ = "1.0 (09.03.2019)"
-__email__ = "mdekauwe@gmail.com"
-
-import os
 import subprocess
-import getpass
 from typing import Union
 from pathlib import Path
 
 from benchcab import internal
-from benchcab.internal import CWD, SRC_DIR, HOME_DIR, CABLE_SVN_ROOT, CABLE_AUX_DIR
 
 
 def next_path(path_pattern, sep="-"):
@@ -35,35 +22,12 @@ def next_path(path_pattern, sep="-"):
     new_file_index = 1
     common_filename, _ = loc_pattern.stem.split(sep)
 
-    pattern_files_sorted = sorted(Path(".").glob(path_pattern))
-    if len(pattern_files_sorted):
+    pattern_files_sorted = sorted(internal.CWD.glob(path_pattern))
+    if pattern_files_sorted != []:
         common_filename, last_file_index = pattern_files_sorted[-1].stem.split(sep)
         new_file_index = int(last_file_index) + 1
 
     return f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}"
-
-
-def archive_rev_number():
-    """Archives previous rev_number.log"""
-
-    revision_file = Path("rev_number.log")
-    if revision_file.exists():
-        new_revision_file = next_path("rev_number-*.log")
-        print(f"Writing revision number info to {new_revision_file}")
-        revision_file.replace(new_revision_file)
-
-
-def need_pass() -> bool:
-    """If the user requires a password for SVN, return `True`. Otherwise return `False`."""
-    try:
-        return os.listdir(f"{HOME_DIR}/.subversion/auth/svn.simple/") == []
-    except FileNotFoundError:
-        return False
-
-
-def get_password() -> str:
-    """Prompt user for a password."""
-    return "'" + getpass.getpass("Password:") + "'"
 
 
 def svn_info_show_item(path: Union[Path, str], item: str) -> str:
@@ -73,50 +37,48 @@ def svn_info_show_item(path: Union[Path, str], item: str) -> str:
     return out.stdout.strip()
 
 
-def checkout_cable_auxiliary(verbose=False):
+def checkout_cable_auxiliary(verbose=False) -> Path:
     """Checkout CABLE-AUX."""
-    # TODO(Sean) we should archive revision numbers for CABLE-AUX
 
-    cable_aux_dir = Path(CWD / CABLE_AUX_DIR)
-    if cable_aux_dir.exists():
-        return
+    cable_aux_dir = Path(internal.CWD / internal.CABLE_AUX_DIR)
 
-    cmd = f"svn checkout {CABLE_SVN_ROOT}/branches/Share/CABLE-AUX {cable_aux_dir}"
-
-    if need_pass():
-        cmd += f" --password {get_password()}"
+    cmd = f"svn checkout {internal.CABLE_SVN_ROOT}/branches/Share/CABLE-AUX {cable_aux_dir}"
 
     if verbose:
         print(cmd)
 
     subprocess.run(
-        cmd, shell=True, check=True, stdout=None if verbose else subprocess.DEVNULL
+        cmd,
+        shell=True,
+        check=True,
+        stdout=None if verbose else subprocess.DEVNULL,
+        stderr=subprocess.STDOUT,
     )
+
+    revision = svn_info_show_item(cable_aux_dir, "revision")
+    print(f"Successfully checked out CABLE-AUX at revision {revision}")
 
     # Check relevant files exist in repository:
 
-    if not Path.exists(CWD / internal.GRID_FILE):
+    if not Path.exists(internal.CWD / internal.GRID_FILE):
         raise RuntimeError(
             f"Error checking out CABLE-AUX: cannot find file '{internal.GRID_FILE}'"
         )
 
-    if not Path.exists(CWD / internal.PHEN_FILE):
+    if not Path.exists(internal.CWD / internal.PHEN_FILE):
         raise RuntimeError(
             f"Error checking out CABLE-AUX: cannot find file '{internal.PHEN_FILE}'"
         )
 
-    if not Path.exists(CWD / internal.CNPBIOME_FILE):
+    if not Path.exists(internal.CWD / internal.CNPBIOME_FILE):
         raise RuntimeError(
             f"Error checking out CABLE-AUX: cannot find file '{internal.CNPBIOME_FILE}'"
         )
 
-    rev_number = svn_info_show_item(
-        f"{CABLE_SVN_ROOT}/branches/Share/CABLE-AUX", "revision"
-    )
-    print(f"Successfully checked out CABLE-AUX at revision {rev_number}")
+    return cable_aux_dir
 
 
-def checkout_cable(branch_config: dict, verbose=False):
+def checkout_cable(branch_config: dict, verbose=False) -> Path:
     """Checkout a branch of CABLE."""
     # TODO(Sean) do nothing if the repository has already been checked out?
     # This also relates the 'clean' feature.
@@ -127,11 +89,8 @@ def checkout_cable(branch_config: dict, verbose=False):
     if branch_config["revision"] > 0:
         cmd += f" -r {branch_config['revision']}"
 
-    if need_pass():
-        cmd += f" --password {get_password()}"
-
-    path_to_repo = Path(CWD, SRC_DIR, branch_config["name"])
-    cmd += f" {CABLE_SVN_ROOT}/{branch_config['path']} {path_to_repo}"
+    path_to_repo = Path(internal.CWD, internal.SRC_DIR, branch_config["name"])
+    cmd += f" {internal.CABLE_SVN_ROOT}/{branch_config['path']} {path_to_repo}"
 
     if verbose:
         print(cmd)
@@ -141,14 +100,10 @@ def checkout_cable(branch_config: dict, verbose=False):
         shell=True,
         check=True,
         stdout=None if verbose else subprocess.DEVNULL,
+        stderr=subprocess.STDOUT,
     )
 
-    # Write last change revision number to rev_number.log file
-    last_changed_rev_number = svn_info_show_item(path_to_repo, "last-changed-revision")
-    with open(f"{CWD}/rev_number.log", "a", encoding="utf-8") as fout:
-        fout.write(
-            f"{branch_config['name']} last changed revision: {last_changed_rev_number}\n"
-        )
+    revision = svn_info_show_item(path_to_repo, "revision")
+    print(f"Successfully checked out {branch_config['name']} at revision {revision}")
 
-    rev_number = svn_info_show_item(path_to_repo, "revision")
-    print(f"Successfully checked out {branch_config['name']} at revision {rev_number}")
+    return path_to_repo

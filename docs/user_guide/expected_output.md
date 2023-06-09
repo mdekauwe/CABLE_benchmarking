@@ -41,13 +41,9 @@ Running FLUXNET tasks...
 Successfully ran FLUXNET tasks
 
 Running comparison tasks...
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S2_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S2_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S6_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S6_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S7_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S7_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S3_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S3_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S0_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S0_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S5_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S5_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S4_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S4_out.nc are identitical
-Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S1_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S1_out.nc are identitical
+Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S0_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S0_out.nc are identical
+Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S1_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S1_out.nc are identical
+Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S2_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S2_out.nc are identical
+Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S3_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S3_out.nc are identical
 Successfully ran comparison tasks
 ```

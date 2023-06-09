@@ -25,3 +25,4 @@ requirements:
         - netCDF4
         - PyYAML
         - f90nml
+        - flatdict

@@ -1,12 +1,9 @@
-"""
-A module containing all *_config() functions.
-
-"""
+"""A module containing all *_config() functions."""
 
 from pathlib import Path
 import yaml
 
-from benchcab.internal import MEORG_EXPERIMENTS, DEFAULT_SCIENCE_CONFIGURATIONS
+from benchcab import internal
 
 
 def check_config(config: dict):
@@ -15,12 +12,10 @@ def check_config(config: dict):
     If the config is invalid, an exception is raised. Otherwise, do nothing.
     """
 
-    required_keys = ["realisations", "project", "modules", "experiment"]
-    if any(key not in config for key in required_keys):
+    if any(key not in config for key in internal.CONFIG_REQUIRED_KEYS):
         raise ValueError(
             "The config file does not list all required entries. "
-            "Those are: "
-            ", ".join(required_keys)
+            "Those are: " + ", ".join(internal.CONFIG_REQUIRED_KEYS)
         )
 
     if not isinstance(config["project"], str):
@@ -46,12 +41,13 @@ def check_config(config: dict):
                 "that is compatible with the f90nml python package."
             )
 
-    valid_experiments = list(MEORG_EXPERIMENTS) + MEORG_EXPERIMENTS["five-site-test"]
+    valid_experiments = (
+        list(internal.MEORG_EXPERIMENTS) + internal.MEORG_EXPERIMENTS["five-site-test"]
+    )
     if config["experiment"] not in valid_experiments:
         raise ValueError(
             "The 'experiment' key is invalid.\n"
-            "Valid experiments are: "
-            ", ".join(valid_experiments)
+            "Valid experiments are: " + ", ".join(valid_experiments)
         )
 
     if not isinstance(config["realisations"], list):
@@ -119,6 +115,6 @@ def read_config(config_path: str) -> dict:
         branch.setdefault("build_script", "")
 
     # Add "science_configurations" if not provided and set to default value
-    config.setdefault("science_configurations", DEFAULT_SCIENCE_CONFIGURATIONS)
+    config.setdefault("science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS)
 
     return config

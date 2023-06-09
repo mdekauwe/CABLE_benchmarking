@@ -8,4 +8,6 @@ dependencies:
   - netcdf4
   - numpy
   - pytest
+  - coverage
   - pyyaml
+  - flatdict
