@@ -3,18 +3,19 @@
 
 import os
 import shutil
-import subprocess
 import multiprocessing
 import queue
 import dataclasses
 from pathlib import Path
 from typing import TypeVar, Dict, Any
+from subprocess import CalledProcessError
 
 import flatdict
 import netCDF4
 import f90nml
 
 from benchcab import internal
+from benchcab.utils import subprocess
 import benchcab.get_cable
 
 
@@ -251,12 +252,12 @@ class Task:
         exe_path = task_dir / internal.CABLE_EXE
         nml_path = task_dir / internal.CABLE_NML
         stdout_path = task_dir / internal.CABLE_STDOUT_FILENAME
-        cmd = f"{exe_path} {nml_path} > {stdout_path} 2>&1"
+
         try:
-            if verbose:
-                print(f"  {cmd}")
-            subprocess.run(cmd, shell=True, check=True)
-        except subprocess.CalledProcessError as exc:
+            subprocess.run_cmd(
+                f"{exe_path} {nml_path}", output_file=stdout_path, verbose=verbose
+            )
+        except CalledProcessError as exc:
             print(f"Error: CABLE returned an error for task {task_name}")
             raise CableError from exc
 
@@ -445,16 +446,17 @@ def run_comparison(task_a: Task, task_b: Task, verbose=False):
         print(
             f"Comparing files {task_a_output.name} and {task_b_output.name} bitwise..."
         )
-    cmd = f"nccmp -df {task_a_output} {task_b_output} 2>&1"
-    if verbose:
-        print(f"  {cmd}")
-    proc = subprocess.run(cmd, shell=True, check=False, capture_output=True, text=True)
-    if proc.returncode != 0:
+    try:
+        subprocess.run_cmd(
+            f"nccmp -df {task_a_output} {task_b_output}",
+            capture_output=True,
+            verbose=verbose,
+        )
+        print(f"Success: files {task_a_output.name} {task_b_output.name} are identical")
+    except CalledProcessError as exc:
         with open(output_file, "w", encoding="utf-8") as file:
-            file.write(proc.stdout)
+            file.write(exc.stdout)
         print(
             f"Failure: files {task_a_output.name} {task_b_output.name} differ. "
             f"Results of diff have been written to {output_file}"
         )
-    else:
-        print(f"Success: files {task_a_output.name} {task_b_output.name} are identical")

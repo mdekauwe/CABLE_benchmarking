@@ -2,7 +2,7 @@
 
 import sys
 
-from benchcab.job_script import create_job_script, submit_job
+from benchcab.job_script import submit_job
 from benchcab.bench_config import read_config
 from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
 from benchcab.build_cable import default_build, custom_build
@@ -144,14 +144,13 @@ class Benchcab:
             if "fluxnet-bitwise-cmp" not in self.args.skip:
                 self.fluxnet_bitwise_cmp()
         else:
-            create_job_script(
+            submit_job(
                 project=self.config["project"],
                 config_path=self.args.config,
                 modules=self.config["modules"],
                 verbose=self.args.verbose,
                 skip_bitwise_cmp="fluxnet-bitwise-cmp" in self.args.skip,
             )
-            submit_job()
             print(
                 "The CABLE log file for each task is written to "
                 f"{SITE_LOG_DIR}/<task_name>_log.txt"

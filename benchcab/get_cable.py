@@ -1,10 +1,10 @@
 """A module containing functions for checking out CABLE repositories."""
 
-import subprocess
 from typing import Union
 from pathlib import Path
 
 from benchcab import internal
+from benchcab.utils import subprocess
 
 
 def next_path(path_pattern, sep="-"):
@@ -32,9 +32,10 @@ def next_path(path_pattern, sep="-"):
 
 def svn_info_show_item(path: Union[Path, str], item: str) -> str:
     """A wrapper around `svn info --show-item <item> <path>`."""
-    cmd = f"svn info --show-item {item} {path}"
-    out = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
-    return out.stdout.strip()
+    proc = subprocess.run_cmd(
+        f"svn info --show-item {item} {path}", capture_output=True
+    )
+    return proc.stdout.strip()
 
 
 def checkout_cable_auxiliary(verbose=False) -> Path:
@@ -42,17 +43,9 @@ def checkout_cable_auxiliary(verbose=False) -> Path:
 
     cable_aux_dir = Path(internal.CWD / internal.CABLE_AUX_DIR)
 
-    cmd = f"svn checkout {internal.CABLE_SVN_ROOT}/branches/Share/CABLE-AUX {cable_aux_dir}"
-
-    if verbose:
-        print(cmd)
-
-    subprocess.run(
-        cmd,
-        shell=True,
-        check=True,
-        stdout=None if verbose else subprocess.DEVNULL,
-        stderr=subprocess.STDOUT,
+    subprocess.run_cmd(
+        f"svn checkout {internal.CABLE_SVN_ROOT}/branches/Share/CABLE-AUX {cable_aux_dir}",
+        verbose=verbose,
     )
 
     revision = svn_info_show_item(cable_aux_dir, "revision")
@@ -92,16 +85,7 @@ def checkout_cable(branch_config: dict, verbose=False) -> Path:
     path_to_repo = Path(internal.CWD, internal.SRC_DIR, branch_config["name"])
     cmd += f" {internal.CABLE_SVN_ROOT}/{branch_config['path']} {path_to_repo}"
 
-    if verbose:
-        print(cmd)
-
-    subprocess.run(
-        cmd,
-        shell=True,
-        check=True,
-        stdout=None if verbose else subprocess.DEVNULL,
-        stderr=subprocess.STDOUT,
-    )
+    subprocess.run_cmd(cmd, verbose=verbose)
 
     revision = svn_info_show_item(path_to_repo, "revision")
     print(f"Successfully checked out {branch_config['name']} at revision {revision}")

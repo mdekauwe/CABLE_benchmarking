@@ -1,6 +1,7 @@
 """Contains a wrapper around the environment modules API."""
 
 import sys
+import contextlib
 
 sys.path.append("/opt/Modules/v4.3.0/init")
 try:
@@ -16,6 +17,20 @@ except ImportError:
 
 class EnvironmentModulesError(Exception):
     """Custom exception class for environment modules errors."""
+
+
+@contextlib.contextmanager
+def load(modules, verbose=False):
+    """Context manager for loading and unloading modules."""
+    if verbose:
+        print("Loading modules: " + " ".join(modules))
+    module_load(*modules)
+    try:
+        yield
+    finally:
+        if verbose:
+            print("Unloading modules: " + " ".join(modules))
+        module_unload(*modules)
 
 
 def module_is_avail(*args: str):

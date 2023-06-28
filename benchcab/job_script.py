@@ -1,10 +1,10 @@
 """Contains functions for job script creation and submission on Gadi."""
 
-import os
-import subprocess
+from subprocess import CalledProcessError
 from pathlib import Path
 
 from benchcab import internal
+from benchcab.utils import subprocess
 
 
 def get_local_storage_flag(path: Path) -> str:
@@ -16,19 +16,18 @@ def get_local_storage_flag(path: Path) -> str:
     raise RuntimeError("Current directory structure unknown on Gadi.")
 
 
-def create_job_script(
+def submit_job(
     project: str,
     config_path: str,
     modules: list,
     verbose=False,
     skip_bitwise_cmp=False,
 ):
-    """Creates a job script that executes all computationally expensive commands.
+    """Submits a PBS job that executes all computationally expensive commands.
 
-    Executed commands are:
-    - benchcab fluxnet-run-tasks
-    - benchcab fluxnet-bitwise-cmp
-
+    This includes things such as running CABLE and running bitwise comparison jobs
+    between model output files.
+    The PBS job script is written to the current working directory as a side effect.
     """
 
     job_script_path = internal.CWD / internal.QSUB_FNAME
@@ -73,18 +72,12 @@ fi''' }
 """
         )
 
-
-def submit_job():
-    """Submits the job script specified by `QSUB_FNAME`."""
-
-    job_script_path = internal.CWD / internal.QSUB_FNAME
-    cmd = f"qsub {job_script_path}"
     try:
-        proc = subprocess.run(
-            cmd, shell=True, check=True, capture_output=True, text=True
+        proc = subprocess.run_cmd(
+            f"qsub {job_script_path}", capture_output=True, verbose=verbose
         )
         print(f"PBS job submitted: {proc.stdout.strip()}")
-    except subprocess.CalledProcessError as exc:
+    except CalledProcessError as exc:
         print("Error when submitting job to NCI queue")
         print(exc.stderr)
         raise

@@ -264,36 +264,48 @@ def test_run_cable():
     nml_path = task_dir / internal.CABLE_NML
     nml_path.touch()
 
+    stdout_file = task_dir / internal.CABLE_STDOUT_FILENAME
+
     # Success case: run CABLE executable in subprocess
-    with unittest.mock.patch("subprocess.run") as mock_subprocess_run:
+    with unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
         task.run_cable()
-        mock_subprocess_run.assert_called_once_with(
-            f"{exe_path} {nml_path} > {task_dir / internal.CABLE_STDOUT_FILENAME} 2>&1",
-            shell=True,
-            check=True,
+        mock_run_cmd.assert_called_once_with(
+            f"{exe_path} {nml_path}",
+            output_file=stdout_file,
+            verbose=False,
+        )
+
+    # Success case: run CABLE executable in subprocess with verbose enabled
+    # TODO(Sean): this test should be removed once we use the logging module
+    with unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
+        task.run_cable(verbose=True)
+        mock_run_cmd.assert_called_once_with(
+            f"{exe_path} {nml_path}",
+            output_file=stdout_file,
+            verbose=True,
         )
 
     # Success case: test non-verbose output
-    with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, contextlib.redirect_stdout(io.StringIO()) as buf:
-        task.run_cable()
-    assert not buf.getvalue()
+    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
+            task.run_cable()
+        assert not buf.getvalue()
 
     # Success case: test verbose output
-    with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, contextlib.redirect_stdout(io.StringIO()) as buf:
-        task.run_cable(verbose=True)
-    assert buf.getvalue() == (
-        f"  {MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/cable "
-        f"{MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/cable.nml "
-        f"> {MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/out.txt 2>&1\n"
-    )
+    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
+        with contextlib.redirect_stdout(io.StringIO()) as buf:
+            task.run_cable(verbose=True)
+        assert not buf.getvalue()
 
     # Failure case: raise CableError on subprocess non-zero exit code
-    with unittest.mock.patch("subprocess.run") as mock_subprocess_run:
-        mock_subprocess_run.side_effect = subprocess.CalledProcessError(
+    with unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
+        mock_run_cmd.side_effect = subprocess.CalledProcessError(
             returncode=1, cmd="cmd"
         )
         with pytest.raises(CableError):
@@ -353,60 +365,6 @@ def test_add_provenance_info():
         "  Adding attributes to output file: "
         f"{MOCK_CWD}/runs/site/outputs/forcing-file_R1_S0_out.nc\n"
     )
-
-
-def test_run():
-    """Tests for `run()`."""
-
-    task = setup_mock_task()
-
-    # Success case: run CABLE and add attributes to netcdf output file
-    with unittest.mock.patch(
-        "benchcab.task.Task.run_cable"
-    ) as mock_run_cable, unittest.mock.patch(
-        "benchcab.task.Task.add_provenance_info"
-    ) as mock_add_provenance_info:
-        task.run()
-        mock_run_cable.assert_called_once()
-        mock_add_provenance_info.assert_called_once()
-
-    # Success case: do not add attributes to netcdf file on failure
-    with unittest.mock.patch(
-        "benchcab.task.Task.run_cable"
-    ) as mock_run_cable, unittest.mock.patch(
-        "benchcab.task.Task.add_provenance_info"
-    ) as mock_add_provenance_info:
-        mock_run_cable.side_effect = CableError
-        task.run()
-        mock_run_cable.assert_called_once()
-        mock_add_provenance_info.assert_not_called()
-
-    # Success case: test non-verbose output
-    with unittest.mock.patch(
-        "benchcab.task.Task.run_cable"
-    ) as mock_run_cable, unittest.mock.patch(
-        "benchcab.task.Task.add_provenance_info"
-    ) as mock_add_provenance_info:
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            task.run()
-        mock_run_cable.assert_called_once_with(verbose=False)
-        mock_add_provenance_info.assert_called_once_with(verbose=False)
-        assert not buf.getvalue()
-
-    # Success case: test verbose output
-    with unittest.mock.patch(
-        "benchcab.task.Task.run_cable"
-    ) as mock_run_cable, unittest.mock.patch(
-        "benchcab.task.Task.add_provenance_info"
-    ) as mock_add_provenance_info:
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            task.run(verbose=True)
-        mock_run_cable.assert_called_once_with(verbose=True)
-        mock_add_provenance_info.assert_called_once_with(verbose=True)
-        assert buf.getvalue() == (
-            "Running task forcing-file_R1_S0... CABLE standard output saved in "
-            f"{MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/out.txt\n"
-        )
 
 
 def test_get_fluxnet_tasks():
@@ -492,6 +450,7 @@ def test_get_comparison_name():
 
 def test_run_comparison():
     """Tests for `run_comparison()`."""
+
     bitwise_cmp_dir = MOCK_CWD / internal.SITE_BITWISE_CMP_DIR
     bitwise_cmp_dir.mkdir(parents=True)
     output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
@@ -500,40 +459,31 @@ def test_run_comparison():
 
     # Success case: run comparison
     with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(
-            **{
-                "returncode": 0,
-                "stdout": "standard output from subprocess",
-            }
-        )
-        mock_subprocess_run.return_value = mock_completed_process
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
         run_comparison(task_a, task_b)
-        mock_subprocess_run.assert_called_once_with(
+        mock_run_cmd.assert_called_once_with(
             f"nccmp -df {output_dir / task_a.get_output_filename()} "
-            f"{output_dir / task_b.get_output_filename()} 2>&1",
-            shell=True,
-            check=False,
+            f"{output_dir / task_b.get_output_filename()}",
             capture_output=True,
-            text=True,
+            verbose=False,
+        )
+
+    # Success case: run comparison with verbose enabled
+    # TODO(Sean): this test should be removed once we use the logging module
+    with unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
+        run_comparison(task_a, task_b, verbose=True)
+        mock_run_cmd.assert_called_once_with(
+            f"nccmp -df {output_dir / task_a.get_output_filename()} "
+            f"{output_dir / task_b.get_output_filename()}",
+            capture_output=True,
+            verbose=True,
         )
 
     # Success case: test non-verbose output
-    with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(
-            **{
-                "returncode": 0,
-                "stdout": "standard output from subprocess",
-            }
-        )
-        mock_subprocess_run.return_value = mock_completed_process
+    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
         with contextlib.redirect_stdout(io.StringIO()) as buf:
             run_comparison(task_a, task_b)
         assert buf.getvalue() == (
@@ -542,60 +492,30 @@ def test_run_comparison():
         )
 
     # Success case: test verbose output
-    with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(
-            **{
-                "returncode": 0,
-                "stdout": "standard output from subprocess",
-            }
-        )
-        mock_subprocess_run.return_value = mock_completed_process
+    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
         with contextlib.redirect_stdout(io.StringIO()) as buf:
             run_comparison(task_a, task_b, verbose=True)
         assert buf.getvalue() == (
             f"Comparing files {task_a.get_output_filename()} and "
             f"{task_b.get_output_filename()} bitwise...\n"
-            f"  nccmp -df {output_dir / task_a.get_output_filename()} "
-            f"{output_dir / task_b.get_output_filename()} 2>&1\n"
             f"Success: files {task_a.get_output_filename()} "
             f"{task_b.get_output_filename()} are identical\n"
         )
 
-    # Failure case: run comparison with non-zero exit code
     with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(
-            **{
-                "returncode": 1,
-                "stdout": "standard output from subprocess",
-            }
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
+        mock_run_cmd.side_effect = subprocess.CalledProcessError(
+            returncode=1, cmd="dummy cmd", output="error message from command"
         )
-        mock_subprocess_run.return_value = mock_completed_process
+
+        # Failure case: test failed comparison check (files differ)
         run_comparison(task_a, task_b)
         stdout_file = bitwise_cmp_dir / f"{get_comparison_name(task_a, task_b)}.txt"
         with open(stdout_file, "r", encoding="utf-8") as file:
-            assert file.read() == "standard output from subprocess"
+            assert file.read() == "error message from command"
 
-    # Failure case: test non-verbose output
-    with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(
-            **{
-                "returncode": 1,
-                "stdout": "standard output from subprocess",
-            }
-        )
-        mock_subprocess_run.return_value = mock_completed_process
+        # Failure case: test non-verbose standard output on failure
         with contextlib.redirect_stdout(io.StringIO()) as buf:
             run_comparison(task_a, task_b)
         stdout_file = bitwise_cmp_dir / f"{get_comparison_name(task_a, task_b)}.txt"
@@ -605,27 +525,13 @@ def test_run_comparison():
             f"have been written to {stdout_file}\n"
         )
 
-    # Failure case: test verbose output
-    with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(
-            **{
-                "returncode": 1,
-                "stdout": "standard output from subprocess",
-            }
-        )
-        mock_subprocess_run.return_value = mock_completed_process
+        # Failure case: test verbose standard output on failure
         with contextlib.redirect_stdout(io.StringIO()) as buf:
             run_comparison(task_a, task_b, verbose=True)
         stdout_file = bitwise_cmp_dir / f"{get_comparison_name(task_a, task_b)}.txt"
         assert buf.getvalue() == (
             f"Comparing files {task_a.get_output_filename()} and "
             f"{task_b.get_output_filename()} bitwise...\n"
-            f"  nccmp -df {output_dir / task_a.get_output_filename()} "
-            f"{output_dir / task_b.get_output_filename()} 2>&1\n"
             f"Failure: files {task_a.get_output_filename()} "
             f"{task_b.get_output_filename()} differ. Results of diff "
             f"have been written to {stdout_file}\n"

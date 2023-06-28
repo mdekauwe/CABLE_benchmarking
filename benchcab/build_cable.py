@@ -3,12 +3,12 @@
 import os
 import contextlib
 import stat
-import subprocess
 import shlex
 import shutil
 import pathlib
 
 from benchcab import internal
+from benchcab.utils import subprocess
 from benchcab import environment_modules
 
 
@@ -23,7 +23,7 @@ def chdir(newdir: pathlib.Path):
         os.chdir(prevdir)
 
 
-def patch_build_script(file_path):
+def remove_module_lines(file_path):
     """Remove lines from `file_path` that call the environment modules package."""
     with open(file_path, "r", encoding="utf-8") as file:
         contents = file.read()
@@ -58,38 +58,27 @@ def default_build(branch_name: str, modules: list, verbose=False):
     tmp_script_path = default_script_path.parent / "tmp-build3.sh"
 
     if verbose:
-        print(f"  Copying {default_script_path} to {tmp_script_path}")
+        print(f"Copying {default_script_path} to {tmp_script_path}")
     shutil.copy(default_script_path, tmp_script_path)
+
     if verbose:
-        print(f"  chmod +x {tmp_script_path}")
+        print(f"chmod +x {tmp_script_path}")
     tmp_script_path.chmod(tmp_script_path.stat().st_mode | stat.S_IEXEC)
 
     if verbose:
         print(
-            f"  Patching {tmp_script_path.name}: remove lines that call "
+            f"Modifying {tmp_script_path.name}: remove lines that call "
             "environment modules"
         )
-    patch_build_script(tmp_script_path)
+    remove_module_lines(tmp_script_path)
 
-    if verbose:
-        print("  Loading modules: " + " ".join(modules))
-    environment_modules.module_load(*modules)
-
-    with chdir(default_script_path.parent):
-        cmd = f"./{tmp_script_path.name}" + (" mpi" if internal.MPI else "")
-        if verbose:
-            print(f"  {cmd}")
-        subprocess.run(
-            cmd,
-            shell=True,
-            check=True,
-            stdout=None if verbose else subprocess.DEVNULL,
-            stderr=subprocess.STDOUT,
+    with chdir(default_script_path.parent), environment_modules.load(
+        modules, verbose=verbose
+    ):
+        subprocess.run_cmd(
+            f"./{tmp_script_path.name}" + (" mpi" if internal.MPI else ""),
+            verbose=verbose,
         )
-
-    if verbose:
-        print("  Unloading modules: " + " ".join(modules))
-    environment_modules.module_unload(*modules)
 
 
 def custom_build(config_build_script: str, branch_name: str, verbose=False):
@@ -103,13 +92,4 @@ def custom_build(config_build_script: str, branch_name: str, verbose=False):
     )
 
     with chdir(build_script_path.parent):
-        cmd = f"./{build_script_path.name}"
-        if verbose:
-            print(f"  {cmd}")
-        subprocess.run(
-            cmd,
-            shell=True,
-            check=True,
-            stdout=None if verbose else subprocess.DEVNULL,
-            stderr=subprocess.STDOUT,
-        )
+        subprocess.run_cmd(f"./{build_script_path.name}", verbose=verbose)

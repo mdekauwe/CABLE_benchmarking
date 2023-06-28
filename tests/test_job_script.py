@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from benchcab import internal
-from benchcab.job_script import get_local_storage_flag, create_job_script, submit_job
+from benchcab.job_script import get_local_storage_flag, submit_job
 from .common import MOCK_CWD
 
 
@@ -28,15 +28,51 @@ def test_get_local_storage_flag():
         get_local_storage_flag(Path("/home/189/foo"))
 
 
-def test_create_job_script():
-    """Tests for `create_job_script()`."""
+def test_submit_job():
+    """Tests for `submit_job()`."""
 
-    # Success case: test default job script creation
+    # Success case: test qsub command is executed
     with unittest.mock.patch(
-        "benchcab.job_script.get_local_storage_flag"
-    ) as mock_get_local_storage_flag:
+        "benchcab.job_script.get_local_storage_flag", autospec=True
+    ) as mock_get_local_storage_flag, unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
         mock_get_local_storage_flag.return_value = "storage_flag"
-        create_job_script(
+        submit_job(
+            project="tm70",
+            config_path="/path/to/config.yaml",
+            modules=["foo", "bar", "baz"],
+        )
+        mock_run_cmd.assert_called_once_with(
+            f"qsub {MOCK_CWD/internal.QSUB_FNAME}", capture_output=True, verbose=False
+        )
+
+    # Success case: test qsub command is executed with verbose enabled
+    # TODO(Sean): this test should be removed once we use the logging module
+    with unittest.mock.patch(
+        "benchcab.job_script.get_local_storage_flag", autospec=True
+    ) as mock_get_local_storage_flag, unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
+        mock_get_local_storage_flag.return_value = "storage_flag"
+        submit_job(
+            project="tm70",
+            config_path="/path/to/config.yaml",
+            modules=["foo", "bar", "baz"],
+            verbose=True,
+        )
+        mock_run_cmd.assert_called_once_with(
+            f"qsub {MOCK_CWD/internal.QSUB_FNAME}", capture_output=True, verbose=True
+        )
+
+    # Success case: test default job script generated is correct
+    with unittest.mock.patch(
+        "benchcab.job_script.get_local_storage_flag", autospec=True
+    ) as mock_get_local_storage_flag, unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd",
+    ):
+        mock_get_local_storage_flag.return_value = "storage_flag"
+        submit_job(
             project="tm70",
             config_path="/path/to/config.yaml",
             modules=["foo", "bar", "baz"],
@@ -78,10 +114,12 @@ fi
 
     # Success case: skip fluxnet-bitwise-cmp step
     with unittest.mock.patch(
-        "benchcab.job_script.get_local_storage_flag"
-    ) as mock_get_local_storage_flag:
+        "benchcab.job_script.get_local_storage_flag", autospec=True
+    ) as mock_get_local_storage_flag, unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd"
+    ):
         mock_get_local_storage_flag.return_value = "storage_flag"
-        create_job_script(
+        submit_job(
             project="tm70",
             config_path="/path/to/config.yaml",
             modules=["foo", "bar", "baz"],
@@ -117,13 +155,18 @@ fi
 """
         )
 
-    # Success case: test standard output
+    # Success case: test non-verbose output
     with unittest.mock.patch(
         "benchcab.job_script.get_local_storage_flag"
-    ) as mock_get_local_storage_flag:
-        mock_get_local_storage_flag.return_value = "storage_flag"
+    ), unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd, unittest.mock.patch(
+        "subprocess.CompletedProcess", autospec=True
+    ) as mock_completed_process:
+        mock_completed_process.configure_mock(stdout="standard output from qsub")
+        mock_run_cmd.return_value = mock_completed_process
         with contextlib.redirect_stdout(io.StringIO()) as buf:
-            create_job_script(
+            submit_job(
                 project="tm70",
                 config_path="/path/to/config.yaml",
                 modules=["foo", "bar", "baz"],
@@ -131,14 +174,17 @@ fi
         assert buf.getvalue() == (
             "Creating PBS job script to run FLUXNET tasks on compute "
             f"nodes: {internal.QSUB_FNAME}\n"
+            "PBS job submitted: standard output from qsub\n"
         )
 
-    # Success case: enable verbose flag
+    # Success case: add verbose flag to job script
     with unittest.mock.patch(
-        "benchcab.job_script.get_local_storage_flag"
-    ) as mock_get_local_storage_flag:
+        "benchcab.job_script.get_local_storage_flag", autospec=True
+    ) as mock_get_local_storage_flag, unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd"
+    ):
         mock_get_local_storage_flag.return_value = "storage_flag"
-        create_job_script(
+        submit_job(
             project="tm70",
             config_path="/path/to/config.yaml",
             modules=["foo", "bar", "baz"],
@@ -179,41 +225,24 @@ fi
 """
         )
 
-
-def test_submit_job():
-    """Tests for `submit_job()`."""
-
-    # Success case: submit PBS job
-    with unittest.mock.patch("subprocess.run") as mock_subprocess_run:
-        submit_job()
-        mock_subprocess_run.assert_called_once_with(
-            f"qsub {MOCK_CWD/internal.QSUB_FNAME}",
-            shell=True,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-
-    # Success case: test standard output
+    # Failure case: qsub non-zero exit code prints an error message
     with unittest.mock.patch(
-        "subprocess.run"
-    ) as mock_subprocess_run, unittest.mock.patch(
-        "subprocess.CompletedProcess"
-    ) as mock_completed_process:
-        mock_completed_process.configure_mock(stdout="standard output from qsub")
-        mock_subprocess_run.return_value = mock_completed_process
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            submit_job()
-        assert buf.getvalue() == "PBS job submitted: standard output from qsub\n"
-
-    # Failure case: qsub non-zero exit code
-    with unittest.mock.patch("subprocess.run") as mock_subprocess_run:
-        mock_subprocess_run.side_effect = subprocess.CalledProcessError(
+        "benchcab.job_script.get_local_storage_flag"
+    ), unittest.mock.patch(
+        "benchcab.utils.subprocess.run_cmd", autospec=True
+    ) as mock_run_cmd:
+        mock_run_cmd.side_effect = subprocess.CalledProcessError(
             1, "dummy-cmd", stderr="standard error from qsub"
         )
         with contextlib.redirect_stdout(io.StringIO()) as buf:
             with pytest.raises(subprocess.CalledProcessError):
-                submit_job()
+                submit_job(
+                    project="tm70",
+                    config_path="/path/to/config.yaml",
+                    modules=["foo", "bar", "baz"],
+                )
         assert buf.getvalue() == (
-            "Error when submitting job to NCI queue\n" "standard error from qsub\n"
+            "Creating PBS job script to run FLUXNET tasks on compute "
+            f"nodes: {internal.QSUB_FNAME}\n"
+            "Error when submitting job to NCI queue\nstandard error from qsub\n"
         )
