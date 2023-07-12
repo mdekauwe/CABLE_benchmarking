@@ -1,11 +1,9 @@
 """A module containing functions and data structures for running fluxnet tasks."""
 
 
-import os
 import shutil
 import multiprocessing
 import queue
-import dataclasses
 from pathlib import Path
 from typing import TypeVar, Dict, Any
 from subprocess import CalledProcessError
@@ -15,8 +13,9 @@ import netCDF4
 import f90nml
 
 from benchcab import internal
-from benchcab.utils import subprocess
-import benchcab.get_cable
+from benchcab.repository import CableRepository
+from benchcab.comparison import ComparisonTask
+from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
 
 
 # fmt: off
@@ -66,21 +65,28 @@ class CableError(Exception):
     """Custom exception class for CABLE errors."""
 
 
-@dataclasses.dataclass
 class Task:
     """A class used to represent a single fluxnet task."""
 
-    branch_id: int
-    branch_name: str
-    branch_patch: dict
-    met_forcing_file: str
-    sci_conf_id: int
-    sci_config: dict
+    root_dir: Path = internal.CWD
+    subprocess_handler: SubprocessWrapperInterface = SubprocessWrapper()
+
+    def __init__(
+        self,
+        repo: CableRepository,
+        met_forcing_file: str,
+        sci_conf_id: int,
+        sci_config: dict,
+    ) -> None:
+        self.repo = repo
+        self.met_forcing_file = met_forcing_file
+        self.sci_conf_id = sci_conf_id
+        self.sci_config = sci_config
 
     def get_task_name(self) -> str:
         """Returns the file name convention used for this task."""
         met_forcing_base_filename = self.met_forcing_file.split(".")[0]
-        return f"{met_forcing_base_filename}_R{self.branch_id}_S{self.sci_conf_id}"
+        return f"{met_forcing_base_filename}_R{self.repo.repo_id}_S{self.sci_conf_id}"
 
     def get_output_filename(self) -> str:
         """Returns the file name convention used for the netcdf output file."""
@@ -109,7 +115,7 @@ class Task:
         self.fetch_files(verbose=verbose)
 
         nml_path = (
-            internal.CWD
+            self.root_dir
             / internal.SITE_TASKS_DIR
             / self.get_task_name()
             / internal.CABLE_NML
@@ -124,25 +130,25 @@ class Task:
                     "filename": {
                         "met": str(internal.MET_DIR / self.met_forcing_file),
                         "out": str(
-                            internal.CWD
+                            self.root_dir
                             / internal.SITE_OUTPUT_DIR
                             / self.get_output_filename()
                         ),
                         "log": str(
-                            internal.CWD
+                            self.root_dir
                             / internal.SITE_LOG_DIR
                             / self.get_log_filename()
                         ),
                         "restart_out": " ",
-                        "type": str(internal.CWD / internal.GRID_FILE),
+                        "type": str(self.root_dir / internal.GRID_FILE),
                     },
                     "output": {
                         "restart": False,
                     },
                     "fixedCO2": internal.CABLE_FIXED_CO2_CONC,
                     "casafile": {
-                        "phen": str(internal.CWD / internal.PHEN_FILE),
-                        "cnpbiome": str(internal.CWD / internal.CNPBIOME_FILE),
+                        "phen": str(self.root_dir / internal.PHEN_FILE),
+                        "cnpbiome": str(self.root_dir / internal.CNPBIOME_FILE),
                     },
                     "spinup": False,
                 }
@@ -153,12 +159,12 @@ class Task:
             print(f"  Adding science configurations to CABLE namelist file {nml_path}")
         patch_namelist(nml_path, self.sci_config)
 
-        if self.branch_patch:
+        if self.repo.patch:
             if verbose:
                 print(
                     f"  Adding branch specific configurations to CABLE namelist file {nml_path}"
                 )
-            patch_namelist(nml_path, self.branch_patch)
+            patch_namelist(nml_path, self.repo.patch)
 
     def clean_task(self, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""
@@ -166,28 +172,33 @@ class Task:
         if verbose:
             print("  Cleaning task")
 
-        task_name = self.get_task_name()
-        task_dir = Path(internal.CWD, internal.SITE_TASKS_DIR, task_name)
+        task_dir = self.root_dir / internal.SITE_TASKS_DIR / self.get_task_name()
 
-        if Path.exists(task_dir / internal.CABLE_EXE):
-            os.remove(task_dir / internal.CABLE_EXE)
+        cable_exe = task_dir / internal.CABLE_EXE
+        if cable_exe.exists():
+            cable_exe.unlink()
 
-        if Path.exists(task_dir / internal.CABLE_NML):
-            os.remove(task_dir / internal.CABLE_NML)
+        cable_nml = task_dir / internal.CABLE_NML
+        if cable_nml.exists():
+            cable_nml.unlink()
 
-        if Path.exists(task_dir / internal.CABLE_VEGETATION_NML):
-            os.remove(task_dir / internal.CABLE_VEGETATION_NML)
+        cable_vegetation_nml = task_dir / internal.CABLE_VEGETATION_NML
+        if cable_vegetation_nml.exists():
+            cable_vegetation_nml.unlink()
 
-        if Path.exists(task_dir / internal.CABLE_SOIL_NML):
-            os.remove(task_dir / internal.CABLE_SOIL_NML)
+        cable_soil_nml = task_dir / internal.CABLE_SOIL_NML
+        if cable_soil_nml.exists():
+            cable_soil_nml.unlink()
 
-        output_file = self.get_output_filename()
-        if Path.exists(internal.CWD / internal.SITE_OUTPUT_DIR / output_file):
-            os.remove(internal.CWD / internal.SITE_OUTPUT_DIR / output_file)
+        output_file = (
+            self.root_dir / internal.SITE_OUTPUT_DIR / self.get_output_filename()
+        )
+        if output_file.exists():
+            output_file.unlink()
 
-        log_file = self.get_log_filename()
-        if Path.exists(internal.CWD / internal.SITE_LOG_DIR / log_file):
-            os.remove(internal.CWD / internal.SITE_LOG_DIR / log_file)
+        log_file = self.root_dir / internal.SITE_LOG_DIR / self.get_log_filename()
+        if log_file.exists():
+            log_file.unlink()
 
         return self
 
@@ -199,22 +210,22 @@ class Task:
         - copies cable executable from source to 'runs/site/tasks/<task_name>' directory.
         """
 
-        task_dir = Path(internal.CWD, internal.SITE_TASKS_DIR, self.get_task_name())
+        task_dir = self.root_dir / internal.SITE_TASKS_DIR / self.get_task_name()
 
         if verbose:
             print(
-                f"  Copying namelist files from {internal.CWD / internal.NAMELIST_DIR} "
+                f"  Copying namelist files from {self.root_dir / internal.NAMELIST_DIR} "
                 f"to {task_dir}"
             )
 
         shutil.copytree(
-            internal.CWD / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True
+            self.root_dir / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True
         )
 
         exe_src = (
-            internal.CWD
+            self.root_dir
             / internal.SRC_DIR
-            / self.branch_name
+            / self.repo.name
             / "offline"
             / internal.CABLE_EXE
         )
@@ -230,7 +241,7 @@ class Task:
     def run(self, verbose=False):
         """Runs a single fluxnet task."""
         task_name = self.get_task_name()
-        task_dir = internal.CWD / internal.SITE_TASKS_DIR / task_name
+        task_dir = self.root_dir / internal.SITE_TASKS_DIR / task_name
         if verbose:
             print(
                 f"Running task {task_name}... CABLE standard output "
@@ -248,13 +259,13 @@ class Task:
         Raises `CableError` when CABLE returns a non-zero exit code.
         """
         task_name = self.get_task_name()
-        task_dir = internal.CWD / internal.SITE_TASKS_DIR / task_name
+        task_dir = self.root_dir / internal.SITE_TASKS_DIR / task_name
         exe_path = task_dir / internal.CABLE_EXE
         nml_path = task_dir / internal.CABLE_NML
         stdout_path = task_dir / internal.CABLE_STDOUT_FILENAME
 
         try:
-            subprocess.run_cmd(
+            self.subprocess_handler.run_cmd(
                 f"{exe_path} {nml_path}", output_file=stdout_path, verbose=verbose
             )
         except CalledProcessError as exc:
@@ -268,16 +279,16 @@ class Task:
         the namelist file used to run cable.
         """
         nc_output_path = (
-            internal.CWD / internal.SITE_OUTPUT_DIR / self.get_output_filename()
+            self.root_dir / internal.SITE_OUTPUT_DIR / self.get_output_filename()
         )
         nml = f90nml.read(
-            internal.CWD
+            self.root_dir
             / internal.SITE_TASKS_DIR
             / self.get_task_name()
             / internal.CABLE_NML
         )
         if verbose:
-            print(f"  Adding attributes to output file: {nc_output_path}")
+            print(f"Adding attributes to output file: {nc_output_path}")
         with netCDF4.Dataset(nc_output_path, "r+") as nc_output:
             nc_output.setncatts(
                 {
@@ -288,33 +299,27 @@ class Task:
                         ).items()
                     },
                     **{
-                        "cable_branch": benchcab.get_cable.svn_info_show_item(
-                            internal.CWD / internal.SRC_DIR / self.branch_name, "url"
-                        ),
-                        "svn_revision_number": benchcab.get_cable.svn_info_show_item(
-                            internal.CWD / internal.SRC_DIR / self.branch_name,
-                            "revision",
-                        ),
+                        "cable_branch": self.repo.svn_info_show_item("url"),
+                        "svn_revision_number": self.repo.svn_info_show_item("revision"),
                     },
                 }
             )
 
 
 def get_fluxnet_tasks(
-    realisations: list[dict], science_configurations: list[dict], met_sites: list[str]
+    repos: list[CableRepository],
+    science_configurations: list[dict],
+    met_sites: list[str],
 ) -> list[Task]:
     """Returns a list of fluxnet tasks to run."""
-    # TODO(Sean) convert this to a generator
     tasks = [
         Task(
-            branch_id=branch_id,
-            branch_name=branch["name"],
-            branch_patch=branch["patch"],
+            repo=repo,
             met_forcing_file=site,
             sci_conf_id=sci_conf_id,
             sci_config=sci_config,
         )
-        for branch_id, branch in enumerate(realisations)
+        for repo in repos
         for site in met_sites
         for sci_conf_id, sci_config in enumerate(science_configurations)
     ]
@@ -354,20 +359,31 @@ def worker_run(task_queue: multiprocessing.Queue, verbose=False):
         task.run(verbose=verbose)
 
 
-def get_fluxnet_comparisons(tasks: list[Task]) -> list[tuple[Task, Task]]:
+def get_fluxnet_comparisons(
+    tasks: list[Task], root_dir=internal.CWD
+) -> list[ComparisonTask]:
     """Returns a list of pairs of fluxnet tasks to run comparisons with.
 
     Pairs should be matching in science configurations and meteorological
     forcing, but differ in realisations. When multiple realisations are
     specified, return all pair wise combinations between all realisations.
     """
+    output_dir = root_dir / internal.SITE_OUTPUT_DIR
     return [
-        (task_a, task_b)
+        ComparisonTask(
+            files=(
+                output_dir / task_a.get_output_filename(),
+                output_dir / task_b.get_output_filename(),
+            ),
+            task_name=get_comparison_name(
+                task_a.repo, task_b.repo, task_a.met_forcing_file, task_a.sci_conf_id
+            ),
+        )
         for task_a in tasks
         for task_b in tasks
         if task_a.met_forcing_file == task_b.met_forcing_file
         and task_a.sci_conf_id == task_b.sci_conf_id
-        and task_a.branch_id < task_b.branch_id
+        and task_a.repo.repo_id < task_b.repo.repo_id
         # TODO(Sean): Review later - the following code avoids using a double
         # for loop to generate pair wise combinations, however we would have
         # to re-initialize task instances to get access to the output file path
@@ -381,82 +397,15 @@ def get_fluxnet_comparisons(tasks: list[Task]) -> list[tuple[Task, Task]]:
     ]
 
 
-def get_comparison_name(task_a: Task, task_b: Task) -> str:
-    """Returns the naming convention used for bitwise comparisons.
-
-    Assumes `met_forcing_file` and `sci_conf_id` attributes are
-    common to both tasks.
-    """
-    met_forcing_base_filename = task_a.met_forcing_file.split(".")[0]
+def get_comparison_name(
+    repo_a: CableRepository,
+    repo_b: CableRepository,
+    met_forcing_file: str,
+    sci_conf_id: int,
+) -> str:
+    """Returns the naming convention used for bitwise comparisons."""
+    met_forcing_base_filename = met_forcing_file.split(".")[0]
     return (
-        f"{met_forcing_base_filename}_S{task_a.sci_conf_id}"
-        f"_R{task_a.branch_id}_R{task_b.branch_id}"
+        f"{met_forcing_base_filename}_S{sci_conf_id}"
+        f"_R{repo_a.repo_id}_R{repo_b.repo_id}"
     )
-
-
-def run_comparisons(comparisons: list[tuple[Task, Task]], verbose=False):
-    """Runs bitwise comparison tasks serially."""
-    for task_a, task_b in comparisons:
-        run_comparison(task_a, task_b, verbose=verbose)
-
-
-def run_comparisons_in_parallel(comparisons: list[tuple[Task, Task]], verbose=False):
-    """Runs bitwise comparison tasks in parallel across multiple processes."""
-
-    task_queue: multiprocessing.Queue = multiprocessing.Queue()
-    for pair in comparisons:
-        task_queue.put(pair)
-
-    processes = []
-    for _ in range(internal.NCPUS):
-        proc = multiprocessing.Process(
-            target=worker_comparison, args=[task_queue, verbose]
-        )
-        proc.start()
-        processes.append(proc)
-
-    for proc in processes:
-        proc.join()
-
-
-def worker_comparison(task_queue: multiprocessing.Queue, verbose=False):
-    """Runs bitwise comparison tasks in `task_queue` until the queue is emptied."""
-    while True:
-        try:
-            task_a, task_b = task_queue.get_nowait()
-        except queue.Empty:
-            return
-        run_comparison(task_a, task_b, verbose=verbose)
-
-
-def run_comparison(task_a: Task, task_b: Task, verbose=False):
-    """Executes `nccmp -df` between the NetCDF output file of `task_a` and of `task_b`."""
-    task_a_output = (
-        internal.CWD / internal.SITE_OUTPUT_DIR / task_a.get_output_filename()
-    )
-    task_b_output = (
-        internal.CWD / internal.SITE_OUTPUT_DIR / task_b.get_output_filename()
-    )
-    output_file = (
-        internal.CWD
-        / internal.SITE_BITWISE_CMP_DIR
-        / f"{get_comparison_name(task_a, task_b)}.txt"
-    )
-    if verbose:
-        print(
-            f"Comparing files {task_a_output.name} and {task_b_output.name} bitwise..."
-        )
-    try:
-        subprocess.run_cmd(
-            f"nccmp -df {task_a_output} {task_b_output}",
-            capture_output=True,
-            verbose=verbose,
-        )
-        print(f"Success: files {task_a_output.name} {task_b_output.name} are identical")
-    except CalledProcessError as exc:
-        with open(output_file, "w", encoding="utf-8") as file:
-            file.write(exc.stdout)
-        print(
-            f"Failure: files {task_a_output.name} {task_b_output.name} differ. "
-            f"Results of diff have been written to {output_file}"
-        )

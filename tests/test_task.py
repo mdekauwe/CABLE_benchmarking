@@ -1,7 +1,5 @@
 """`pytest` tests for task.py"""
 
-import unittest.mock
-import subprocess
 from pathlib import Path
 import io
 import contextlib
@@ -14,25 +12,37 @@ from benchcab.task import (
     get_fluxnet_tasks,
     get_fluxnet_comparisons,
     get_comparison_name,
-    run_comparison,
     Task,
     CableError,
 )
 from benchcab import internal
-from benchcab.benchtree import setup_fluxnet_directory_tree
-from .common import MOCK_CWD, make_barebones_config
+from benchcab.repository import CableRepository
+from benchcab.utils.subprocess import SubprocessWrapperInterface
+from .common import MOCK_CWD, get_mock_config, MockSubprocessWrapper
 
 
-def setup_mock_task() -> Task:
+def get_mock_task(
+    subprocess_handler: SubprocessWrapperInterface = MockSubprocessWrapper(),
+) -> Task:
     """Returns a mock `Task` instance."""
+
+    repo = CableRepository(
+        repo_id=1,
+        path="path/to/test-branch",
+        patch={"cable": {"some_branch_specific_setting": True}},
+    )
+    repo.subprocess_handler = subprocess_handler
+    repo.root_dir = MOCK_CWD
+
     task = Task(
-        branch_id=1,
-        branch_name="test-branch",
-        branch_patch={"cable": {"some_branch_specific_setting": True}},
+        repo=repo,
         met_forcing_file="forcing-file.nc",
         sci_conf_id=0,
         sci_config={"cable": {"some_setting": True}},
     )
+    task.subprocess_handler = subprocess_handler
+    task.root_dir = MOCK_CWD
+
     return task
 
 
@@ -53,6 +63,16 @@ def setup_mock_namelists_directory():
     )
     cable_vegetation_nml_path.touch()
     assert cable_vegetation_nml_path.exists()
+
+
+def setup_mock_run_directory(task: Task):
+    """Setup mock run directory for a single task."""
+    task_dir = MOCK_CWD / internal.SITE_TASKS_DIR / task.get_task_name()
+    task_dir.mkdir(parents=True)
+    output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
+    output_dir.mkdir(parents=True)
+    log_dir = MOCK_CWD / internal.SITE_LOG_DIR
+    log_dir.mkdir(parents=True)
 
 
 def do_mock_checkout_and_build():
@@ -80,21 +100,21 @@ def do_mock_run(task: Task):
 def test_get_task_name():
     """Tests for `get_task_name()`."""
     # Success case: check task name convention
-    task = setup_mock_task()
+    task = get_mock_task()
     assert task.get_task_name() == "forcing-file_R1_S0"
 
 
 def test_get_log_filename():
     """Tests for `get_log_filename()`."""
     # Success case: check log file name convention
-    task = setup_mock_task()
+    task = get_mock_task()
     assert task.get_log_filename() == "forcing-file_R1_S0_log.txt"
 
 
 def test_get_output_filename():
     """Tests for `get_output_filename()`."""
     # Success case: check output file name convention
-    task = setup_mock_task()
+    task = get_mock_task()
     assert task.get_output_filename() == "forcing-file_R1_S0_out.nc"
 
 
@@ -102,10 +122,10 @@ def test_fetch_files():
     """Tests for `fetch_files()`."""
 
     # Success case: fetch files required to run CABLE
-    task = setup_mock_task()
+    task = get_mock_task()
 
     setup_mock_namelists_directory()
-    setup_fluxnet_directory_tree([task])
+    setup_mock_run_directory(task)
     do_mock_checkout_and_build()
 
     task.fetch_files()
@@ -131,10 +151,10 @@ def test_clean_task():
     """Tests for `clean_task()`."""
 
     # Success case: fetch then clean files
-    task = setup_mock_task()
+    task = get_mock_task()
 
     setup_mock_namelists_directory()
-    setup_fluxnet_directory_tree([task])
+    setup_mock_run_directory(task)
     do_mock_checkout_and_build()
 
     task.fetch_files()
@@ -198,11 +218,11 @@ def test_patch_namelist():
 def test_setup_task():
     """Tests for `setup_task()`."""
 
-    task = setup_mock_task()
+    task = get_mock_task()
     task_dir = Path(MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name())
 
     setup_mock_namelists_directory()
-    setup_fluxnet_directory_tree([task])
+    setup_mock_run_directory(task)
     do_mock_checkout_and_build()
 
     # Success case: test all settings are patched into task namelist file
@@ -256,7 +276,8 @@ def test_setup_task():
 def test_run_cable():
     """Tests for `run_cable()`."""
 
-    task = setup_mock_task()
+    mock_subprocess = MockSubprocessWrapper()
+    task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.SITE_TASKS_DIR / task.get_task_name()
     task_dir.mkdir(parents=True)
     exe_path = task_dir / internal.CABLE_EXE
@@ -267,55 +288,31 @@ def test_run_cable():
     stdout_file = task_dir / internal.CABLE_STDOUT_FILENAME
 
     # Success case: run CABLE executable in subprocess
-    with unittest.mock.patch(
-        "benchcab.utils.subprocess.run_cmd", autospec=True
-    ) as mock_run_cmd:
-        task.run_cable()
-        mock_run_cmd.assert_called_once_with(
-            f"{exe_path} {nml_path}",
-            output_file=stdout_file,
-            verbose=False,
-        )
-
-    # Success case: run CABLE executable in subprocess with verbose enabled
-    # TODO(Sean): this test should be removed once we use the logging module
-    with unittest.mock.patch(
-        "benchcab.utils.subprocess.run_cmd", autospec=True
-    ) as mock_run_cmd:
-        task.run_cable(verbose=True)
-        mock_run_cmd.assert_called_once_with(
-            f"{exe_path} {nml_path}",
-            output_file=stdout_file,
-            verbose=True,
-        )
+    task.run_cable()
+    assert f"{exe_path} {nml_path}" in mock_subprocess.commands
+    assert stdout_file.exists()
 
     # Success case: test non-verbose output
-    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            task.run_cable()
-        assert not buf.getvalue()
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.run_cable()
+    assert not buf.getvalue()
 
     # Success case: test verbose output
-    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            task.run_cable(verbose=True)
-        assert not buf.getvalue()
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.run_cable(verbose=True)
+    assert not buf.getvalue()
 
     # Failure case: raise CableError on subprocess non-zero exit code
-    with unittest.mock.patch(
-        "benchcab.utils.subprocess.run_cmd", autospec=True
-    ) as mock_run_cmd:
-        mock_run_cmd.side_effect = subprocess.CalledProcessError(
-            returncode=1, cmd="cmd"
-        )
-        with pytest.raises(CableError):
-            task.run_cable()
+    mock_subprocess.error_on_call = True
+    with pytest.raises(CableError):
+        task.run_cable()
 
 
 def test_add_provenance_info():
     """Tests for `add_provenance_info()`."""
 
-    task = setup_mock_task()
+    mock_subprocess = MockSubprocessWrapper()
+    task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.SITE_TASKS_DIR / task.get_task_name()
     task_dir.mkdir(parents=True)
     site_output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
@@ -331,38 +328,26 @@ def test_add_provenance_info():
     nc_output_path = site_output_dir / task.get_output_filename()
     netCDF4.Dataset(nc_output_path, "w")
 
-    def mock_svn_info_show_item(*args, **kwargs):  # pylint: disable=unused-argument
-        item = args[1]
-        return {"url": "/url/to/test-branch", "revision": "123"}[item]
-
     # Success case: add global attributes to netcdf file
-    with unittest.mock.patch(
-        "benchcab.get_cable.svn_info_show_item", mock_svn_info_show_item
-    ):
-        task.add_provenance_info()
-
+    task.add_provenance_info()
     with netCDF4.Dataset(str(nc_output_path), "r") as nc_output:
         atts = vars(nc_output)
-        assert atts["cable_branch"] == "/url/to/test-branch"
-        assert atts["svn_revision_number"] == "123"
+        assert atts["cable_branch"] == "mock standard output"
+        assert atts["svn_revision_number"] == "mock standard output"
         assert atts[r"filename%met"] == "/path/to/met/file"
         assert atts[r"filename%foo"] == 123
         assert atts[r"bar"] == ".true."
 
     # Success case: test non-verbose output
-    with unittest.mock.patch(
-        "benchcab.get_cable.svn_info_show_item", mock_svn_info_show_item
-    ), contextlib.redirect_stdout(io.StringIO()) as buf:
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
         task.add_provenance_info()
     assert not buf.getvalue()
 
     # Success case: test verbose output
-    with unittest.mock.patch(
-        "benchcab.get_cable.svn_info_show_item", mock_svn_info_show_item
-    ), contextlib.redirect_stdout(io.StringIO()) as buf:
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
         task.add_provenance_info(verbose=True)
     assert buf.getvalue() == (
-        "  Adding attributes to output file: "
+        "Adding attributes to output file: "
         f"{MOCK_CWD}/runs/site/outputs/forcing-file_R1_S0_out.nc\n"
     )
 
@@ -372,167 +357,106 @@ def test_get_fluxnet_tasks():
 
     # Success case: get task list for two branches, two met
     # sites and two science configurations
-    config = make_barebones_config()
-    branch_a, branch_b = config["realisations"]
+    config = get_mock_config()
+    repos = [
+        CableRepository(**branch_config, repo_id=id)
+        for id, branch_config in enumerate(config["realisations"])
+    ]
     met_site_a, met_site_b = "foo", "bar"
     sci_a, sci_b = config["science_configurations"]
-
-    assert get_fluxnet_tasks(
-        config["realisations"],
+    tasks = get_fluxnet_tasks(
+        repos,
         config["science_configurations"],
         [met_site_a, met_site_b],
-    ) == [
-        Task(0, branch_a["name"], branch_a["patch"], met_site_a, 0, sci_a),
-        Task(0, branch_a["name"], branch_a["patch"], met_site_a, 1, sci_b),
-        Task(0, branch_a["name"], branch_a["patch"], met_site_b, 0, sci_a),
-        Task(0, branch_a["name"], branch_a["patch"], met_site_b, 1, sci_b),
-        Task(1, branch_b["name"], branch_b["patch"], met_site_a, 0, sci_a),
-        Task(1, branch_b["name"], branch_b["patch"], met_site_a, 1, sci_b),
-        Task(1, branch_b["name"], branch_b["patch"], met_site_b, 0, sci_a),
-        Task(1, branch_b["name"], branch_b["patch"], met_site_b, 1, sci_b),
+    )
+    assert [(task.repo, task.met_forcing_file, task.sci_config) for task in tasks] == [
+        (repos[0], met_site_a, sci_a),
+        (repos[0], met_site_a, sci_b),
+        (repos[0], met_site_b, sci_a),
+        (repos[0], met_site_b, sci_b),
+        (repos[1], met_site_a, sci_a),
+        (repos[1], met_site_a, sci_b),
+        (repos[1], met_site_b, sci_a),
+        (repos[1], met_site_b, sci_b),
     ]
 
 
 def test_get_fluxnet_comparisons():
     """Tests for `get_fluxnet_comparisons()`."""
 
+    output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
+
     # Success case: comparisons for two branches with two tasks
     # met0_S0_R0 met0_S0_R1
-    config = make_barebones_config()
-    science_configurations = [{"foo": "bar"}]
-    met_sites = ["foo.nc"]
-    tasks = get_fluxnet_tasks(config["realisations"], science_configurations, met_sites)
-    assert len(tasks) == 2
-    comparisons = get_fluxnet_comparisons(tasks)
-    assert len(comparisons) == 1
-    assert all(
-        (task_a.sci_conf_id, task_a.met_forcing_file)
-        == (task_b.sci_conf_id, task_b.met_forcing_file)
-        for task_a, task_b in comparisons
+    task_a = Task(
+        repo=CableRepository("path/to/repo_a", repo_id=0),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
     )
-    assert (comparisons[0][0].branch_id, comparisons[0][1].branch_id) == (0, 1)
+    task_b = Task(
+        repo=CableRepository("path/to/repo_b", repo_id=1),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    comparisons = get_fluxnet_comparisons([task_a, task_b], root_dir=MOCK_CWD)
+    assert len(comparisons) == 1
+    assert comparisons[0].files == (
+        output_dir / task_a.get_output_filename(),
+        output_dir / task_b.get_output_filename(),
+    )
+    assert comparisons[0].task_name == "foo_S0_R0_R1"
 
     # Success case: comparisons for three branches with three tasks
     # met0_S0_R0 met0_S0_R1 met0_S0_R2
-    config = make_barebones_config()
-    config["realisations"] += (
-        {
-            "name": "new-branch",
-            "revision": -1,
-            "path": "path/to/new-branch",
-            "patch": {},
-            "build_script": "",
-        },
+    task_a = Task(
+        repo=CableRepository("path/to/repo_a", repo_id=0),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
     )
-    science_configurations = [{"foo": "bar"}]
-    met_sites = ["foo.nc"]
-    tasks = get_fluxnet_tasks(config["realisations"], science_configurations, met_sites)
-    assert len(tasks) == 3
-    comparisons = get_fluxnet_comparisons(tasks)
+    task_b = Task(
+        repo=CableRepository("path/to/repo_b", repo_id=1),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    task_c = Task(
+        repo=CableRepository("path/to/repo_b", repo_id=2),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    comparisons = get_fluxnet_comparisons([task_a, task_b, task_c], root_dir=MOCK_CWD)
     assert len(comparisons) == 3
-    assert all(
-        (task_a.sci_conf_id, task_a.met_forcing_file)
-        == (task_b.sci_conf_id, task_b.met_forcing_file)
-        for task_a, task_b in comparisons
+    assert comparisons[0].files == (
+        output_dir / task_a.get_output_filename(),
+        output_dir / task_b.get_output_filename(),
     )
-    assert (comparisons[0][0].branch_id, comparisons[0][1].branch_id) == (0, 1)
-    assert (comparisons[1][0].branch_id, comparisons[1][1].branch_id) == (0, 2)
-    assert (comparisons[2][0].branch_id, comparisons[2][1].branch_id) == (1, 2)
+    assert comparisons[1].files == (
+        output_dir / task_a.get_output_filename(),
+        output_dir / task_c.get_output_filename(),
+    )
+    assert comparisons[2].files == (
+        output_dir / task_b.get_output_filename(),
+        output_dir / task_c.get_output_filename(),
+    )
+    assert comparisons[0].task_name == "foo_S0_R0_R1"
+    assert comparisons[1].task_name == "foo_S0_R0_R2"
+    assert comparisons[2].task_name == "foo_S0_R1_R2"
 
 
 def test_get_comparison_name():
     """Tests for `get_comparison_name()`."""
+
     # Success case: check comparison name convention
-    task_a = Task(0, "branch-a", {}, "foo", 0, {})
-    task_b = Task(1, "branch-b", {}, "foo", 0, {})
-    assert get_comparison_name(task_a, task_b) == "foo_S0_R0_R1"
-
-
-def test_run_comparison():
-    """Tests for `run_comparison()`."""
-
-    bitwise_cmp_dir = MOCK_CWD / internal.SITE_BITWISE_CMP_DIR
-    bitwise_cmp_dir.mkdir(parents=True)
-    output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
-    task_a = Task(0, "branch-a", {}, "foo", 0, {})
-    task_b = Task(1, "branch-b", {}, "foo", 0, {})
-
-    # Success case: run comparison
-    with unittest.mock.patch(
-        "benchcab.utils.subprocess.run_cmd", autospec=True
-    ) as mock_run_cmd:
-        run_comparison(task_a, task_b)
-        mock_run_cmd.assert_called_once_with(
-            f"nccmp -df {output_dir / task_a.get_output_filename()} "
-            f"{output_dir / task_b.get_output_filename()}",
-            capture_output=True,
-            verbose=False,
+    assert (
+        get_comparison_name(
+            CableRepository("path/to/repo", repo_id=0),
+            CableRepository("path/to/repo", repo_id=1),
+            met_forcing_file="foo.nc",
+            sci_conf_id=0,
         )
-
-    # Success case: run comparison with verbose enabled
-    # TODO(Sean): this test should be removed once we use the logging module
-    with unittest.mock.patch(
-        "benchcab.utils.subprocess.run_cmd", autospec=True
-    ) as mock_run_cmd:
-        run_comparison(task_a, task_b, verbose=True)
-        mock_run_cmd.assert_called_once_with(
-            f"nccmp -df {output_dir / task_a.get_output_filename()} "
-            f"{output_dir / task_b.get_output_filename()}",
-            capture_output=True,
-            verbose=True,
-        )
-
-    # Success case: test non-verbose output
-    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            run_comparison(task_a, task_b)
-        assert buf.getvalue() == (
-            f"Success: files {task_a.get_output_filename()} "
-            f"{task_b.get_output_filename()} are identical\n"
-        )
-
-    # Success case: test verbose output
-    with unittest.mock.patch("benchcab.utils.subprocess.run_cmd"):
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            run_comparison(task_a, task_b, verbose=True)
-        assert buf.getvalue() == (
-            f"Comparing files {task_a.get_output_filename()} and "
-            f"{task_b.get_output_filename()} bitwise...\n"
-            f"Success: files {task_a.get_output_filename()} "
-            f"{task_b.get_output_filename()} are identical\n"
-        )
-
-    with unittest.mock.patch(
-        "benchcab.utils.subprocess.run_cmd", autospec=True
-    ) as mock_run_cmd:
-        mock_run_cmd.side_effect = subprocess.CalledProcessError(
-            returncode=1, cmd="dummy cmd", output="error message from command"
-        )
-
-        # Failure case: test failed comparison check (files differ)
-        run_comparison(task_a, task_b)
-        stdout_file = bitwise_cmp_dir / f"{get_comparison_name(task_a, task_b)}.txt"
-        with open(stdout_file, "r", encoding="utf-8") as file:
-            assert file.read() == "error message from command"
-
-        # Failure case: test non-verbose standard output on failure
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            run_comparison(task_a, task_b)
-        stdout_file = bitwise_cmp_dir / f"{get_comparison_name(task_a, task_b)}.txt"
-        assert buf.getvalue() == (
-            f"Failure: files {task_a.get_output_filename()} "
-            f"{task_b.get_output_filename()} differ. Results of diff "
-            f"have been written to {stdout_file}\n"
-        )
-
-        # Failure case: test verbose standard output on failure
-        with contextlib.redirect_stdout(io.StringIO()) as buf:
-            run_comparison(task_a, task_b, verbose=True)
-        stdout_file = bitwise_cmp_dir / f"{get_comparison_name(task_a, task_b)}.txt"
-        assert buf.getvalue() == (
-            f"Comparing files {task_a.get_output_filename()} and "
-            f"{task_b.get_output_filename()} bitwise...\n"
-            f"Failure: files {task_a.get_output_filename()} "
-            f"{task_b.get_output_filename()} differ. Results of diff "
-            f"have been written to {stdout_file}\n"
-        )
+        == "foo_S0_R0_R1"
+    )

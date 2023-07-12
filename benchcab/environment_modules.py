@@ -2,6 +2,7 @@
 
 import sys
 import contextlib
+from abc import ABC as AbstractBaseClass, abstractmethod
 
 sys.path.append("/opt/Modules/v4.3.0/init")
 try:
@@ -19,37 +20,57 @@ class EnvironmentModulesError(Exception):
     """Custom exception class for environment modules errors."""
 
 
-@contextlib.contextmanager
-def load(modules, verbose=False):
-    """Context manager for loading and unloading modules."""
-    if verbose:
-        print("Loading modules: " + " ".join(modules))
-    module_load(*modules)
-    try:
-        yield
-    finally:
+class EnvironmentModulesInterface(AbstractBaseClass):
+    """An abstract class (interface) that defines abstract methods for interacting
+    with the environment modules API.
+
+    An interface is defined so that we can easily mock the environment modules API
+    in our unit tests.
+    """
+
+    @abstractmethod
+    def module_is_avail(self, *args: str) -> bool:
+        """Wrapper around `module is-avail modulefile...`"""
+
+    @abstractmethod
+    def module_is_loaded(self, *args: str) -> bool:
+        """Wrapper around `module is-loaded modulefile...`"""
+
+    @abstractmethod
+    def module_load(self, *args: str) -> None:
+        """Wrapper around `module load modulefile...`"""
+
+    @abstractmethod
+    def module_unload(self, *args: str) -> None:
+        """Wrapper around `module unload modulefile...`"""
+
+    @contextlib.contextmanager
+    def load(self, modules: list[str], verbose=False):
+        """Context manager for loading and unloading modules."""
         if verbose:
-            print("Unloading modules: " + " ".join(modules))
-        module_unload(*modules)
+            print("Loading modules: " + " ".join(modules))
+        self.module_load(*modules)
+        try:
+            yield
+        finally:
+            if verbose:
+                print("Unloading modules: " + " ".join(modules))
+            self.module_unload(*modules)
 
 
-def module_is_avail(*args: str):
-    """Wrapper around `module is-avail modulefile...`"""
-    return module("is-avail", *args)
+class EnvironmentModules(EnvironmentModulesInterface):
+    """A concrete implementation of the `EnvironmentModulesInterface` abstract class."""
 
+    def module_is_avail(self, *args: str) -> bool:
+        return module("is-avail", *args)
 
-def module_is_loaded(*args: str):
-    """Wrapper around `module is-loaded modulefile...`"""
-    return module("is-loaded", *args)
+    def module_is_loaded(self, *args: str) -> bool:
+        return module("is-loaded", *args)
 
+    def module_load(self, *args: str) -> None:
+        if not module("load", *args):
+            raise EnvironmentModulesError("Failed to load modules: " + " ".join(args))
 
-def module_load(*args: str):
-    """Wrapper around `module load modulefile...`"""
-    if not module("load", *args):
-        raise EnvironmentModulesError("Failed to load modules: " + " ".join(args))
-
-
-def module_unload(*args: str):
-    """Wrapper around `module unload modulefile...`"""
-    if not module("unload", *args):
-        raise EnvironmentModulesError("Failed to unload modules: " + " ".join(args))
+    def module_unload(self, *args: str) -> None:
+        if not module("unload", *args):
+            raise EnvironmentModulesError("Failed to unload modules: " + " ".join(args))

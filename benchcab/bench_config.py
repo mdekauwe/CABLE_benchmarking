@@ -14,8 +14,10 @@ def check_config(config: dict):
 
     if any(key not in config for key in internal.CONFIG_REQUIRED_KEYS):
         raise ValueError(
-            "The config file does not list all required entries. "
-            "Those are: " + ", ".join(internal.CONFIG_REQUIRED_KEYS)
+            "Keys are missing from the config file: "
+            + ", ".join(
+                key for key in internal.CONFIG_REQUIRED_KEYS if key not in config
+            )
         )
 
     if not isinstance(config["project"], str):
@@ -103,18 +105,5 @@ def read_config(config_path: str) -> dict:
         config = yaml.safe_load(file)
 
     check_config(config)
-
-    for branch in config["realisations"]:
-        # Add "name" key if not provided and set to base name of "path" key
-        branch.setdefault("name", Path(branch["path"]).name)
-        # Add "revision" key if not provided and set to default value -1, i.e. HEAD of branch
-        branch.setdefault("revision", -1)
-        # Add "patch" key if not provided and set to default value {}
-        branch.setdefault("patch", {})
-        # Add "build_script" key if not provided and set to default value ""
-        branch.setdefault("build_script", "")
-
-    # Add "science_configurations" if not provided and set to default value
-    config.setdefault("science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS)
 
     return config
