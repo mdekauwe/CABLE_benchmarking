@@ -7,7 +7,6 @@ dependencies:
   - f90nml
   - netcdf4
   - numpy
-  - pytest
-  - coverage
+  - pytest-cov
   - pyyaml
   - flatdict
