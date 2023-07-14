@@ -1,59 +1,98 @@
 """`pytest` tests for task.py"""
 
 from pathlib import Path
+import io
+import contextlib
+import pytest
 import f90nml
+import netCDF4
 
-from tests.common import TMP_DIR
-from benchcab.task import Task
+from benchcab.task import (
+    patch_namelist,
+    get_fluxnet_tasks,
+    get_fluxnet_comparisons,
+    get_comparison_name,
+    Task,
+    CableError,
+)
 from benchcab import internal
-from benchcab.benchtree import setup_fluxnet_directory_tree
+from benchcab.repository import CableRepository
+from benchcab.utils.subprocess import SubprocessWrapperInterface
+from .common import MOCK_CWD, get_mock_config, MockSubprocessWrapper
 
-def setup_mock_task() -> Task:
+
+def get_mock_task(
+    subprocess_handler: SubprocessWrapperInterface = MockSubprocessWrapper(),
+) -> Task:
     """Returns a mock `Task` instance."""
+
+    repo = CableRepository(
+        repo_id=1,
+        path="path/to/test-branch",
+        patch={"cable": {"some_branch_specific_setting": True}},
+    )
+    repo.subprocess_handler = subprocess_handler
+    repo.root_dir = MOCK_CWD
+
     task = Task(
-        branch_id=1,
-        branch_name="test-branch",
-        branch_patch={"cable": {"some_branch_specific_setting": True}},
+        repo=repo,
         met_forcing_file="forcing-file.nc",
         sci_conf_id=0,
-        sci_config={"cable": {"some_setting": True}}
+        sci_config={"cable": {"some_setting": True}},
     )
+    task.subprocess_handler = subprocess_handler
+    task.root_dir = MOCK_CWD
+
     return task
 
 
 def setup_mock_namelists_directory():
-    """Setup a mock namelists directory in TMP_DIR."""
-    Path(TMP_DIR, internal.NAMELIST_DIR).mkdir()
+    """Setup a mock namelists directory in MOCK_CWD."""
+    Path(MOCK_CWD, internal.NAMELIST_DIR).mkdir()
 
-    cable_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_NML)
+    cable_nml_path = Path(MOCK_CWD, internal.NAMELIST_DIR, internal.CABLE_NML)
     cable_nml_path.touch()
     assert cable_nml_path.exists()
 
-    cable_soil_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML)
+    cable_soil_nml_path = Path(MOCK_CWD, internal.NAMELIST_DIR, internal.CABLE_SOIL_NML)
     cable_soil_nml_path.touch()
     assert cable_soil_nml_path.exists()
 
-    cable_vegetation_nml_path = Path(TMP_DIR, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML)
+    cable_vegetation_nml_path = Path(
+        MOCK_CWD, internal.NAMELIST_DIR, internal.CABLE_VEGETATION_NML
+    )
     cable_vegetation_nml_path.touch()
     assert cable_vegetation_nml_path.exists()
 
 
+def setup_mock_run_directory(task: Task):
+    """Setup mock run directory for a single task."""
+    task_dir = MOCK_CWD / internal.SITE_TASKS_DIR / task.get_task_name()
+    task_dir.mkdir(parents=True)
+    output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
+    output_dir.mkdir(parents=True)
+    log_dir = MOCK_CWD / internal.SITE_LOG_DIR
+    log_dir.mkdir(parents=True)
+
+
 def do_mock_checkout_and_build():
     """Setup mock repository that has been checked out and built."""
-    Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
+    Path(MOCK_CWD, internal.SRC_DIR, "test-branch", "offline").mkdir(parents=True)
 
-    cable_exe_path = Path(TMP_DIR, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE)
+    cable_exe_path = Path(
+        MOCK_CWD, internal.SRC_DIR, "test-branch", "offline", internal.CABLE_EXE
+    )
     cable_exe_path.touch()
     assert cable_exe_path.exists()
 
 
 def do_mock_run(task: Task):
     """Make mock log files and output files as if benchcab has just been run."""
-    output_path = Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename())
+    output_path = Path(MOCK_CWD, internal.SITE_OUTPUT_DIR, task.get_output_filename())
     output_path.touch()
     assert output_path.exists()
 
-    log_path = Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename())
+    log_path = Path(MOCK_CWD, internal.SITE_LOG_DIR, task.get_log_filename())
     log_path.touch()
     assert log_path.exists()
 
@@ -61,21 +100,21 @@ def do_mock_run(task: Task):
 def test_get_task_name():
     """Tests for `get_task_name()`."""
     # Success case: check task name convention
-    task = setup_mock_task()
+    task = get_mock_task()
     assert task.get_task_name() == "forcing-file_R1_S0"
 
 
 def test_get_log_filename():
     """Tests for `get_log_filename()`."""
     # Success case: check log file name convention
-    task = setup_mock_task()
+    task = get_mock_task()
     assert task.get_log_filename() == "forcing-file_R1_S0_log.txt"
 
 
 def test_get_output_filename():
     """Tests for `get_output_filename()`."""
     # Success case: check output file name convention
-    task = setup_mock_task()
+    task = get_mock_task()
     assert task.get_output_filename() == "forcing-file_R1_S0_out.nc"
 
 
@@ -83,114 +122,337 @@ def test_fetch_files():
     """Tests for `fetch_files()`."""
 
     # Success case: fetch files required to run CABLE
-    task = setup_mock_task()
+    task = get_mock_task()
 
     setup_mock_namelists_directory()
-    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
+    setup_mock_run_directory(task)
     do_mock_checkout_and_build()
 
-    task.fetch_files(root_dir=TMP_DIR)
+    task.fetch_files()
 
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_NML).exists()
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_VEGETATION_NML).exists()
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_SOIL_NML).exists()
-    assert Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                task.get_task_name(), internal.CABLE_EXE).exists()
+    assert Path(
+        MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name(), internal.CABLE_NML
+    ).exists()
+    assert Path(
+        MOCK_CWD,
+        internal.SITE_TASKS_DIR,
+        task.get_task_name(),
+        internal.CABLE_VEGETATION_NML,
+    ).exists()
+    assert Path(
+        MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name(), internal.CABLE_SOIL_NML
+    ).exists()
+    assert Path(
+        MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name(), internal.CABLE_EXE
+    ).exists()
 
 
 def test_clean_task():
     """Tests for `clean_task()`."""
 
     # Success case: fetch then clean files
-    task = setup_mock_task()
+    task = get_mock_task()
 
     setup_mock_namelists_directory()
-    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
+    setup_mock_run_directory(task)
     do_mock_checkout_and_build()
 
-    task.fetch_files(root_dir=TMP_DIR)
+    task.fetch_files()
 
     do_mock_run(task)
 
-    task.clean_task(root_dir=TMP_DIR)
+    task.clean_task()
 
-    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                    task.get_task_name(), internal.CABLE_NML).exists()
-    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                    task.get_task_name(), internal.CABLE_VEGETATION_NML).exists()
-    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                    task.get_task_name(), internal.CABLE_SOIL_NML).exists()
-    assert not Path(TMP_DIR, internal.SITE_TASKS_DIR,
-                    task.get_task_name(), internal.CABLE_EXE).exists()
-    assert not Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename()).exists()
-    assert not Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
+    assert not Path(
+        MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name(), internal.CABLE_NML
+    ).exists()
+    assert not Path(
+        MOCK_CWD,
+        internal.SITE_TASKS_DIR,
+        task.get_task_name(),
+        internal.CABLE_VEGETATION_NML,
+    ).exists()
+    assert not Path(
+        MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name(), internal.CABLE_SOIL_NML
+    ).exists()
+    assert not Path(
+        MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name(), internal.CABLE_EXE
+    ).exists()
+    assert not Path(
+        MOCK_CWD, internal.SITE_OUTPUT_DIR, task.get_output_filename()
+    ).exists()
+    assert not Path(MOCK_CWD, internal.SITE_LOG_DIR, task.get_log_filename()).exists()
 
 
-def test_adjust_namelist_file():
-    """Tests for `adjust_namelist_file()`."""
+def test_patch_namelist():
+    """Tests for `patch_namelist()`."""
 
-    # Success case: adjust cable namelist file
-    task = setup_mock_task()
-    task_dir = Path(TMP_DIR, internal.SITE_TASKS_DIR, task.get_task_name())
+    nml_path = MOCK_CWD / "test.nml"
 
-    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
+    # Success case: patch non-existing namelist file
+    assert not nml_path.exists()
+    patch = {"cable": {"file": "/path/to/file", "bar": 123}}
+    patch_namelist(nml_path, patch)
+    assert f90nml.read(nml_path) == patch
 
-    # Create mock namelist file in task directory:
-    nml = {
-        'cable': {
-            'filename': {
-                'met': "/path/to/met/file",
-                'foo': 123
-            },
-            'bar': 123
+    # Success case: patch non-empty namelist file
+    patch_namelist(nml_path, {"cable": {"some": {"parameter": True}, "bar": 456}})
+    assert f90nml.read(nml_path) == {
+        "cable": {
+            "file": "/path/to/file",
+            "bar": 456,
+            "some": {"parameter": True},
         }
     }
 
-    f90nml.write(nml, str(task_dir / internal.CABLE_NML))
-
-    task.adjust_namelist_file(root_dir=TMP_DIR)
-
-    res_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
-
-    met_file_path = Path(internal.MET_DIR, "forcing-file.nc")
-    output_path = Path(TMP_DIR, internal.SITE_OUTPUT_DIR, task.get_output_filename())
-    log_path = Path(TMP_DIR, internal.SITE_LOG_DIR, task.get_log_filename())
-    grid_file_path = Path(TMP_DIR, internal.GRID_FILE)
-    phen_file_path = Path(TMP_DIR, internal.PHEN_FILE)
-    cnpbiome_file_path = Path(TMP_DIR, internal.CNPBIOME_FILE)
-
-    assert res_nml['cable']['filename']['met'] == str(met_file_path)
-    assert res_nml['cable']['filename']['out'] == str(output_path)
-    assert res_nml['cable']['filename']['log'] == str(log_path)
-    assert res_nml['cable']['filename']['restart_out'] == " "
-    assert res_nml['cable']['filename']['type'] == str(grid_file_path)
-    assert res_nml['cable']['output']['restart'] is False
-    assert res_nml['cable']['fixedCO2'] == internal.CABLE_FIXED_CO2_CONC
-    assert res_nml['cable']['casafile']['phen'] == str(phen_file_path)
-    assert res_nml['cable']['casafile']['cnpbiome'] == str(cnpbiome_file_path)
-    assert res_nml['cable']['spinup'] is False
-    assert res_nml['cable']['some_setting'] is True
-
-    assert res_nml['cable']['filename']['foo'] == 123, "assert existing derived types are preserved"
-    assert res_nml['cable']['bar'] == 123, "assert existing top-level parameters are preserved"
+    # Success case: empty patch does nothing
+    prev = f90nml.read(nml_path)
+    patch_namelist(nml_path, {})
+    assert f90nml.read(nml_path) == prev
 
 
 def test_setup_task():
     """Tests for `setup_task()`."""
 
-    # Success case: test branch specific settings are patched into task namelist file
-    task = setup_mock_task()
-    task_dir = Path(TMP_DIR, internal.SITE_TASKS_DIR, task.get_task_name())
+    task = get_mock_task()
+    task_dir = Path(MOCK_CWD, internal.SITE_TASKS_DIR, task.get_task_name())
 
     setup_mock_namelists_directory()
-    setup_fluxnet_directory_tree([task], root_dir=TMP_DIR)
+    setup_mock_run_directory(task)
     do_mock_checkout_and_build()
 
-    task.setup_task(root_dir=TMP_DIR)
-
+    # Success case: test all settings are patched into task namelist file
+    task.setup_task()
     res_nml = f90nml.read(str(task_dir / internal.CABLE_NML))
+    assert res_nml["cable"] == {
+        "filename": {
+            "met": str(internal.MET_DIR / "forcing-file.nc"),
+            "out": str(
+                MOCK_CWD / internal.SITE_OUTPUT_DIR / task.get_output_filename()
+            ),
+            "log": str(MOCK_CWD / internal.SITE_LOG_DIR / task.get_log_filename()),
+            "restart_out": " ",
+            "type": str(MOCK_CWD / internal.GRID_FILE),
+        },
+        "output": {"restart": False},
+        "fixedco2": internal.CABLE_FIXED_CO2_CONC,
+        "casafile": {
+            "phen": str(MOCK_CWD / internal.PHEN_FILE),
+            "cnpbiome": str(MOCK_CWD / internal.CNPBIOME_FILE),
+        },
+        "spinup": False,
+        "some_setting": True,
+        "some_branch_specific_setting": True,
+    }
 
-    assert res_nml['cable']['some_branch_specific_setting'] is True
+    # Success case: test non-verbose output
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.setup_task()
+    assert not buf.getvalue()
+
+    # Success case: test verbose output
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.setup_task(verbose=True)
+    assert buf.getvalue() == (
+        "Setting up task: forcing-file_R1_S0\n"
+        "  Cleaning task\n"
+        f"  Copying namelist files from {MOCK_CWD}/namelists to "
+        f"{MOCK_CWD / 'runs/site/tasks/forcing-file_R1_S0'}\n"
+        f"  Copying CABLE executable from {MOCK_CWD}/src/test-branch/"
+        f"offline/cable to {MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/cable\n"
+        "  Adding base configurations to CABLE namelist file "
+        f"{MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/cable.nml\n"
+        "  Adding science configurations to CABLE namelist file "
+        f"{MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/cable.nml\n"
+        "  Adding branch specific configurations to CABLE namelist file "
+        f"{MOCK_CWD}/runs/site/tasks/forcing-file_R1_S0/cable.nml\n"
+    )
+
+
+def test_run_cable():
+    """Tests for `run_cable()`."""
+
+    mock_subprocess = MockSubprocessWrapper()
+    task = get_mock_task(subprocess_handler=mock_subprocess)
+    task_dir = MOCK_CWD / internal.SITE_TASKS_DIR / task.get_task_name()
+    task_dir.mkdir(parents=True)
+    exe_path = task_dir / internal.CABLE_EXE
+    exe_path.touch()
+    nml_path = task_dir / internal.CABLE_NML
+    nml_path.touch()
+
+    stdout_file = task_dir / internal.CABLE_STDOUT_FILENAME
+
+    # Success case: run CABLE executable in subprocess
+    task.run_cable()
+    assert f"{exe_path} {nml_path}" in mock_subprocess.commands
+    assert stdout_file.exists()
+
+    # Success case: test non-verbose output
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.run_cable()
+    assert not buf.getvalue()
+
+    # Success case: test verbose output
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.run_cable(verbose=True)
+    assert not buf.getvalue()
+
+    # Failure case: raise CableError on subprocess non-zero exit code
+    mock_subprocess.error_on_call = True
+    with pytest.raises(CableError):
+        task.run_cable()
+
+
+def test_add_provenance_info():
+    """Tests for `add_provenance_info()`."""
+
+    mock_subprocess = MockSubprocessWrapper()
+    task = get_mock_task(subprocess_handler=mock_subprocess)
+    task_dir = MOCK_CWD / internal.SITE_TASKS_DIR / task.get_task_name()
+    task_dir.mkdir(parents=True)
+    site_output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
+    site_output_dir.mkdir()
+
+    # Create mock namelist file in task directory:
+    f90nml.write(
+        {"cable": {"filename": {"met": "/path/to/met/file", "foo": 123}, "bar": True}},
+        task_dir / internal.CABLE_NML,
+    )
+
+    # Create mock netcdf output file as if CABLE had just been run:
+    nc_output_path = site_output_dir / task.get_output_filename()
+    netCDF4.Dataset(nc_output_path, "w")
+
+    # Success case: add global attributes to netcdf file
+    task.add_provenance_info()
+    with netCDF4.Dataset(str(nc_output_path), "r") as nc_output:
+        atts = vars(nc_output)
+        assert atts["cable_branch"] == mock_subprocess.stdout
+        assert atts["svn_revision_number"] == mock_subprocess.stdout
+        assert atts[r"filename%met"] == "/path/to/met/file"
+        assert atts[r"filename%foo"] == 123
+        assert atts[r"bar"] == ".true."
+
+    # Success case: test non-verbose output
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.add_provenance_info()
+    assert not buf.getvalue()
+
+    # Success case: test verbose output
+    with contextlib.redirect_stdout(io.StringIO()) as buf:
+        task.add_provenance_info(verbose=True)
+    assert buf.getvalue() == (
+        "Adding attributes to output file: "
+        f"{MOCK_CWD}/runs/site/outputs/forcing-file_R1_S0_out.nc\n"
+    )
+
+
+def test_get_fluxnet_tasks():
+    """Tests for `get_fluxnet_tasks()`."""
+
+    # Success case: get task list for two branches, two met
+    # sites and two science configurations
+    config = get_mock_config()
+    repos = [
+        CableRepository(**branch_config, repo_id=id)
+        for id, branch_config in enumerate(config["realisations"])
+    ]
+    met_site_a, met_site_b = "foo", "bar"
+    sci_a, sci_b = config["science_configurations"]
+    tasks = get_fluxnet_tasks(
+        repos,
+        config["science_configurations"],
+        [met_site_a, met_site_b],
+    )
+    assert [(task.repo, task.met_forcing_file, task.sci_config) for task in tasks] == [
+        (repos[0], met_site_a, sci_a),
+        (repos[0], met_site_a, sci_b),
+        (repos[0], met_site_b, sci_a),
+        (repos[0], met_site_b, sci_b),
+        (repos[1], met_site_a, sci_a),
+        (repos[1], met_site_a, sci_b),
+        (repos[1], met_site_b, sci_a),
+        (repos[1], met_site_b, sci_b),
+    ]
+
+
+def test_get_fluxnet_comparisons():
+    """Tests for `get_fluxnet_comparisons()`."""
+
+    output_dir = MOCK_CWD / internal.SITE_OUTPUT_DIR
+
+    # Success case: comparisons for two branches with two tasks
+    # met0_S0_R0 met0_S0_R1
+    task_a = Task(
+        repo=CableRepository("path/to/repo_a", repo_id=0),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    task_b = Task(
+        repo=CableRepository("path/to/repo_b", repo_id=1),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    comparisons = get_fluxnet_comparisons([task_a, task_b], root_dir=MOCK_CWD)
+    assert len(comparisons) == 1
+    assert comparisons[0].files == (
+        output_dir / task_a.get_output_filename(),
+        output_dir / task_b.get_output_filename(),
+    )
+    assert comparisons[0].task_name == "foo_S0_R0_R1"
+
+    # Success case: comparisons for three branches with three tasks
+    # met0_S0_R0 met0_S0_R1 met0_S0_R2
+    task_a = Task(
+        repo=CableRepository("path/to/repo_a", repo_id=0),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    task_b = Task(
+        repo=CableRepository("path/to/repo_b", repo_id=1),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    task_c = Task(
+        repo=CableRepository("path/to/repo_b", repo_id=2),
+        met_forcing_file="foo.nc",
+        sci_config={"foo": "bar"},
+        sci_conf_id=0,
+    )
+    comparisons = get_fluxnet_comparisons([task_a, task_b, task_c], root_dir=MOCK_CWD)
+    assert len(comparisons) == 3
+    assert comparisons[0].files == (
+        output_dir / task_a.get_output_filename(),
+        output_dir / task_b.get_output_filename(),
+    )
+    assert comparisons[1].files == (
+        output_dir / task_a.get_output_filename(),
+        output_dir / task_c.get_output_filename(),
+    )
+    assert comparisons[2].files == (
+        output_dir / task_b.get_output_filename(),
+        output_dir / task_c.get_output_filename(),
+    )
+    assert comparisons[0].task_name == "foo_S0_R0_R1"
+    assert comparisons[1].task_name == "foo_S0_R0_R2"
+    assert comparisons[2].task_name == "foo_S0_R1_R2"
+
+
+def test_get_comparison_name():
+    """Tests for `get_comparison_name()`."""
+
+    # Success case: check comparison name convention
+    assert (
+        get_comparison_name(
+            CableRepository("path/to/repo", repo_id=0),
+            CableRepository("path/to/repo", repo_id=1),
+            met_forcing_file="foo.nc",
+            sci_conf_id=0,
+        )
+        == "foo_S0_R0_R1"
+    )

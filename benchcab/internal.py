@@ -1,16 +1,12 @@
 """internal.py: define all runtime constants in a single file."""
 
 import os
-import sys
-import grp
 from pathlib import Path
 
-from .environment_modules import module_is_avail
 
 _, NODENAME, _, _, _ = os.uname()
 
-# Default config file names
-DEFAULT_CONFIG = "config.yaml"
+CONFIG_REQUIRED_KEYS = ["realisations", "project", "modules", "experiment"]
 
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"
@@ -39,6 +35,13 @@ NAMELIST_DIR = Path("namelists")
 
 # Relative path to CABLE Auxiliary repository
 CABLE_AUX_DIR = SRC_DIR / "CABLE-AUX"
+
+# Relative URL path to CABLE Auxiliary repository on SVN
+CABLE_AUX_RELATIVE_SVN_PATH = "branches/Share/CABLE-AUX"
+
+# TODO(Sean): hard coding paths assets in CABLE_AUX is brittle, these should
+# be promoted to config parameters, especially since we no longer throw exceptions
+# when the assets cannot be found.
 
 # Relative path to CABLE grid info file
 GRID_FILE = CABLE_AUX_DIR / "offline" / "gridinfo_CSIRO_1x1.nc"
@@ -214,47 +217,3 @@ def get_met_sites(experiment: str) -> list[str]:
     ]
 
     return met_sites
-
-
-def validate_environment(project: str, modules: list):
-    """Performs checks on current user environment"""
-
-    if "gadi.nci" not in NODENAME:
-        print("Error: benchcab is currently implemented only on Gadi")
-        sys.exit(1)
-
-    namelist_dir = Path(CWD / NAMELIST_DIR)
-    if not namelist_dir.exists():
-        print("Error: cannot find 'namelists' directory in current working directory")
-        sys.exit(1)
-
-    required_groups = [project, "ks32", "hh5"]
-    groups = [grp.getgrgid(gid).gr_name for gid in os.getgroups()]
-    if not set(required_groups).issubset(groups):
-        print(
-            "Error: user does not have the required group permissions.",
-            "The required groups are:",
-            ", ".join(required_groups),
-        )
-        sys.exit(1)
-
-    for modname in modules:
-        if not module_is_avail(modname):
-            print(f"Error: module ({modname}) is not available.")
-            sys.exit(1)
-
-    all_site_ids = set(
-        MEORG_EXPERIMENTS["five-site-test"] + MEORG_EXPERIMENTS["forty-two-site-test"]
-    )
-    for site_id in all_site_ids:
-        paths = list(MET_DIR.glob(f"{site_id}*"))
-        if not paths:
-            print(
-                f"Error: failed to infer met file for site id '{site_id}' in {MET_DIR}."
-            )
-            sys.exit(1)
-        if len(paths) > 1:
-            print(
-                f"Error: multiple paths infered for site id: '{site_id}' in {MET_DIR}."
-            )
-            sys.exit(1)
