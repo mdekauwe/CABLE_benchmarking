@@ -217,9 +217,9 @@ class Benchcab:
     def fluxnet_bitwise_cmp(self):
         """Endpoint for `benchcab fluxnet-bitwise-cmp`."""
 
-        if not self.modules_handler.module_is_loaded("nccmp"):
+        if not self.modules_handler.module_is_loaded("nccmp/1.8.5.0"):
             self.modules_handler.module_load(
-                "nccmp"
+                "nccmp/1.8.5.0"
             )  # use `nccmp -df` for bitwise comparisons
 
         tasks = self.tasks if self.tasks else self._initialise_tasks()

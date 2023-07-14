@@ -24,13 +24,13 @@ def test_run_cmd(capfd):
     assert not captured.out
     assert not captured.err
 
-    # Success case: test stdout is printed in verbose mode
+    # Success case: test command and stdout is printed in verbose mode
     subprocess_handler.run_cmd("echo foo", verbose=True)
     captured = capfd.readouterr()
     assert captured.out == "echo foo\nfoo\n"
     assert not captured.err
 
-    # Success case: test stderr is redirected to stdout in verbose mode
+    # Success case: test command and stderr is redirected to stdout in verbose mode
     subprocess_handler.run_cmd("echo foo 1>&2", verbose=True)
     captured = capfd.readouterr()
     assert captured.out == "echo foo 1>&2\nfoo\n"
@@ -53,7 +53,7 @@ def test_run_cmd(capfd):
     assert proc.stdout == "foo\n"
     assert not proc.stderr
 
-    # Success case: test command is printed in verbose mode
+    # Success case: test command is printed and stdout is captured in verbose mode
     proc = subprocess_handler.run_cmd("echo foo", capture_output=True, verbose=True)
     captured = capfd.readouterr()
     assert captured.out == "echo foo\n"
@@ -61,7 +61,7 @@ def test_run_cmd(capfd):
     assert proc.stdout == "foo\n"
     assert not proc.stderr
 
-    # Success case: redirect output to file descriptor
+    # Success case: test stdout is redirected to file
     file_path = TMP_DIR / "out.txt"
     subprocess_handler.run_cmd("echo foo", output_file=file_path)
     with open(file_path, "r", encoding="utf-8") as file:
@@ -70,7 +70,7 @@ def test_run_cmd(capfd):
     assert not captured.out
     assert not captured.err
 
-    # Success case: redirect output to file descriptor in verbose mode
+    # Success case: test command is printed and stdout is redirected to file in verbose mode
     file_path = TMP_DIR / "out.txt"
     subprocess_handler.run_cmd("echo foo", output_file=file_path, verbose=True)
     with file_path.open("r", encoding="utf-8") as file:

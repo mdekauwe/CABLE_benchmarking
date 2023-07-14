@@ -38,7 +38,7 @@ def test_fluxnet_submit_job():
     assert buf.getvalue() == (
         "Creating PBS job script to run FLUXNET tasks on compute "
         f"nodes: {internal.QSUB_FNAME}\n"
-        "PBS job submitted: mock standard output\n"
+        f"PBS job submitted: {mock_subprocess.stdout}\n"
         "The CABLE log file for each task is written to "
         f"{internal.SITE_LOG_DIR}/<task_name>_log.txt\n"
         "The CABLE standard output for each task is written to "
@@ -57,5 +57,5 @@ def test_fluxnet_submit_job():
     assert buf.getvalue() == (
         "Creating PBS job script to run FLUXNET tasks on compute "
         f"nodes: {internal.QSUB_FNAME}\n"
-        "Error when submitting job to NCI queue\nmock standard output\n"
+        f"Error when submitting job to NCI queue\n{mock_subprocess.stdout}\n"
     )

@@ -11,11 +11,10 @@ def render_job_script(
     verbose=False,
     skip_bitwise_cmp=False,
 ) -> str:
-    """Returns a PBS job that executes all computationally expensive commands.
+    """Returns the text for a PBS job script that executes all computationally expensive commands.
 
     This includes things such as running CABLE and running bitwise comparison jobs
-    between model output files. The PBS job script is written to the current
-    working directory as a side effect.
+    between model output files.
     """
 
     module_load_lines = "\n".join(

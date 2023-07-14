@@ -41,13 +41,12 @@ class SubprocessWrapper(SubprocessWrapperInterface):
             if capture_output:
                 kwargs["text"] = True
                 kwargs["stdout"] = subprocess.PIPE
+            elif output_file:
+                kwargs["stdout"] = stack.enter_context(
+                    output_file.open("w", encoding="utf-8")
+                )
             else:
-                if output_file:
-                    kwargs["stdout"] = stack.enter_context(
-                        output_file.open("w", encoding="utf-8")
-                    )
-                else:
-                    kwargs["stdout"] = None if verbose else subprocess.DEVNULL
+                kwargs["stdout"] = None if verbose else subprocess.DEVNULL
             kwargs["stderr"] = subprocess.STDOUT
 
             if verbose:

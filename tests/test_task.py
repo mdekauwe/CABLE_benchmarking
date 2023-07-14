@@ -191,13 +191,9 @@ def test_patch_namelist():
 
     # Success case: patch non-existing namelist file
     assert not nml_path.exists()
-    patch_namelist(nml_path, {"cable": {"file": "/path/to/file", "bar": 123}})
-    assert f90nml.read(nml_path) == {
-        "cable": {
-            "file": "/path/to/file",
-            "bar": 123,
-        }
-    }
+    patch = {"cable": {"file": "/path/to/file", "bar": 123}}
+    patch_namelist(nml_path, patch)
+    assert f90nml.read(nml_path) == patch
 
     # Success case: patch non-empty namelist file
     patch_namelist(nml_path, {"cable": {"some": {"parameter": True}, "bar": 456}})
@@ -332,8 +328,8 @@ def test_add_provenance_info():
     task.add_provenance_info()
     with netCDF4.Dataset(str(nc_output_path), "r") as nc_output:
         atts = vars(nc_output)
-        assert atts["cable_branch"] == "mock standard output"
-        assert atts["svn_revision_number"] == "mock standard output"
+        assert atts["cable_branch"] == mock_subprocess.stdout
+        assert atts["svn_revision_number"] == mock_subprocess.stdout
         assert atts[r"filename%met"] == "/path/to/met/file"
         assert atts[r"filename%foo"] == 123
         assert atts[r"bar"] == ".true."

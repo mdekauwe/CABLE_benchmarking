@@ -53,20 +53,20 @@ def test_run_comparison():
         f"Success: files {file_a.name} {file_b.name} are identical\n"
     )
 
-    stdout_file = bitwise_cmp_dir / "mock_comparison_task_name.txt"
-
     # Failure case: test failed comparison check (files differ)
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.error_on_call = True
     task = get_mock_comparison_task(subprocess_handler=mock_subprocess)
+    stdout_file = bitwise_cmp_dir / f"{task.task_name}.txt"
     task.run()
     with open(stdout_file, "r", encoding="utf-8") as file:
-        assert file.read() == "mock standard output"
+        assert file.read() == mock_subprocess.stdout
 
     # Failure case: test non-verbose standard output on failure
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.error_on_call = True
     task = get_mock_comparison_task(subprocess_handler=mock_subprocess)
+    stdout_file = bitwise_cmp_dir / f"{task.task_name}.txt"
     with contextlib.redirect_stdout(io.StringIO()) as buf:
         task.run()
     assert buf.getvalue() == (
@@ -78,6 +78,7 @@ def test_run_comparison():
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.error_on_call = True
     task = get_mock_comparison_task(subprocess_handler=mock_subprocess)
+    stdout_file = bitwise_cmp_dir / f"{task.task_name}.txt"
     with contextlib.redirect_stdout(io.StringIO()) as buf:
         task.run(verbose=True)
     assert buf.getvalue() == (

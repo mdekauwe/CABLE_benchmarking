@@ -91,7 +91,7 @@ def test_svn_info_show_item():
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.stdout = "mock standard output"
     repo = get_mock_repo(mock_subprocess)
-    assert repo.svn_info_show_item("some-mock-item") == "mock standard output"
+    assert repo.svn_info_show_item("some-mock-item") == mock_subprocess.stdout
     assert (
         f"svn info --show-item some-mock-item {MOCK_CWD}/src/trunk"
         in mock_subprocess.commands
@@ -101,7 +101,7 @@ def test_svn_info_show_item():
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.stdout = " \n\n mock standard output \n\n"
     repo = get_mock_repo(mock_subprocess)
-    assert repo.svn_info_show_item("some-mock-item") == "mock standard output"
+    assert repo.svn_info_show_item("some-mock-item") == mock_subprocess.stdout.strip()
     assert (
         f"svn info --show-item some-mock-item {MOCK_CWD}/src/trunk"
         in mock_subprocess.commands
@@ -113,34 +113,39 @@ def test_build():
     build_script_path = MOCK_CWD / internal.SRC_DIR / "trunk" / "offline" / "build3.sh"
     build_script_path.parent.mkdir(parents=True)
     build_script_path.touch()
+    mock_modules = ["foo", "bar"]
 
     # Success case: execute the default build command
     mock_subprocess = MockSubprocessWrapper()
-    mock_modules = MockEnvironmentModules()
-    repo = get_mock_repo(mock_subprocess, mock_modules)
-    repo.build(["foo", "bar"])
+    mock_environment_modules = MockEnvironmentModules()
+    repo = get_mock_repo(mock_subprocess, mock_environment_modules)
+    repo.build(mock_modules)
     assert "./tmp-build3.sh" in mock_subprocess.commands
-    assert "module load foo bar" in mock_modules.commands
-    assert "module unload foo bar" in mock_modules.commands
+    assert (
+        "module load " + " ".join(mock_modules)
+    ) in mock_environment_modules.commands
+    assert (
+        "module unload " + " ".join(mock_modules)
+    ) in mock_environment_modules.commands
 
     # Success case: test non-verbose standard output
     repo = get_mock_repo()
     with contextlib.redirect_stdout(io.StringIO()) as buf:
-        repo.build(["foo", "bar"])
+        repo.build(mock_modules)
     assert buf.getvalue() == ("Compiling CABLE serially for realisation trunk...\n")
 
     # Success case: test verbose standard output
     repo = get_mock_repo()
     with contextlib.redirect_stdout(io.StringIO()) as buf:
-        repo.build(["foo", "bar"], verbose=True)
+        repo.build(mock_modules, verbose=True)
     assert buf.getvalue() == (
         "Compiling CABLE serially for realisation trunk...\n"
         f"Copying {build_script_path} to {build_script_path.parent}/tmp-build3.sh\n"
         f"chmod +x {build_script_path.parent}/tmp-build3.sh\n"
         "Modifying tmp-build3.sh: remove lines that call environment "
         "modules\n"
-        "Loading modules: foo bar\n"
-        "Unloading modules: foo bar\n"
+        f"Loading modules: {' '.join(mock_modules)}\n"
+        f"Unloading modules: {' '.join(mock_modules)}\n"
     )
 
     # Failure case: cannot find default build script
@@ -152,7 +157,7 @@ def test_build():
         "could not be found. Do you need to specify a different build script with the "
         "'build_script' option in config.yaml?",
     ):
-        repo.build(["foo", "bar"])
+        repo.build(mock_modules)
 
 
 def test_custom_build():
