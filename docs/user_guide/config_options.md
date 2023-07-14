@@ -70,13 +70,13 @@ The different running modes of `benchcab` are solely dependent on the options us
 #### `revision`
 
 : The revision number to use for the branch.
-: This key is **optional** and can be omitted from the config file. By default `revision` is set to `-1` which indicates the HEAD of the branch to be used. The user may also explicitly specify `-1` to use the HEAD of the branch.
+: This key is **optional** and can be omitted from the config file (in which case the HEAD of the branch is used).
 
 #### `patch`
 
 : Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
 : The `patch` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
-: This key is **optional** and can be omitted from the config file. By default `patch` is empty and does not modify the namelist file.
+: This key is **optional** and can be omitted from the config file (in which case `patch` does not modify the namelist file).
 
 Example:
 ```yaml
