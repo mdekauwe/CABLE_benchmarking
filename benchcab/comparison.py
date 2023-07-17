@@ -40,7 +40,9 @@ class ComparisonTask:
             print(f"Success: files {file_a.name} {file_b.name} are identical")
         except CalledProcessError as exc:
             output_file = (
-                self.root_dir / internal.SITE_BITWISE_CMP_DIR / f"{self.task_name}.txt"
+                self.root_dir
+                / internal.FLUXSITE_BITWISE_CMP_DIR
+                / f"{self.task_name}.txt"
             )
             with open(output_file, "w", encoding="utf-8") as file:
                 file.write(exc.stdout)

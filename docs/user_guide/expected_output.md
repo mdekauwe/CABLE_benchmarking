@@ -18,27 +18,27 @@ Successfully compiled CABLE for realisation trunk
 Compiling CABLE serially for realisation test-branch...
 Successfully compiled CABLE for realisation test-branch
 
-Setting up run directory tree for FLUXNET tests...
-Creating runs/site/logs directory: /scratch/tm70/sb8430/bench_example/runs/site/logs
-Creating runs/site/outputs directory: /scratch/tm70/sb8430/bench_example/runs/site/outputs
-Creating runs/site/tasks directory: /scratch/tm70/sb8430/bench_example/runs/site/tasks
-Creating runs/site/analysis directory: /scratch/tm70/sb8430/bench_example/runs/site/analysis
-Creating runs/site/analysis/bitwise-comparisons directory: /scratch/tm70/sb8430/bench_example/runs/site/analysis/bitwise-comparisons
+Setting up run directory tree for fluxsite tests...
+Creating runs/fluxsite/logs directory: /scratch/tm70/sb8430/bench_example/runs/fluxsite/logs
+Creating runs/fluxsite/outputs directory: /scratch/tm70/sb8430/bench_example/runs/fluxsite/outputs
+Creating runs/fluxsite/tasks directory: /scratch/tm70/sb8430/bench_example/runs/fluxsite/tasks
+Creating runs/fluxsite/analysis directory: /scratch/tm70/sb8430/bench_example/runs/fluxsite/analysis
+Creating runs/fluxsite/analysis/bitwise-comparisons directory: /scratch/tm70/sb8430/bench_example/runs/fluxsite/analysis/bitwise-comparisons
 Creating task directories...
 Setting up tasks...
-Successfully setup FLUXNET tasks
+Successfully setup fluxsite tasks
 
-Creating PBS job script to run FLUXNET tasks on compute nodes: benchmark_cable_qsub.sh
+Creating PBS job script to run fluxsite tasks on compute nodes: benchmark_cable_qsub.sh
 PBS job submitted: 82479088.gadi-pbs
-The CABLE log file for each task is written to runs/site/logs/<task_name>_log.txt
-The CABLE standard output for each task is written to runs/site/tasks/<task_name>/out.txt
-The NetCDF output for each task is written to runs/site/outputs/<task_name>_out.nc
+The CABLE log file for each task is written to runs/fluxsite/logs/<task_name>_log.txt
+The CABLE standard output for each task is written to runs/fluxsite/tasks/<task_name>/out.txt
+The NetCDF output for each task is written to runs/fluxsite/outputs/<task_name>_out.nc
 ```
 
 The PBS schedule job should print out the following to the job log file:
 ```
-Running FLUXNET tasks...
-Successfully ran FLUXNET tasks
+Running fluxsite tasks...
+Successfully ran fluxsite tasks
 
 Running comparison tasks...
 Success: files AU-Tum_2002-2017_OzFlux_Met_R0_S0_out.nc AU-Tum_2002-2017_OzFlux_Met_R1_S0_out.nc are identical

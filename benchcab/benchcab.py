@@ -8,13 +8,13 @@ from typing import Optional
 from subprocess import CalledProcessError
 
 from benchcab import internal
-from benchcab.internal import get_met_sites
+from benchcab.internal import get_met_forcing_file_names
 from benchcab.bench_config import read_config
-from benchcab.benchtree import setup_fluxnet_directory_tree, setup_src_dir
+from benchcab.benchtree import setup_fluxsite_directory_tree, setup_src_dir
 from benchcab.repository import CableRepository
 from benchcab.task import (
-    get_fluxnet_tasks,
-    get_fluxnet_comparisons,
+    get_fluxsite_tasks,
+    get_fluxsite_comparisons,
     run_tasks,
     run_tasks_in_parallel,
     Task,
@@ -46,7 +46,7 @@ class Benchcab:
             CableRepository(**config, repo_id=id)
             for id, config in enumerate(self.config["realisations"])
         ]
-        self.tasks: list[Task] = []  # initialise fluxnet tasks lazily
+        self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
 
         if validate_env:
             self._validate_environment(
@@ -102,23 +102,25 @@ class Benchcab:
 
     def _initialise_tasks(self) -> list[Task]:
         """A helper method that initialises and returns the `tasks` attribute."""
-        self.tasks = get_fluxnet_tasks(
+        self.tasks = get_fluxsite_tasks(
             repos=self.repos,
             science_configurations=self.config.get(
                 "science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS
             ),
-            met_sites=get_met_sites(self.config["experiment"]),
+            fluxsite_forcing_file_names=get_met_forcing_file_names(
+                self.config["experiment"]
+            ),
         )
         return self.tasks
 
-    # TODO(Sean) this method should be the endpoint for the `fluxnet-submit-job`
+    # TODO(Sean) this method should be the endpoint for the `fluxsite-submit-job`
     # command line argument.
-    def fluxnet_submit_job(self) -> None:
-        """Submits the PBS job script step in the fluxnet test workflow."""
+    def fluxsite_submit_job(self) -> None:
+        """Submits the PBS job script step in the fluxsite test workflow."""
 
         job_script_path = self.root_dir / internal.QSUB_FNAME
         print(
-            "Creating PBS job script to run FLUXNET tasks on compute "
+            "Creating PBS job script to run fluxsite tasks on compute "
             f"nodes: {job_script_path.relative_to(self.root_dir)}"
         )
         with job_script_path.open("w", encoding="utf-8") as file:
@@ -128,7 +130,7 @@ class Benchcab:
                 modules=self.config["modules"],
                 storage_flags=[],  # TODO(Sean) add storage flags option to config
                 verbose=self.args.verbose,
-                skip_bitwise_cmp="fluxnet-bitwise-cmp" in self.args.skip,
+                skip_bitwise_cmp="fluxsite-bitwise-cmp" in self.args.skip,
             )
             file.write(contents)
 
@@ -146,11 +148,11 @@ class Benchcab:
         print(
             f"PBS job submitted: {proc.stdout.strip()}\n"
             "The CABLE log file for each task is written to "
-            f"{internal.SITE_LOG_DIR}/<task_name>_log.txt\n"
+            f"{internal.FLUXSITE_LOG_DIR}/<task_name>_log.txt\n"
             "The CABLE standard output for each task is written to "
-            f"{internal.SITE_TASKS_DIR}/<task_name>/out.txt\n"
+            f"{internal.FLUXSITE_TASKS_DIR}/<task_name>/out.txt\n"
             "The NetCDF output for each task is written to "
-            f"{internal.SITE_OUTPUT_DIR}/<task_name>_out.nc"
+            f"{internal.FLUXSITE_OUTPUT_DIR}/<task_name>_out.nc"
         )
 
     def checkout(self):
@@ -192,30 +194,30 @@ class Benchcab:
             print(f"Successfully compiled CABLE for realisation {repo.name}")
         print("")
 
-    def fluxnet_setup_work_directory(self):
-        """Endpoint for `benchcab fluxnet-setup-work-dir`."""
+    def fluxsite_setup_work_directory(self):
+        """Endpoint for `benchcab fluxsite-setup-work-dir`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
-        print("Setting up run directory tree for FLUXNET tests...")
-        setup_fluxnet_directory_tree(fluxnet_tasks=tasks, verbose=self.args.verbose)
+        print("Setting up run directory tree for fluxsite tests...")
+        setup_fluxsite_directory_tree(fluxsite_tasks=tasks, verbose=self.args.verbose)
         print("Setting up tasks...")
         for task in tasks:
             task.setup_task(verbose=self.args.verbose)
-        print("Successfully setup FLUXNET tasks")
+        print("Successfully setup fluxsite tasks")
         print("")
 
-    def fluxnet_run_tasks(self):
-        """Endpoint for `benchcab fluxnet-run-tasks`."""
+    def fluxsite_run_tasks(self):
+        """Endpoint for `benchcab fluxsite-run-tasks`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
-        print("Running FLUXNET tasks...")
+        print("Running fluxsite tasks...")
         if internal.MULTIPROCESS:
             run_tasks_in_parallel(tasks, verbose=self.args.verbose)
         else:
             run_tasks(tasks, verbose=self.args.verbose)
-        print("Successfully ran FLUXNET tasks")
+        print("Successfully ran fluxsite tasks")
         print("")
 
-    def fluxnet_bitwise_cmp(self):
-        """Endpoint for `benchcab fluxnet-bitwise-cmp`."""
+    def fluxsite_bitwise_cmp(self):
+        """Endpoint for `benchcab fluxsite-bitwise-cmp`."""
 
         if not self.modules_handler.module_is_loaded("nccmp/1.8.5.0"):
             self.modules_handler.module_load(
@@ -223,7 +225,7 @@ class Benchcab:
             )  # use `nccmp -df` for bitwise comparisons
 
         tasks = self.tasks if self.tasks else self._initialise_tasks()
-        comparisons = get_fluxnet_comparisons(tasks)
+        comparisons = get_fluxsite_comparisons(tasks)
 
         print("Running comparison tasks...")
         if internal.MULTIPROCESS:
@@ -232,24 +234,24 @@ class Benchcab:
             run_comparisons(comparisons, verbose=self.args.verbose)
         print("Successfully ran comparison tasks")
 
-    def fluxnet(self):
-        """Endpoint for `benchcab fluxnet`."""
+    def fluxsite(self):
+        """Endpoint for `benchcab fluxsite`."""
         self.checkout()
         self.build()
-        self.fluxnet_setup_work_directory()
+        self.fluxsite_setup_work_directory()
         if self.args.no_submit:
-            self.fluxnet_run_tasks()
-            if "fluxnet-bitwise-cmp" not in self.args.skip:
-                self.fluxnet_bitwise_cmp()
+            self.fluxsite_run_tasks()
+            if "fluxsite-bitwise-cmp" not in self.args.skip:
+                self.fluxsite_bitwise_cmp()
         else:
-            self.fluxnet_submit_job()
+            self.fluxsite_submit_job()
 
     def spatial(self):
         """Endpoint for `benchcab spatial`."""
 
     def run(self):
         """Endpoint for `benchcab run`."""
-        self.fluxnet()
+        self.fluxsite()
         self.spatial()
 
     def main(self):
@@ -264,17 +266,17 @@ class Benchcab:
         if self.args.subcommand == "build":
             self.build()
 
-        if self.args.subcommand == "fluxnet":
-            self.fluxnet()
+        if self.args.subcommand == "fluxsite":
+            self.fluxsite()
 
-        if self.args.subcommand == "fluxnet-setup-work-dir":
-            self.fluxnet_setup_work_directory()
+        if self.args.subcommand == "fluxsite-setup-work-dir":
+            self.fluxsite_setup_work_directory()
 
-        if self.args.subcommand == "fluxnet-run-tasks":
-            self.fluxnet_run_tasks()
+        if self.args.subcommand == "fluxsite-run-tasks":
+            self.fluxsite_run_tasks()
 
-        if self.args.subcommand == "fluxnet-bitwise-cmp":
-            self.fluxnet_bitwise_cmp()
+        if self.args.subcommand == "fluxsite-bitwise-cmp":
+            self.fluxsite_bitwise_cmp()
 
         if self.args.subcommand == "spatial":
             self.spatial()
