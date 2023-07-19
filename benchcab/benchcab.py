@@ -3,6 +3,7 @@
 import sys
 import os
 import grp
+import shutil
 from pathlib import Path
 from typing import Optional
 from subprocess import CalledProcessError
@@ -47,6 +48,7 @@ class Benchcab:
             for id, config in enumerate(self.config["realisations"])
         ]
         self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
+        self.benchcab_exe_path = shutil.which(argv[0])
 
         if validate_env:
             self._validate_environment(
@@ -131,6 +133,9 @@ class Benchcab:
                 storage_flags=[],  # TODO(Sean) add storage flags option to config
                 verbose=self.args.verbose,
                 skip_bitwise_cmp="fluxsite-bitwise-cmp" in self.args.skip,
+                benchcab_path=self.benchcab_exe_path
+                if self.benchcab_exe_path
+                else "benchcab",
             )
             file.write(contents)
 
