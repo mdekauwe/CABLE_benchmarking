@@ -13,6 +13,7 @@ def test_render_job_script():
         config_path="/path/to/config.yaml",
         modules=["foo", "bar", "baz"],
         storage_flags=["scratch/tm70"],
+        benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
@@ -30,13 +31,13 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
+/absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 
-benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml 
+/absolute/path/to/benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
     exit 1
@@ -51,6 +52,7 @@ fi
         modules=["foo", "bar", "baz"],
         storage_flags=["scratch/tm70"],
         verbose=True,
+        benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
@@ -68,13 +70,13 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxsite-run-tasks --config=/path/to/config.yaml -v
+/absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml -v
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 
-benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml -v
+/absolute/path/to/benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml -v
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
     exit 1
@@ -89,6 +91,7 @@ fi
         modules=["foo", "bar", "baz"],
         storage_flags=["scratch/tm70"],
         skip_bitwise_cmp=True,
+        benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
@@ -106,7 +109,7 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
+/absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
@@ -122,38 +125,6 @@ fi
         modules=["foo", "bar", "baz"],
         storage_flags=[],
         skip_bitwise_cmp=True,
-    ) == (
-        f"""#!/bin/bash
-#PBS -l wd
-#PBS -l ncpus={internal.NCPUS}
-#PBS -l mem={internal.MEM}
-#PBS -l walltime={internal.WALL_TIME}
-#PBS -q normal
-#PBS -P tm70
-#PBS -j oe
-#PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
-
-module purge
-module load foo
-module load bar
-module load baz
-
-benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
-
-"""
-    )
-
-    # Success case: specify path to benchcab executable
-    assert render_job_script(
-        project="tm70",
-        config_path="/path/to/config.yaml",
-        modules=["foo", "bar", "baz"],
-        storage_flags=[],
         benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
@@ -178,10 +149,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-/absolute/path/to/benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
-    exit 1
-fi
 """
     )

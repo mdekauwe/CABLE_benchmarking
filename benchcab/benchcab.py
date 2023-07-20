@@ -38,6 +38,7 @@ class Benchcab:
     def __init__(
         self,
         argv: list[str],
+        benchcab_exe_path: Optional[Path],
         config: Optional[dict] = None,
         validate_env: bool = True,
     ) -> None:
@@ -48,7 +49,7 @@ class Benchcab:
             for id, config in enumerate(self.config["realisations"])
         ]
         self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
-        self.benchcab_exe_path = shutil.which(argv[0])
+        self.benchcab_exe_path = benchcab_exe_path
 
         if validate_env:
             self._validate_environment(
@@ -120,6 +121,9 @@ class Benchcab:
     def fluxsite_submit_job(self) -> None:
         """Submits the PBS job script step in the fluxsite test workflow."""
 
+        if self.benchcab_exe_path is None:
+            raise RuntimeError("Path to benchcab executable is undefined.")
+
         job_script_path = self.root_dir / internal.QSUB_FNAME
         print(
             "Creating PBS job script to run fluxsite tasks on compute "
@@ -133,9 +137,7 @@ class Benchcab:
                 storage_flags=[],  # TODO(Sean) add storage flags option to config
                 verbose=self.args.verbose,
                 skip_bitwise_cmp="fluxsite-bitwise-cmp" in self.args.skip,
-                benchcab_path=self.benchcab_exe_path
-                if self.benchcab_exe_path
-                else "benchcab",
+                benchcab_path=str(self.benchcab_exe_path),
             )
             file.write(contents)
 
@@ -293,7 +295,7 @@ def main():
     This is required for setup.py entry_points
     """
 
-    app = Benchcab(argv=sys.argv)
+    app = Benchcab(argv=sys.argv, benchcab_exe_path=shutil.which(sys.argv[0]))
     app.main()
 
 

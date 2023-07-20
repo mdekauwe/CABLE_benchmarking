@@ -8,9 +8,9 @@ def render_job_script(
     config_path: str,
     modules: list,
     storage_flags: list,
+    benchcab_path: str,
     verbose=False,
     skip_bitwise_cmp=False,
-    benchcab_path="benchcab",
 ) -> str:
     """Returns the text for a PBS job script that executes all computationally expensive commands.
 
