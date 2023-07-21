@@ -64,7 +64,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 #### `build_script`
 
-: This key is **optional**. The path to a custom script to build the code in that branch, relative to the name of the branch.  The script specified with this option will run as is, ignoring the entries in the `modules` key of `config.yaml` file.
+: This key is **optional**. The path to a custom shell script to build the code in that branch, relative to the name of the branch. **Note:** any lines in the provided shell script that call the [environment modules API][environment-modules] will be ignored. To specify modules to use for the build script, please specify them using the [`modules`](#`modules`) key.
 : Example: `build_script: offline/build.sh` to specify a build script under `<name_of_branch>/offline/`.
 
 #### `revision`
@@ -138,3 +138,4 @@ science_configurations: [
 [forty-two-me]: https://modelevaluation.org/experiment/display/urTKSXEsojdvEPwdR
 [five-me]: https://modelevaluation.org/experiment/display/xNZx2hSvn4PMKAa9R
 [f90nml-github]: https://github.com/marshallward/f90nml
+[environment-modules]: https://modules.sourceforge.net/

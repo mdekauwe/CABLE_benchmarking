@@ -187,10 +187,7 @@ class Benchcab:
     def build(self):
         """Endpoint for `benchcab build`."""
         for repo in self.repos:
-            if repo.build_script:
-                repo.custom_build(verbose=self.args.verbose)
-            else:
-                repo.build(modules=self.config["modules"], verbose=self.args.verbose)
+            repo.build(modules=self.config["modules"], verbose=self.args.verbose)
             print(f"Successfully compiled CABLE for realisation {repo.name}")
         print("")
 
