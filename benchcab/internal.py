@@ -54,23 +54,23 @@ CNPBIOME_FILE = (
     CABLE_AUX_DIR / "core" / "biogeochem" / "pftlookup_csiro_v16_17tiles.csv"
 )
 
-# Relative path to root directory for CABLE site runs
-SITE_RUN_DIR = RUN_DIR / "site"
+# Relative path to root directory for CABLE fluxsite runs
+FLUXSITE_RUN_DIR = RUN_DIR / "fluxsite"
 
 # Relative path to directory that stores CABLE log files
-SITE_LOG_DIR = SITE_RUN_DIR / "logs"
+FLUXSITE_LOG_DIR = FLUXSITE_RUN_DIR / "logs"
 
 # Relative path to directory that stores CABLE output files
-SITE_OUTPUT_DIR = SITE_RUN_DIR / "outputs"
+FLUXSITE_OUTPUT_DIR = FLUXSITE_RUN_DIR / "outputs"
 
 # Relative path to tasks directory where cable executables are run from
-SITE_TASKS_DIR = SITE_RUN_DIR / "tasks"
+FLUXSITE_TASKS_DIR = FLUXSITE_RUN_DIR / "tasks"
 
 # Relative path to directory that stores results of analysis on model output
-SITE_ANALYSIS_DIR = SITE_RUN_DIR / "analysis"
+FLUXSITE_ANALYSIS_DIR = FLUXSITE_RUN_DIR / "analysis"
 
 # Relative path to directory that stores bitwise comparison results
-SITE_BITWISE_CMP_DIR = SITE_ANALYSIS_DIR / "bitwise-comparisons"
+FLUXSITE_BITWISE_CMP_DIR = FLUXSITE_ANALYSIS_DIR / "bitwise-comparisons"
 
 # Path to met files:
 MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
@@ -133,10 +133,10 @@ DEFAULT_SCIENCE_CONFIGURATIONS = [
     },
 ]
 
-# Contains the site ids for each met forcing file associated with an experiment
+# Contains the FLUXNET site ids for each met forcing file associated with an experiment
 # on modelevaluation.org
 MEORG_EXPERIMENTS = {
-    # List of site ids associated with the 'Five site test'
+    # List of FLUXNET site ids associated with the 'Five site test'
     # experiment (workspace: NRI Land testing), see:
     # https://modelevaluation.org/experiment/display/xNZx2hSvn4PMKAa9R
     "five-site-test": [
@@ -146,7 +146,7 @@ MEORG_EXPERIMENTS = {
         "US-Var",
         "US-Whs",
     ],
-    # List of site ids associated with the 'Forty two site test'
+    # List of FLUXNET site ids associated with the 'Forty two site test'
     # experiment (workspace: NRI Land testing), see:
     # https://modelevaluation.org/experiment/display/urTKSXEsojdvEPwdR
     "forty-two-site-test": [
@@ -195,11 +195,11 @@ MEORG_EXPERIMENTS = {
     ],
 }
 
-OPTIONAL_COMMANDS = ["fluxnet-bitwise-cmp"]
+OPTIONAL_COMMANDS = ["fluxsite-bitwise-cmp"]
 
 
-def get_met_sites(experiment: str) -> list[str]:
-    """Get a list of met forcing file basenames specified by an experiment
+def get_met_forcing_file_names(experiment: str) -> list[str]:
+    """Get a list of meteorological forcing file basenames specified by an experiment
 
     The `experiment` argument either specifies a key in `MEORG_EXPERIMENTS` or a site id
     within the five-site-test experiment.
@@ -211,9 +211,9 @@ def get_met_sites(experiment: str) -> list[str]:
         # the user is specifying a single met site
         return [next(MET_DIR.glob(f"{experiment}*")).name]
 
-    met_sites = [
+    file_names = [
         next(MET_DIR.glob(f"{site_id}*")).name
         for site_id in MEORG_EXPERIMENTS[experiment]
     ]
 
-    return met_sites
+    return file_names

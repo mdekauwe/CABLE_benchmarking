@@ -28,8 +28,8 @@ def setup_src_dir(root_dir=internal.CWD):
         os.makedirs(src_dir)
 
 
-def setup_fluxnet_directory_tree(
-    fluxnet_tasks: list[Task], root_dir=internal.CWD, verbose=False
+def setup_fluxsite_directory_tree(
+    fluxsite_tasks: list[Task], root_dir=internal.CWD, verbose=False
 ):
     """Generate the directory structure used of `benchcab`."""
 
@@ -37,49 +37,50 @@ def setup_fluxnet_directory_tree(
     if not run_dir.exists():
         os.makedirs(run_dir)
 
-    site_run_dir = Path(root_dir, internal.SITE_RUN_DIR)
-    if not site_run_dir.exists():
-        os.makedirs(site_run_dir)
+    fluxsite_run_dir = Path(root_dir, internal.FLUXSITE_RUN_DIR)
+    if not fluxsite_run_dir.exists():
+        os.makedirs(fluxsite_run_dir)
 
-    site_log_dir = Path(root_dir, internal.SITE_LOG_DIR)
-    if not site_log_dir.exists():
+    fluxsite_log_dir = Path(root_dir, internal.FLUXSITE_LOG_DIR)
+    if not fluxsite_log_dir.exists():
         print(
-            f"Creating {site_log_dir.relative_to(root_dir)} directory: {site_log_dir}"
+            f"Creating {fluxsite_log_dir.relative_to(root_dir)} directory: {fluxsite_log_dir}"
         )
-        os.makedirs(site_log_dir)
+        os.makedirs(fluxsite_log_dir)
 
-    site_output_dir = Path(root_dir, internal.SITE_OUTPUT_DIR)
-    if not site_output_dir.exists():
+    fluxsite_output_dir = Path(root_dir, internal.FLUXSITE_OUTPUT_DIR)
+    if not fluxsite_output_dir.exists():
         print(
-            f"Creating {site_output_dir.relative_to(root_dir)} directory: {site_output_dir}"
+            f"Creating {fluxsite_output_dir.relative_to(root_dir)} directory: {fluxsite_output_dir}"
         )
-        os.makedirs(site_output_dir)
+        os.makedirs(fluxsite_output_dir)
 
-    site_tasks_dir = Path(root_dir, internal.SITE_TASKS_DIR)
-    if not site_tasks_dir.exists():
+    fluxsite_tasks_dir = Path(root_dir, internal.FLUXSITE_TASKS_DIR)
+    if not fluxsite_tasks_dir.exists():
         print(
-            f"Creating {site_tasks_dir.relative_to(root_dir)} directory: {site_tasks_dir}"
+            f"Creating {fluxsite_tasks_dir.relative_to(root_dir)} directory: {fluxsite_tasks_dir}"
         )
-        os.makedirs(site_tasks_dir)
+        os.makedirs(fluxsite_tasks_dir)
 
-    site_analysis_dir = Path(root_dir, internal.SITE_ANALYSIS_DIR)
-    if not site_analysis_dir.exists():
+    fluxsite_analysis_dir = Path(root_dir, internal.FLUXSITE_ANALYSIS_DIR)
+    if not fluxsite_analysis_dir.exists():
         print(
-            f"Creating {site_analysis_dir.relative_to(root_dir)} directory: {site_analysis_dir}"
+            f"Creating {fluxsite_analysis_dir.relative_to(root_dir)} directory: "
+            f"{fluxsite_analysis_dir}"
         )
-        os.makedirs(site_analysis_dir)
+        os.makedirs(fluxsite_analysis_dir)
 
-    site_bitwise_cmp_dir = Path(root_dir, internal.SITE_BITWISE_CMP_DIR)
-    if not site_bitwise_cmp_dir.exists():
+    fluxsite_bitwise_cmp_dir = Path(root_dir, internal.FLUXSITE_BITWISE_CMP_DIR)
+    if not fluxsite_bitwise_cmp_dir.exists():
         print(
-            f"Creating {site_bitwise_cmp_dir.relative_to(root_dir)} directory: "
-            f"{site_bitwise_cmp_dir}"
+            f"Creating {fluxsite_bitwise_cmp_dir.relative_to(root_dir)} directory: "
+            f"{fluxsite_bitwise_cmp_dir}"
         )
-        os.makedirs(site_bitwise_cmp_dir)
+        os.makedirs(fluxsite_bitwise_cmp_dir)
 
     print("Creating task directories...")
-    for task in fluxnet_tasks:
-        task_dir = Path(root_dir, internal.SITE_TASKS_DIR, task.get_task_name())
+    for task in fluxsite_tasks:
+        task_dir = Path(root_dir, internal.FLUXSITE_TASKS_DIR, task.get_task_name())
         if not task_dir.exists():
             if verbose:
                 print(f"Creating {task_dir.relative_to(root_dir)}: " f"{task_dir}")

@@ -27,36 +27,36 @@ def test_cli_parser():
     res = vars(parser.parse_args(["build"]))
     assert res == {"subcommand": "build", "config": "config.yaml", "verbose": False}
 
-    # Success case: default fluxnet command
-    res = vars(parser.parse_args(["fluxnet"]))
+    # Success case: default fluxsite command
+    res = vars(parser.parse_args(["fluxsite"]))
     assert res == {
-        "subcommand": "fluxnet",
+        "subcommand": "fluxsite",
         "config": "config.yaml",
         "no_submit": False,
         "verbose": False,
         "skip": [],
     }
 
-    # Success case: default fluxnet-setup-work-dir command
-    res = vars(parser.parse_args(["fluxnet-setup-work-dir"]))
+    # Success case: default fluxsite-setup-work-dir command
+    res = vars(parser.parse_args(["fluxsite-setup-work-dir"]))
     assert res == {
-        "subcommand": "fluxnet-setup-work-dir",
+        "subcommand": "fluxsite-setup-work-dir",
         "config": "config.yaml",
         "verbose": False,
     }
 
-    # Success case: default fluxnet run-tasks command
-    res = vars(parser.parse_args(["fluxnet-run-tasks"]))
+    # Success case: default fluxsite run-tasks command
+    res = vars(parser.parse_args(["fluxsite-run-tasks"]))
     assert res == {
-        "subcommand": "fluxnet-run-tasks",
+        "subcommand": "fluxsite-run-tasks",
         "config": "config.yaml",
         "verbose": False,
     }
 
-    # Success case: default fluxnet-bitwise-cmp command
-    res = vars(parser.parse_args(["fluxnet-bitwise-cmp"]))
+    # Success case: default fluxsite-bitwise-cmp command
+    res = vars(parser.parse_args(["fluxsite-bitwise-cmp"]))
     assert res == {
-        "subcommand": "fluxnet-bitwise-cmp",
+        "subcommand": "fluxsite-bitwise-cmp",
         "config": "config.yaml",
         "verbose": False,
     }
@@ -71,7 +71,7 @@ def test_cli_parser():
 
     # Failure case: pass --no-submit to a non 'run' command
     with pytest.raises(SystemExit):
-        parser.parse_args(["fluxnet-setup-work-dir", "--no-submit"])
+        parser.parse_args(["fluxsite-setup-work-dir", "--no-submit"])
 
     # Failure case: pass non-optional command to --skip
     with pytest.raises(SystemExit):

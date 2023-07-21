@@ -32,15 +32,15 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxnet-run-tasks --config=/path/to/config.yaml 
+benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
+    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 
-benchcab fluxnet-bitwise-cmp --config=/path/to/config.yaml 
+benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-bitwise-cmp failed. Exiting...'
+    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
     exit 1
 fi
 """
@@ -72,21 +72,21 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxnet-run-tasks --config=/path/to/config.yaml -v
+benchcab fluxsite-run-tasks --config=/path/to/config.yaml -v
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
+    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 
-benchcab fluxnet-bitwise-cmp --config=/path/to/config.yaml -v
+benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml -v
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-bitwise-cmp failed. Exiting...'
+    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
     exit 1
 fi
 """
     )
 
-    # Success case: skip fluxnet-bitwise-cmp step
+    # Success case: skip fluxsite-bitwise-cmp step
     assert render_job_script(
         project="tm70",
         config_path="/path/to/config.yaml",
@@ -112,9 +112,9 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxnet-run-tasks --config=/path/to/config.yaml 
+benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
+    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 
@@ -147,9 +147,9 @@ module load foo
 module load bar
 module load baz
 
-benchcab fluxnet-run-tasks --config=/path/to/config.yaml 
+benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
+    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 

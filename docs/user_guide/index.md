@@ -119,7 +119,7 @@ The following files and directories are created when `benchcab run` executes suc
 ├── benchmark_cable_qsub.sh.o<jobid>
 ├── rev_number-1.log
 ├── runs
-│   └── site
+│   └── fluxsite
 │       ├── logs
 │       │   ├── <task>_log.txt
 │       │   └── ...
@@ -153,7 +153,7 @@ The following files and directories are created when `benchcab run` executes suc
 
 :   directory that contains the source code checked out from SVN for each branch specified in the config file (labelled `realisation-*` above) and the CABLE-AUX branch.
 
-`runs/site/`
+`runs/fluxsite/`
 
 :   directory that contains the log files, output files, and tasks for running CABLE. 
 
@@ -167,21 +167,21 @@ The following files and directories are created when `benchcab run` executes suc
 
 :   where `met_file_base_name` is the base file name of the meteorological forcing file in the FLUXNET dataset, `realisation_key` is the branch key specified in the config file, and `science_config_key` identifies the science configuration used.
 
-`runs/site/tasks/<task>/`
+`runs/fluxsite/tasks/<task>/`
 
 :   directory that contains the executable, the input files for each task and the recorded standard output from the CABLE model run.
 
-`runs/site/outputs/`
+`runs/fluxsite/outputs/`
 
 :   directory that contains the netCDF output files for all tasks
 
-`runs/site/logs/`
+`runs/fluxsite/logs/`
 
 :   directory that contains the log files produced by all tasks
 
-`runs/site/analysis/bitwise-comparisons`
+`runs/fluxsite/analysis/bitwise-comparisons`
 
-:   directory that contains the standard output produced by the bitwise comparison command: `benchcab fluxnet-bitwise-cmp`. Standard output is only saved when the netcdf files being compared differ from each other
+:   directory that contains the standard output produced by the bitwise comparison command: `benchcab fluxsite-bitwise-cmp`. Standard output is only saved when the netcdf files being compared differ from each other
 
 !!! warning "Re-running `benchcab` multiple times in the same working directory"
     We recommend the user to manually delete the generated files when re-running `benchcab`. Re-running `benchcab` multiple times in the same working directory is currently not yet supported (see issue [CABLE-LSM/benchcab#20](https://github.com/CABLE-LSM/benchcab/issues/20)). To clean the current working directory, run the following command in the working directory
@@ -216,7 +216,7 @@ Once the benchmarking has finished running all the simulations, you need to uplo
     The model profile should describe the versions of CABLE used to generate the model outputs and the URLs to the repository pointing to the code versions. You are free to set the name as you like.
 
 4. Upload model outputs created by `benchcab` by doing the following:
-    1. Transfer model outputs from the `runs/site/outputs/` directory to your local computer so that they can be uploaded via the web interface.
+    1. Transfer model outputs from the `runs/fluxsite/outputs/` directory to your local computer so that they can be uploaded via the web interface.
     2. Create a new model output form. You can see [this example][model_output_eg] to get started. To create your own, select the **Model Outputs** tab on [modelevaluation.org][meorg] and click **Upload Model Output**.
         <figure markdown>
           ![Model output](../assets/model_evaluation/New%20model%20output.png){ width="500" }

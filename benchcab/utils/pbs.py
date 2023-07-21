@@ -38,15 +38,15 @@ module use /g/data/hh5/public/modules
 module load conda/analysis3-unstable
 {module_load_lines}
 
-benchcab fluxnet-run-tasks --config={config_path} {verbose_flag}
+benchcab fluxsite-run-tasks --config={config_path} {verbose_flag}
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-run-tasks failed. Exiting...'
+    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 {'' if skip_bitwise_cmp else f'''
-benchcab fluxnet-bitwise-cmp --config={config_path} {verbose_flag}
+benchcab fluxsite-bitwise-cmp --config={config_path} {verbose_flag}
 if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxnet-bitwise-cmp failed. Exiting...'
+    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
     exit 1
 fi''' }
 """

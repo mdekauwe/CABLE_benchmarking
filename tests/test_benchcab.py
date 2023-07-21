@@ -16,35 +16,35 @@ def get_mock_app(
 ) -> Benchcab:
     """Returns a mock `Benchcab` instance for testing against."""
     config = get_mock_config()
-    app = Benchcab(argv=["benchcab", "fluxnet"], config=config, validate_env=False)
+    app = Benchcab(argv=["benchcab", "fluxsite"], config=config, validate_env=False)
     app.subprocess_handler = subprocess_handler
     app.root_dir = MOCK_CWD
     return app
 
 
-def test_fluxnet_submit_job():
-    """Tests for `Benchcab.fluxnet_submit_job()`."""
+def test_fluxsite_submit_job():
+    """Tests for `Benchcab.fluxsite_submit_job()`."""
 
     # Success case: test qsub command is executed
     mock_subprocess = MockSubprocessWrapper()
     app = get_mock_app(mock_subprocess)
-    app.fluxnet_submit_job()
+    app.fluxsite_submit_job()
     assert f"qsub {MOCK_CWD / internal.QSUB_FNAME}" in mock_subprocess.commands
 
     # Success case: test non-verbose output
     app = get_mock_app()
     with contextlib.redirect_stdout(io.StringIO()) as buf:
-        app.fluxnet_submit_job()
+        app.fluxsite_submit_job()
     assert buf.getvalue() == (
-        "Creating PBS job script to run FLUXNET tasks on compute "
+        "Creating PBS job script to run fluxsite tasks on compute "
         f"nodes: {internal.QSUB_FNAME}\n"
         f"PBS job submitted: {mock_subprocess.stdout}\n"
         "The CABLE log file for each task is written to "
-        f"{internal.SITE_LOG_DIR}/<task_name>_log.txt\n"
+        f"{internal.FLUXSITE_LOG_DIR}/<task_name>_log.txt\n"
         "The CABLE standard output for each task is written to "
-        f"{internal.SITE_TASKS_DIR}/<task_name>/out.txt\n"
+        f"{internal.FLUXSITE_TASKS_DIR}/<task_name>/out.txt\n"
         "The NetCDF output for each task is written to "
-        f"{internal.SITE_OUTPUT_DIR}/<task_name>_out.nc\n"
+        f"{internal.FLUXSITE_OUTPUT_DIR}/<task_name>_out.nc\n"
     )
 
     # Failure case: qsub non-zero exit code prints an error message
@@ -53,9 +53,9 @@ def test_fluxnet_submit_job():
     app = get_mock_app(subprocess_handler=mock_subprocess)
     with contextlib.redirect_stdout(io.StringIO()) as buf:
         with pytest.raises(CalledProcessError):
-            app.fluxnet_submit_job()
+            app.fluxsite_submit_job()
     assert buf.getvalue() == (
-        "Creating PBS job script to run FLUXNET tasks on compute "
+        "Creating PBS job script to run fluxsite tasks on compute "
         f"nodes: {internal.QSUB_FNAME}\n"
         f"Error when submitting job to NCI queue\n{mock_subprocess.stdout}\n"
     )
