@@ -3,6 +3,7 @@
 import contextlib
 import io
 from subprocess import CalledProcessError
+from pathlib import Path
 import pytest
 
 from benchcab.benchcab import Benchcab
@@ -16,7 +17,12 @@ def get_mock_app(
 ) -> Benchcab:
     """Returns a mock `Benchcab` instance for testing against."""
     config = get_mock_config()
-    app = Benchcab(argv=["benchcab", "fluxsite"], config=config, validate_env=False)
+    app = Benchcab(
+        argv=["benchcab", "fluxsite"],
+        benchcab_exe_path=Path("/path/to/benchcab"),
+        config=config,
+        validate_env=False,
+    )
     app.subprocess_handler = subprocess_handler
     app.root_dir = MOCK_CWD
     return app
@@ -59,3 +65,9 @@ def test_fluxsite_submit_job():
         f"nodes: {internal.QSUB_FNAME}\n"
         f"Error when submitting job to NCI queue\n{mock_subprocess.stdout}\n"
     )
+
+    # Failure case: test exception is raised when benchcab_exe_path is None
+    app = get_mock_app()
+    app.benchcab_exe_path = None
+    with pytest.raises(RuntimeError, match="Path to benchcab executable is undefined."):
+        app.fluxsite_submit_job()

@@ -8,6 +8,7 @@ def render_job_script(
     config_path: str,
     modules: list,
     storage_flags: list,
+    benchcab_path: str,
     verbose=False,
     skip_bitwise_cmp=False,
 ) -> str:
@@ -34,17 +35,15 @@ def render_job_script(
 #PBS -l storage={'+'.join(storage_flags)}
 
 module purge
-module use /g/data/hh5/public/modules
-module load conda/analysis3-unstable
 {module_load_lines}
 
-benchcab fluxsite-run-tasks --config={config_path} {verbose_flag}
+{benchcab_path} fluxsite-run-tasks --config={config_path} {verbose_flag}
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
     exit 1
 fi
 {'' if skip_bitwise_cmp else f'''
-benchcab fluxsite-bitwise-cmp --config={config_path} {verbose_flag}
+{benchcab_path} fluxsite-bitwise-cmp --config={config_path} {verbose_flag}
 if [ $? -ne 0 ]; then
     echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
     exit 1
