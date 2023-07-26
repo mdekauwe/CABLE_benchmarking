@@ -84,33 +84,39 @@ class CableRepository:
         )
         return proc.stdout.strip()
 
-    # TODO(Sean) the modules argument should be in the constructor and
-    # `custom_build()` should be a part of `build()`. This is part of
-    # issue #94.
     def build(self, modules: list[str], verbose=False) -> None:
-        """Build CABLE using the default script."""
+        """Build CABLE using the default build script or a custom build script."""
 
-        print(
-            f"Compiling CABLE {'with MPI' if internal.MPI else 'serially'} for "
-            f"realisation {self.name}..."
+        if self.build_script:
+            print(
+                "Compiling CABLE using custom build script for "
+                f"realisation {self.name}..."
+            )
+        else:
+            print(
+                f"Compiling CABLE {'with MPI' if internal.MPI else 'serially'} for "
+                f"realisation {self.name}..."
+            )
+
+        build_script_path = (
+            self.root_dir
+            / internal.SRC_DIR
+            / self.name
+            / (self.build_script if self.build_script else "offline/build3.sh")
         )
 
-        default_script_path = (
-            self.root_dir / internal.SRC_DIR / self.name / "offline" / "build3.sh"
-        )
-
-        if not default_script_path.is_file():
+        if not build_script_path.is_file():
             raise FileNotFoundError(
-                f"The default build script, {default_script_path}, could not be found. "
+                f"The build script, {build_script_path}, could not be found. "
                 "Do you need to specify a different build script with the "
                 "'build_script' option in config.yaml?",
             )
 
-        tmp_script_path = default_script_path.parent / "tmp-build3.sh"
+        tmp_script_path = build_script_path.parent / "tmp-build.sh"
 
         if verbose:
-            print(f"Copying {default_script_path} to {tmp_script_path}")
-        shutil.copy(default_script_path, tmp_script_path)
+            print(f"Copying {build_script_path} to {tmp_script_path}")
+        shutil.copy(build_script_path, tmp_script_path)
 
         if verbose:
             print(f"chmod +x {tmp_script_path}")
@@ -123,34 +129,16 @@ class CableRepository:
             )
         remove_module_lines(tmp_script_path)
 
-        with chdir(default_script_path.parent), self.modules_handler.load(
+        args: list[str] = []
+        if internal.MPI and self.build_script is None:
+            args.append("mpi")
+
+        with chdir(build_script_path.parent), self.modules_handler.load(
             modules, verbose=verbose
         ):
             self.subprocess_handler.run_cmd(
-                f"./{tmp_script_path.name}" + (" mpi" if internal.MPI else ""),
+                shlex.join([f"./{tmp_script_path.name}", *args]),
                 verbose=verbose,
-            )
-
-    def custom_build(self, verbose=False) -> None:
-        """Build CABLE with a script provided in configuration file"""
-
-        if self.build_script is None:
-            # TODO(Sean) it is bad that we are allowing this to fail silently
-            # but this will be fixed once we have a single build function.
-            return
-
-        print(
-            "Compiling CABLE using custom build script for "
-            f"realisation {self.name}..."
-        )
-
-        build_script_path = (
-            self.root_dir / internal.SRC_DIR / self.name / self.build_script
-        )
-
-        with chdir(build_script_path.parent):
-            self.subprocess_handler.run_cmd(
-                f"./{build_script_path.name}", verbose=verbose
             )
 
 
