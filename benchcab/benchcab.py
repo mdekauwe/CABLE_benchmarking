@@ -116,8 +116,6 @@ class Benchcab:
         )
         return self.tasks
 
-    # TODO(Sean) this method should be the endpoint for the `fluxsite-submit-job`
-    # command line argument.
     def fluxsite_submit_job(self) -> None:
         """Submits the PBS job script step in the fluxsite test workflow."""
 
@@ -275,6 +273,9 @@ class Benchcab:
 
         if self.args.subcommand == "fluxsite-setup-work-dir":
             self.fluxsite_setup_work_directory()
+
+        if self.args.subcommand == "fluxsite-submit-job":
+            self.fluxsite_submit_job()
 
         if self.args.subcommand == "fluxsite-run-tasks":
             self.fluxsite_run_tasks()
