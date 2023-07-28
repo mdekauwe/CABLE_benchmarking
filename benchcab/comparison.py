@@ -59,7 +59,9 @@ def run_comparisons(comparison_tasks: list[ComparisonTask], verbose=False) -> No
 
 
 def run_comparisons_in_parallel(
-    comparison_tasks: list[ComparisonTask], verbose=False
+    comparison_tasks: list[ComparisonTask],
+    n_processes=internal.DEFAULT_PBS["ncpus"],
+    verbose=False,
 ) -> None:
     """Runs bitwise comparison tasks in parallel across multiple processes."""
 
@@ -68,7 +70,7 @@ def run_comparisons_in_parallel(
         task_queue.put(task)
 
     processes = []
-    for _ in range(internal.NCPUS):
+    for _ in range(n_processes):
         proc = multiprocessing.Process(
             target=worker_comparison, args=[task_queue, verbose]
         )

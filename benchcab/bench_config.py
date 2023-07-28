@@ -43,6 +43,32 @@ def check_config(config: dict):
                 "that is compatible with the f90nml python package."
             )
 
+    # the "pbs" key is optional
+    if "pbs" in config:
+        if not isinstance(config["pbs"], dict):
+            raise TypeError("The 'pbs' key must be a dictionary.")
+        # the "ncpus" key is optional
+        if "ncpus" in config["pbs"] and not isinstance(config["pbs"]["ncpus"], int):
+            raise TypeError("The 'ncpus' key must be an integer.")
+        # the "mem" key is optional
+        if "mem" in config["pbs"] and not isinstance(config["pbs"]["mem"], str):
+            raise TypeError("The 'mem' key must be a string.")
+        # the "walltime" key is optional
+        if "walltime" in config["pbs"] and not isinstance(
+            config["pbs"]["walltime"], str
+        ):
+            raise TypeError("The 'walltime' key must be a string.")
+        # the "storage" key is optional
+        if "storage" in config["pbs"]:
+            if not isinstance(config["pbs"]["storage"], list) or any(
+                not isinstance(val, str) for val in config["pbs"]["storage"]
+            ):
+                raise TypeError("The 'storage' key must be a list of strings.")
+
+    # the "multiprocessing" key is optional
+    if "multiprocessing" in config and not isinstance(config["multiprocessing"], bool):
+        raise TypeError("The 'multiprocessing' key must be a boolean.")
+
     valid_experiments = (
         list(internal.MEORG_EXPERIMENTS) + internal.MEORG_EXPERIMENTS["five-site-test"]
     )

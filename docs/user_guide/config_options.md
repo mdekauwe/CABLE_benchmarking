@@ -43,6 +43,45 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 : NCI modules to use for compiling CABLE
 
+### `pbs`
+
+: Contains sub-keys which specify settings specific to the PBS scheduler at NCI.
+
+#### `ncpus`
+
+: The number of CPU cores to allocate for the main job script, i.e. the `-l ncpus=<4>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]). 
+: This key is **optional** and can be omitted from the config file. By default `ncpus` is set to `18`.
+
+#### `mem`
+
+: The total memory limit for the main job script, i.e. the `-l mem=<10GB>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
+: This key is **optional** and can be omitted from the config file. By default `mem` is set to `30GB`.
+
+#### `walltime`
+
+: The wall clock time limit for the main job script, i.e. `-l walltime=<HH:MM:SS>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
+: This key is **optional** and can be omitted from the config file. By default `walltime` is set to `6:00:00`.
+
+#### `storage`
+
+: A list of extra storage flags required for the main job script, i.e. `-l storage=<scratch/a00>` (see [PBS Directives Explained][nci-pbs-directives]).
+: This key is **optional** and can be omitted from the config file. By default `storage` is set to `[]`.
+
+Example:
+```yaml
+pbs:
+  ncpus: 16
+  mem: 64GB
+  walltime: 00:01:00
+  storage: [scratch/a00, gdata/xy11]
+```
+
+### `multiprocessing`
+
+: Enables or disables multiprocessing for executing embarrassingly parallel tasks.
+: This key is **optional** and can be omitted from the config file. By default `multiprocessing` is set to `True`.
+
+
 ## Simulations options
 
 ### `realisations`
@@ -139,3 +178,4 @@ science_configurations: [
 [five-me]: https://modelevaluation.org/experiment/display/xNZx2hSvn4PMKAa9R
 [f90nml-github]: https://github.com/marshallward/f90nml
 [environment-modules]: https://modules.sourceforge.net/
+[nci-pbs-directives]: https://opus.nci.org.au/display/Help/PBS+Directives+Explained

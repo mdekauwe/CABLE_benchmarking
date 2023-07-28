@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Any
 
 
 _, NODENAME, _, _, _ = os.uname()
@@ -10,11 +11,9 @@ CONFIG_REQUIRED_KEYS = ["realisations", "project", "modules", "experiment"]
 
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"
-NCPUS = 18
-MEM = "30GB"
-WALL_TIME = "6:00:00"
+DEFAULT_PBS: Any = {"ncpus": 18, "mem": "30GB", "walltime": "6:00:00", "storage": []}
 MPI = False
-MULTIPROCESS = True
+DEFAULT_MULTIPROCESS = True
 
 # DIRECTORY PATHS/STRUCTURE:
 
