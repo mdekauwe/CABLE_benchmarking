@@ -45,6 +45,15 @@ def test_cli_parser():
         "verbose": False,
     }
 
+    # Success case: default fluxsite-submit-job command
+    res = vars(parser.parse_args(["fluxsite-submit-job"]))
+    assert res == {
+        "subcommand": "fluxsite-submit-job",
+        "config": "config.yaml",
+        "verbose": False,
+        "skip": [],
+    }
+
     # Success case: default fluxsite run-tasks command
     res = vars(parser.parse_args(["fluxsite-run-tasks"]))
     assert res == {

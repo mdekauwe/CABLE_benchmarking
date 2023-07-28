@@ -39,7 +39,10 @@ def generate_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Force benchcab to execute tasks on the current compute node.",
     )
-    args_run_subcommand.add_argument(
+
+    # parent parser that contains arguments common to all composite subcommands
+    args_composite_subcommand = argparse.ArgumentParser(add_help=False)
+    args_composite_subcommand.add_argument(
         "--skip",
         action="append",
         default=[],
@@ -68,7 +71,12 @@ def generate_parser() -> argparse.ArgumentParser:
     # subcommand: 'benchcab run'
     subparsers.add_parser(
         "run",
-        parents=[args_help, args_subcommand, args_run_subcommand],
+        parents=[
+            args_help,
+            args_subcommand,
+            args_run_subcommand,
+            args_composite_subcommand,
+        ],
         help="Run all test suites for CABLE.",
         description="""Runs all test suites for CABLE: fluxsite and spatial test suites. This
         command runs the full default set of tests for CABLE.""",
@@ -78,11 +86,16 @@ def generate_parser() -> argparse.ArgumentParser:
     # subcommand: 'benchcab fluxsite'
     subparsers.add_parser(
         "fluxsite",
-        parents=[args_help, args_subcommand, args_run_subcommand],
+        parents=[
+            args_help,
+            args_subcommand,
+            args_run_subcommand,
+            args_composite_subcommand,
+        ],
         help="Run the fluxsite test suite for CABLE.",
         description="""Runs the default fluxsite test suite for CABLE. This command is the
         equivalent of running 'benchcab checkout', 'benchcab build', 'benchcab
-        fluxsite-setup-work-dir', and 'benchcab fluxsite-run-tasks' sequentially.""",
+        fluxsite-setup-work-dir', and 'benchcab fluxsite-submit-job' sequentially.""",
         add_help=False,
     )
 
@@ -113,6 +126,15 @@ def generate_parser() -> argparse.ArgumentParser:
         help="Run the work directory setup step of the fluxsite command.",
         description="""Generates the fluxsite run directory tree in the current working
         directory so that fluxsite tasks can be run.""",
+        add_help=False,
+    )
+
+    # subcommand: 'benchcab fluxsite-submit-job'
+    subparsers.add_parser(
+        "fluxsite-submit-job",
+        parents=[args_help, args_subcommand, args_composite_subcommand],
+        help="Generate and submit the PBS job script for the fluxsite test suite.",
+        description="""Generates and submits the PBS job script for the fluxsite test suite.""",
         add_help=False,
     )
 
