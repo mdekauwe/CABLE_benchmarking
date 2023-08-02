@@ -45,7 +45,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 ### `pbs`
 
-: Contains sub-keys which specify settings specific to the PBS scheduler at NCI.
+: Contains settings specific to the PBS scheduler at NCI for the PBS script running the CABLE simulations at FLUXNET sites and the bitwise comparison for these simulations.
 
 #### `ncpus`
 
