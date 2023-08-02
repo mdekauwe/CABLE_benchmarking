@@ -49,7 +49,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 #### `ncpus`
 
-: The number of CPU cores to allocate for the main job script, i.e. the `-l ncpus=<4>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]). 
+: The number of CPU cores to allocate for the PBS job, i.e. the `-l ncpus=<4>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]). 
 : This key is **optional** and can be omitted from the config file. By default `ncpus` is set to `18`.
 
 #### `mem`
