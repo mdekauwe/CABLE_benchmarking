@@ -64,7 +64,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 #### `storage`
 
-: A list of extra storage flags required for the main job script, i.e. `-l storage=<scratch/a00>` (see [PBS Directives Explained][nci-pbs-directives]).
+: A list of extra storage flags required for the PBS job, i.e. `-l storage=<scratch/a00>` (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `storage` is set to `[]`.
 
 Example:
