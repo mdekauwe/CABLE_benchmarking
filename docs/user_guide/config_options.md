@@ -54,7 +54,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 #### `mem`
 
-: The total memory limit for the main job script, i.e. the `-l mem=<10GB>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
+: The total memory limit for the PBS job, i.e. the `-l mem=<10GB>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `mem` is set to `30GB`.
 
 #### `walltime`
