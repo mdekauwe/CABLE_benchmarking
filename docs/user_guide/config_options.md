@@ -59,7 +59,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 #### `walltime`
 
-: The wall clock time limit for the main job script, i.e. `-l walltime=<HH:MM:SS>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
+: The wall clock time limit for the PBS job, i.e. `-l walltime=<HH:MM:SS>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `walltime` is set to `6:00:00`.
 
 #### `storage`
