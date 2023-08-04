@@ -295,7 +295,7 @@ def test_run_cable():
 
     # Success case: run CABLE executable in subprocess
     task.run_cable()
-    assert f"{exe_path} {nml_path}" in mock_subprocess.commands
+    assert f"./{exe_path.name} {nml_path.name}" in mock_subprocess.commands
     assert stdout_file.exists()
 
     # Success case: test non-verbose output
