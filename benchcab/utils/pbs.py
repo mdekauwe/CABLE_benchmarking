@@ -21,20 +21,20 @@ def render_job_script(
     """
 
     if pbs_config is None:
-        pbs_config = internal.DEFAULT_PBS
+        pbs_config = internal.FLUXSITE_DEFAULT_PBS
 
     module_load_lines = "\n".join(
         f"module load {module_name}" for module_name in modules
     )
     verbose_flag = "-v" if verbose else ""
-    ncpus = pbs_config.get("ncpus", internal.DEFAULT_PBS["ncpus"])
-    mem = pbs_config.get("mem", internal.DEFAULT_PBS["mem"])
-    walltime = pbs_config.get("walltime", internal.DEFAULT_PBS["walltime"])
+    ncpus = pbs_config.get("ncpus", internal.FLUXSITE_DEFAULT_PBS["ncpus"])
+    mem = pbs_config.get("mem", internal.FLUXSITE_DEFAULT_PBS["mem"])
+    walltime = pbs_config.get("walltime", internal.FLUXSITE_DEFAULT_PBS["walltime"])
     storage_flags = [
         "gdata/ks32",
         "gdata/hh5",
         f"gdata/{project}",
-        *pbs_config.get("storage", internal.DEFAULT_PBS["storage"]),
+        *pbs_config.get("storage", internal.FLUXSITE_DEFAULT_PBS["storage"]),
     ]
     return f"""#!/bin/bash
 #PBS -l wd

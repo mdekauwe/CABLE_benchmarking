@@ -60,7 +60,7 @@ def run_comparisons(comparison_tasks: list[ComparisonTask], verbose=False) -> No
 
 def run_comparisons_in_parallel(
     comparison_tasks: list[ComparisonTask],
-    n_processes=internal.DEFAULT_PBS["ncpus"],
+    n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"],
     verbose=False,
 ) -> None:
     """Runs bitwise comparison tasks in parallel across multiple processes."""

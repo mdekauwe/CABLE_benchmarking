@@ -43,44 +43,48 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 : NCI modules to use for compiling CABLE
 
-### `pbs`
+### `fluxsite`
+: Contains settings specific to fluxsite tests.
+
+#### `pbs`
 
 : Contains settings specific to the PBS scheduler at NCI for the PBS script running the CABLE simulations at FLUXNET sites and the bitwise comparison for these simulations.
 
-#### `ncpus`
+##### `ncpus`
 
 : The number of CPU cores to allocate for the PBS job, i.e. the `-l ncpus=<4>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]). 
 : This key is **optional** and can be omitted from the config file. By default `ncpus` is set to `18`.
 
-#### `mem`
+##### `mem`
 
 : The total memory limit for the PBS job, i.e. the `-l mem=<10GB>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `mem` is set to `30GB`.
 
-#### `walltime`
+##### `walltime`
 
 : The wall clock time limit for the PBS job, i.e. `-l walltime=<HH:MM:SS>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `walltime` is set to `6:00:00`.
 
-#### `storage`
+##### `storage`
 
 : A list of extra storage flags required for the PBS job, i.e. `-l storage=<scratch/a00>` (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `storage` is set to `[]`.
 
-Example:
-```yaml
-pbs:
-  ncpus: 16
-  mem: 64GB
-  walltime: 00:01:00
-  storage: [scratch/a00, gdata/xy11]
-```
-
-### `multiprocessing`
+#### `multiprocessing`
 
 : Enables or disables multiprocessing for executing embarrassingly parallel tasks.
 : This key is **optional** and can be omitted from the config file. By default `multiprocessing` is set to `True`.
 
+Example:
+```yaml
+fluxsite:
+  pbs:
+    ncpus: 16
+    mem: 64GB
+    walltime: 00:01:00
+    storage: [scratch/a00, gdata/xy11]
+  multiprocessing: True
+```
 
 ## Simulations options
 

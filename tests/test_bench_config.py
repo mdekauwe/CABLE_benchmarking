@@ -55,34 +55,39 @@ def test_check_config():
     config.pop("science_configurations")
     check_config(config)
 
+    # Success case: test config without fluxsite key is valid
+    config = get_mock_config()
+    config.pop("fluxsite")
+    check_config(config)
+
     # Success case: test config without multiprocessing key is valid
     config = get_mock_config()
-    config.pop("multiprocessing")
+    config["fluxsite"].pop("multiprocessing")
     check_config(config)
 
     # Success case: test config without pbs key is valid
     config = get_mock_config()
-    config.pop("pbs")
+    config["fluxsite"].pop("pbs")
     check_config(config)
 
     # Success case: test config without ncpus key is valid
     config = get_mock_config()
-    config["pbs"].pop("ncpus")
+    config["fluxsite"]["pbs"].pop("ncpus")
     check_config(config)
 
     # Success case: test config without mem key is valid
     config = get_mock_config()
-    config["pbs"].pop("mem")
+    config["fluxsite"]["pbs"].pop("mem")
     check_config(config)
 
     # Success case: test config without walltime key is valid
     config = get_mock_config()
-    config["pbs"].pop("walltime")
+    config["fluxsite"]["pbs"].pop("walltime")
     check_config(config)
 
     # Success case: test config without storage key is valid
     config = get_mock_config()
-    config["pbs"].pop("storage")
+    config["fluxsite"]["pbs"].pop("storage")
     check_config(config)
 
     # Failure case: test missing required keys raises an exception
@@ -237,46 +242,52 @@ def test_check_config():
         config["science_configurations"] = [r"cable_user%GS_SWITCH = 'medlyn'"]
         check_config(config)
 
+    # Failure case: type of config["fluxsite"] is not a dict
+    with pytest.raises(TypeError, match="The 'fluxsite' key must be a dictionary."):
+        config = get_mock_config()
+        config["fluxsite"] = ["ncpus: 16\nmem: 64GB\n"]
+        check_config(config)
+
     # Failure case: type of config["pbs"] is not a dict
     with pytest.raises(TypeError, match="The 'pbs' key must be a dictionary."):
         config = get_mock_config()
-        config["pbs"] = "-l ncpus=16"
+        config["fluxsite"]["pbs"] = "-l ncpus=16"
         check_config(config)
 
     # Failure case: type of config["pbs"]["ncpus"] is not an int
     with pytest.raises(TypeError, match="The 'ncpus' key must be an integer."):
         config = get_mock_config()
-        config["pbs"]["ncpus"] = "16"
+        config["fluxsite"]["pbs"]["ncpus"] = "16"
         check_config(config)
 
     # Failure case: type of config["pbs"]["mem"] is not a string
     with pytest.raises(TypeError, match="The 'mem' key must be a string."):
         config = get_mock_config()
-        config["pbs"]["mem"] = 64
+        config["fluxsite"]["pbs"]["mem"] = 64
         check_config(config)
 
     # Failure case: type of config["pbs"]["walltime"] is not a string
     with pytest.raises(TypeError, match="The 'walltime' key must be a string."):
         config = get_mock_config()
-        config["pbs"]["walltime"] = 60
+        config["fluxsite"]["pbs"]["walltime"] = 60
         check_config(config)
 
     # Failure case: type of config["pbs"]["storage"] is not a list
     with pytest.raises(TypeError, match="The 'storage' key must be a list of strings."):
         config = get_mock_config()
-        config["pbs"]["storage"] = "gdata/foo+gdata/bar"
+        config["fluxsite"]["pbs"]["storage"] = "gdata/foo+gdata/bar"
         check_config(config)
 
     # Failure case: type of config["pbs"]["storage"] is not a list of strings
     with pytest.raises(TypeError, match="The 'storage' key must be a list of strings."):
         config = get_mock_config()
-        config["pbs"]["storage"] = [1, 2, 3]
+        config["fluxsite"]["pbs"]["storage"] = [1, 2, 3]
         check_config(config)
 
     # Failure case: type of config["multiprocessing"] is not a bool
     with pytest.raises(TypeError, match="The 'multiprocessing' key must be a boolean."):
         config = get_mock_config()
-        config["multiprocessing"] = 1
+        config["fluxsite"]["multiprocessing"] = 1
         check_config(config)
 
 

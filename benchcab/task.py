@@ -335,7 +335,7 @@ def run_tasks(tasks: list[Task], verbose=False):
 
 
 def run_tasks_in_parallel(
-    tasks: list[Task], n_processes=internal.DEFAULT_PBS["ncpus"], verbose=False
+    tasks: list[Task], n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"], verbose=False
 ):
     """Runs tasks in `tasks` in parallel across multiple processes."""
 

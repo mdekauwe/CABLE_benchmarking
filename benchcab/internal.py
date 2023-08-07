@@ -11,9 +11,14 @@ CONFIG_REQUIRED_KEYS = ["realisations", "project", "modules", "experiment"]
 
 # Parameters for job script:
 QSUB_FNAME = "benchmark_cable_qsub.sh"
-DEFAULT_PBS: Any = {"ncpus": 18, "mem": "30GB", "walltime": "6:00:00", "storage": []}
+FLUXSITE_DEFAULT_PBS: Any = {
+    "ncpus": 18,
+    "mem": "30GB",
+    "walltime": "6:00:00",
+    "storage": [],
+}
 MPI = False
-DEFAULT_MULTIPROCESS = True
+FLUXSITE_DEFAULT_MULTIPROCESS = True
 
 # DIRECTORY PATHS/STRUCTURE:
 

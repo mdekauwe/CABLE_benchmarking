@@ -16,9 +16,9 @@ def test_render_job_script():
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.DEFAULT_PBS["ncpus"]}
-#PBS -l mem={internal.DEFAULT_PBS["mem"]}
-#PBS -l walltime={internal.DEFAULT_PBS["walltime"]}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
@@ -54,9 +54,9 @@ fi
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.DEFAULT_PBS["ncpus"]}
-#PBS -l mem={internal.DEFAULT_PBS["mem"]}
-#PBS -l walltime={internal.DEFAULT_PBS["walltime"]}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
@@ -92,9 +92,9 @@ fi
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.DEFAULT_PBS["ncpus"]}
-#PBS -l mem={internal.DEFAULT_PBS["mem"]}
-#PBS -l walltime={internal.DEFAULT_PBS["walltime"]}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
@@ -165,9 +165,9 @@ fi
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.DEFAULT_PBS["ncpus"]}
-#PBS -l mem={internal.DEFAULT_PBS["mem"]}
-#PBS -l walltime={internal.DEFAULT_PBS["walltime"]}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
