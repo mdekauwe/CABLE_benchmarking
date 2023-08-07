@@ -16,6 +16,7 @@ from benchcab import internal
 from benchcab.repository import CableRepository
 from benchcab.comparison import ComparisonTask
 from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.utils.os import chdir
 
 
 # fmt: off
@@ -260,14 +261,15 @@ class Task:
         """
         task_name = self.get_task_name()
         task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / task_name
-        exe_path = task_dir / internal.CABLE_EXE
-        nml_path = task_dir / internal.CABLE_NML
         stdout_path = task_dir / internal.CABLE_STDOUT_FILENAME
 
         try:
-            self.subprocess_handler.run_cmd(
-                f"{exe_path} {nml_path}", output_file=stdout_path, verbose=verbose
-            )
+            with chdir(task_dir):
+                self.subprocess_handler.run_cmd(
+                    f"./{internal.CABLE_EXE} {internal.CABLE_NML}",
+                    output_file=stdout_path,
+                    verbose=verbose,
+                )
         except CalledProcessError as exc:
             print(f"Error: CABLE returned an error for task {task_name}")
             raise CableError from exc

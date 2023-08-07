@@ -1,8 +1,6 @@
 """A module containing functions and data structures for manipulating CABLE repositories."""
 
 import shlex
-import contextlib
-import os
 import shutil
 import stat
 from pathlib import Path
@@ -11,17 +9,7 @@ from typing import Optional
 from benchcab import internal
 from benchcab.environment_modules import EnvironmentModulesInterface, EnvironmentModules
 from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
-
-
-@contextlib.contextmanager
-def chdir(newdir: Path):
-    """Context manager `cd`."""
-    prevdir = Path.cwd()
-    os.chdir(newdir.expanduser())
-    try:
-        yield
-    finally:
-        os.chdir(prevdir)
+from benchcab.utils.os import chdir
 
 
 class CableRepository:

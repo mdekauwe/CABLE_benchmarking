@@ -286,16 +286,11 @@ def test_run_cable():
     task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
     task_dir.mkdir(parents=True)
-    exe_path = task_dir / internal.CABLE_EXE
-    exe_path.touch()
-    nml_path = task_dir / internal.CABLE_NML
-    nml_path.touch()
-
-    stdout_file = task_dir / internal.CABLE_STDOUT_FILENAME
 
     # Success case: run CABLE executable in subprocess
     task.run_cable()
-    assert f"{exe_path} {nml_path}" in mock_subprocess.commands
+    assert f"./{internal.CABLE_EXE} {internal.CABLE_NML}" in mock_subprocess.commands
+    stdout_file = task_dir / internal.CABLE_STDOUT_FILENAME
     assert stdout_file.exists()
 
     # Success case: test non-verbose output
