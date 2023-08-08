@@ -43,6 +43,20 @@ def deep_update(mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, A
 # fmt: on
 
 
+def deep_del(
+    mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, Any]
+) -> Dict[KeyType, Any]:
+    """Deletes all key-value 'leaf nodes' in `mapping` specified by `updating_mappings`."""
+    updated_mapping = mapping.copy()
+    for updating_mapping in updating_mappings:
+        for key, value in updating_mapping.items():
+            if isinstance(updated_mapping[key], dict) and isinstance(value, dict):
+                updated_mapping[key] = deep_del(updated_mapping[key], value)
+            else:
+                del updated_mapping[key]
+    return updated_mapping
+
+
 def patch_namelist(nml_path: Path, patch: dict):
     """Writes a namelist patch specified by `patch` to `nml_path`.
 
@@ -57,6 +71,23 @@ def patch_namelist(nml_path: Path, patch: dict):
     # remove namelist file as f90nml cannot write to an existing file
     nml_path.unlink()
     f90nml.write(deep_update(nml, patch), nml_path)
+
+
+def patch_remove_namelist(nml_path: Path, patch_remove: dict):
+    """Removes a subset of namelist parameters specified by `patch_remove` from `nml_path`.
+
+    The `patch_remove` dictionary must comply with the `f90nml` api.
+    """
+
+    nml = f90nml.read(nml_path)
+    # remove namelist file as f90nml cannot write to an existing file
+    nml_path.unlink()
+    try:
+        f90nml.write(deep_del(nml, patch_remove), nml_path)
+    except KeyError as exc:
+        raise KeyError(
+            f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
+        ) from exc
 
 
 f90_logical_repr = {True: ".true.", False: ".false."}
@@ -166,6 +197,13 @@ class Task:
                     f"  Adding branch specific configurations to CABLE namelist file {nml_path}"
                 )
             patch_namelist(nml_path, self.repo.patch)
+
+        if self.repo.patch_remove:
+            if verbose:
+                print(
+                    f"  Removing branch specific configurations from CABLE namelist file {nml_path}"
+                )
+            patch_remove_namelist(nml_path, self.repo.patch_remove)
 
     def clean_task(self, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""

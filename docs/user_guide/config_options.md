@@ -123,6 +123,12 @@ fluxsite:
 : The `patch` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
 : This key is **optional** and can be omitted from the config file (in which case `patch` does not modify the namelist file).
 
+#### `patch_remove`
+
+: Specifies branch-specific namelist settings to be removed from the `cable.nml` namelist settings. The `patch_remove` key is similar to [`patch`](#`patch`) in the that these settings will be removed from the namelist file for this branch for all science configurations run by `benchcab`.
+: The `patch_remove` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
+: This key is **optional** and can be omitted from the config file (in which case `patch_remove` does not modify the namelist file).
+
 Example:
 ```yaml
 realisations: [
@@ -136,6 +142,11 @@ realisations: [
         cable_user: {
           FWSOIL_SWITCH: "Lai and Ktaul 2000"
         }
+      }
+    }
+    patch_remove: {
+      cable: {
+        soilparmnew: nil
       }
     }
   }

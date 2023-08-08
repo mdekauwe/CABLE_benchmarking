@@ -9,6 +9,7 @@ import netCDF4
 
 from benchcab.fluxsite import (
     patch_namelist,
+    patch_remove_namelist,
     get_fluxsite_tasks,
     get_fluxsite_comparisons,
     get_comparison_name,
@@ -219,6 +220,47 @@ def test_patch_namelist():
     prev = f90nml.read(nml_path)
     patch_namelist(nml_path, {})
     assert f90nml.read(nml_path) == prev
+
+
+def test_patch_remove_namelist():
+    """Tests for `patch_remove_namelist()`."""
+
+    nml_path = MOCK_CWD / "test.nml"
+
+    # Success case: remove a namelist parameter from derrived type
+    nml = {"cable": {"cable_user": {"some_parameter": True}}}
+    f90nml.write(nml, nml_path)
+    patch_remove_namelist(nml_path, nml)
+    assert not f90nml.read(nml_path)["cable"]
+    nml_path.unlink()
+
+    # Success case: test existing namelist parameters are preserved
+    # when removing a namelist parameter
+    to_remove = {"cable": {"cable_user": {"new_feature": True}}}
+    nml = {"cable": {"cable_user": {"some_parameter": True, "new_feature": True}}}
+    f90nml.write(nml, nml_path)
+    patch_remove_namelist(nml_path, to_remove)
+    assert f90nml.read(nml_path) == {"cable": {"cable_user": {"some_parameter": True}}}
+    nml_path.unlink()
+
+    # Success case: empty patch_remove does nothing
+    nml = {"cable": {"cable_user": {"some_parameter": True}}}
+    f90nml.write(nml, nml_path)
+    patch_remove_namelist(nml_path, {})
+    assert f90nml.read(nml_path) == nml
+    nml_path.unlink()
+
+    # Failure case: patch_remove should raise KeyError when namelist parameters don't exist in
+    # nml_path
+    to_remove = {"cable": {"foo": {"bar": True}}}
+    nml = {"cable": {"cable_user": {"some_parameter": True, "new_feature": True}}}
+    f90nml.write(nml, nml_path)
+    with pytest.raises(
+        KeyError,
+        match=f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}.",
+    ):
+        patch_remove_namelist(nml_path, to_remove)
+    nml_path.unlink(missing_ok=True)
 
 
 def test_setup_task():

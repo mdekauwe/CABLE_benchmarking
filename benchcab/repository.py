@@ -25,6 +25,7 @@ class CableRepository:
         name: Optional[str] = None,
         revision: Optional[int] = None,
         patch: Optional[dict] = None,
+        patch_remove: Optional[dict] = None,
         build_script: Optional[str] = None,
         repo_id: Optional[int] = None,
     ) -> None:
@@ -32,6 +33,7 @@ class CableRepository:
         self.name = name if name else self.path.name
         self.revision = revision
         self.patch = patch
+        self.patch_remove = patch_remove
         self.build_script = build_script
         self._repo_id = repo_id
 
