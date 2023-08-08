@@ -70,10 +70,10 @@ The different running modes of `benchcab` are solely dependent on the options us
 : A list of extra storage flags required for the PBS job, i.e. `-l storage=<scratch/a00>` (see [PBS Directives Explained][nci-pbs-directives]).
 : This key is **optional** and can be omitted from the config file. By default `storage` is set to `[]`.
 
-#### `multiprocessing`
+#### `multiprocess`
 
 : Enables or disables multiprocessing for executing embarrassingly parallel tasks.
-: This key is **optional** and can be omitted from the config file. By default `multiprocessing` is set to `True`.
+: This key is **optional** and can be omitted from the config file. By default `multiprocess` is set to `True`.
 
 Example:
 ```yaml
@@ -83,7 +83,7 @@ fluxsite:
     mem: 64GB
     walltime: 00:01:00
     storage: [scratch/a00, gdata/xy11]
-  multiprocessing: True
+  multiprocess: True
 ```
 
 ## Simulations options
