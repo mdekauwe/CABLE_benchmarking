@@ -1,4 +1,4 @@
-"""`pytest` tests for task.py"""
+"""`pytest` tests for fluxsite.py"""
 
 from pathlib import Path
 import io
@@ -7,7 +7,7 @@ import pytest
 import f90nml
 import netCDF4
 
-from benchcab.task import (
+from benchcab.fluxsite import (
     patch_namelist,
     get_fluxsite_tasks,
     get_fluxsite_comparisons,

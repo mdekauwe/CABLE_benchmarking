@@ -1,4 +1,4 @@
-"""`pytest` tests for benchtree.py"""
+"""`pytest` tests for workdir.py"""
 
 import io
 import contextlib
@@ -8,9 +8,9 @@ from pathlib import Path
 
 from tests.common import MOCK_CWD
 from tests.common import get_mock_config
-from benchcab.task import Task
+from benchcab.fluxsite import Task
 from benchcab.repository import CableRepository
-from benchcab.benchtree import (
+from benchcab.workdir import (
     setup_fluxsite_directory_tree,
     clean_directory_tree,
     setup_src_dir,

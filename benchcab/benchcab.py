@@ -10,10 +10,10 @@ from subprocess import CalledProcessError
 
 from benchcab import internal
 from benchcab.internal import get_met_forcing_file_names
-from benchcab.bench_config import read_config
-from benchcab.benchtree import setup_fluxsite_directory_tree, setup_src_dir
+from benchcab.config import read_config
+from benchcab.workdir import setup_fluxsite_directory_tree, setup_src_dir
 from benchcab.repository import CableRepository
-from benchcab.task import (
+from benchcab.fluxsite import (
     get_fluxsite_tasks,
     get_fluxsite_comparisons,
     run_tasks,

@@ -5,7 +5,7 @@ import os
 import shutil
 
 from benchcab import internal
-from benchcab.task import Task
+from benchcab.fluxsite import Task
 
 
 def clean_directory_tree(root_dir=internal.CWD):
