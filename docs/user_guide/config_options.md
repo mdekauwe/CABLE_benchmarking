@@ -120,13 +120,13 @@ fluxsite:
 #### `patch`
 
 : Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
-: The `patch` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
+: The `patch` key must be a dictionary-like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
 : This key is **optional** and can be omitted from the config file (in which case `patch` does not modify the namelist file).
 
 #### `patch_remove`
 
-: Specifies branch-specific namelist settings to be removed from the `cable.nml` namelist settings. The `patch_remove` key is similar to [`patch`](#`patch`) in the that these settings will be removed from the namelist file for this branch for all science configurations run by `benchcab`.
-: The `patch_remove` key must be a dictionary like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
+: Specifies branch-specific namelist settings to be removed from the `cable.nml` namelist settings. When the `patch_remove` key is specified, the specified namelists are removed from all namelist files for this branch for all science configurations run by `benchcab`.
+: The `patch_remove` key must be a dictionary-like data structure that is compliant with the [`f90nml`][f90nml-github] python package. Note, when specifying a namelist parameter in `patch_remove`, the value of the namelist parameter is ignored.
 : This key is **optional** and can be omitted from the config file (in which case `patch_remove` does not modify the namelist file).
 
 Example:
@@ -143,7 +143,7 @@ realisations: [
           FWSOIL_SWITCH: "Lai and Ktaul 2000"
         }
       }
-    }
+    },
     patch_remove: {
       cable: {
         soilparmnew: nil
