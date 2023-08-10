@@ -1,5 +1,7 @@
 """Contains helper functions for manipulating PBS job scripts."""
 
+from typing import Optional
+
 from benchcab import internal
 
 
@@ -7,10 +9,10 @@ def render_job_script(
     project: str,
     config_path: str,
     modules: list,
-    storage_flags: list,
     benchcab_path: str,
     verbose=False,
     skip_bitwise_cmp=False,
+    pbs_config: Optional[dict] = None,
 ) -> str:
     """Returns the text for a PBS job script that executes all computationally expensive commands.
 
@@ -18,16 +20,27 @@ def render_job_script(
     between model output files.
     """
 
+    if pbs_config is None:
+        pbs_config = internal.FLUXSITE_DEFAULT_PBS
+
     module_load_lines = "\n".join(
         f"module load {module_name}" for module_name in modules
     )
     verbose_flag = "-v" if verbose else ""
-    storage_flags = ["gdata/ks32", "gdata/hh5", f"gdata/{project}", *storage_flags]
+    ncpus = pbs_config.get("ncpus", internal.FLUXSITE_DEFAULT_PBS["ncpus"])
+    mem = pbs_config.get("mem", internal.FLUXSITE_DEFAULT_PBS["mem"])
+    walltime = pbs_config.get("walltime", internal.FLUXSITE_DEFAULT_PBS["walltime"])
+    storage_flags = [
+        "gdata/ks32",
+        "gdata/hh5",
+        f"gdata/{project}",
+        *pbs_config.get("storage", internal.FLUXSITE_DEFAULT_PBS["storage"]),
+    ]
     return f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.NCPUS}
-#PBS -l mem={internal.MEM}
-#PBS -l walltime={internal.WALL_TIME}
+#PBS -l ncpus={ncpus}
+#PBS -l mem={mem}
+#PBS -l walltime={walltime}
 #PBS -q normal
 #PBS -P {project}
 #PBS -j oe

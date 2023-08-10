@@ -132,10 +132,10 @@ class Benchcab:
                 project=self.config["project"],
                 config_path=self.args.config,
                 modules=self.config["modules"],
-                storage_flags=[],  # TODO(Sean) add storage flags option to config
                 verbose=self.args.verbose,
                 skip_bitwise_cmp="fluxsite-bitwise-cmp" in self.args.skip,
                 benchcab_path=str(self.benchcab_exe_path),
+                pbs_config=self.config.get("pbs"),
             )
             file.write(contents)
 
@@ -211,8 +211,15 @@ class Benchcab:
         """Endpoint for `benchcab fluxsite-run-tasks`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         print("Running fluxsite tasks...")
-        if internal.MULTIPROCESS:
-            run_tasks_in_parallel(tasks, verbose=self.args.verbose)
+        try:
+            multiprocess = self.config["fluxsite"]["multiprocess"]
+        except KeyError:
+            multiprocess = internal.FLUXSITE_DEFAULT_MULTIPROCESS
+        if multiprocess:
+            ncpus = self.config.get("pbs", {}).get(
+                "ncpus", internal.FLUXSITE_DEFAULT_PBS["ncpus"]
+            )
+            run_tasks_in_parallel(tasks, n_processes=ncpus, verbose=self.args.verbose)
         else:
             run_tasks(tasks, verbose=self.args.verbose)
         print("Successfully ran fluxsite tasks")
@@ -230,8 +237,18 @@ class Benchcab:
         comparisons = get_fluxsite_comparisons(tasks)
 
         print("Running comparison tasks...")
-        if internal.MULTIPROCESS:
-            run_comparisons_in_parallel(comparisons, verbose=self.args.verbose)
+        try:
+            multiprocess = self.config["fluxsite"]["multiprocess"]
+        except KeyError:
+            multiprocess = internal.FLUXSITE_DEFAULT_MULTIPROCESS
+        if multiprocess:
+            try:
+                ncpus = self.config["fluxsite"]["pbs"]["ncpus"]
+            except KeyError:
+                ncpus = internal.FLUXSITE_DEFAULT_PBS["ncpus"]
+            run_comparisons_in_parallel(
+                comparisons, n_processes=ncpus, verbose=self.args.verbose
+            )
         else:
             run_comparisons(comparisons, verbose=self.args.verbose)
         print("Successfully ran comparison tasks")

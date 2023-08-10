@@ -12,19 +12,18 @@ def test_render_job_script():
         project="tm70",
         config_path="/path/to/config.yaml",
         modules=["foo", "bar", "baz"],
-        storage_flags=["scratch/tm70"],
         benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.NCPUS}
-#PBS -l mem={internal.MEM}
-#PBS -l walltime={internal.WALL_TIME}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70+scratch/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
 
 module purge
 module load foo
@@ -50,20 +49,19 @@ fi
         project="tm70",
         config_path="/path/to/config.yaml",
         modules=["foo", "bar", "baz"],
-        storage_flags=["scratch/tm70"],
         verbose=True,
         benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.NCPUS}
-#PBS -l mem={internal.MEM}
-#PBS -l walltime={internal.WALL_TIME}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70+scratch/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
 
 module purge
 module load foo
@@ -89,20 +87,19 @@ fi
         project="tm70",
         config_path="/path/to/config.yaml",
         modules=["foo", "bar", "baz"],
-        storage_flags=["scratch/tm70"],
         skip_bitwise_cmp=True,
         benchcab_path="/absolute/path/to/benchcab",
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.NCPUS}
-#PBS -l mem={internal.MEM}
-#PBS -l walltime={internal.WALL_TIME}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70+scratch/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
 
 module purge
 module load foo
@@ -118,20 +115,59 @@ fi
 """
     )
 
-    # Success case: test with storage_flags set to []
+    # Success case: specify parameters in pbs_config
     assert render_job_script(
         project="tm70",
         config_path="/path/to/config.yaml",
         modules=["foo", "bar", "baz"],
-        storage_flags=[],
         skip_bitwise_cmp=True,
         benchcab_path="/absolute/path/to/benchcab",
+        pbs_config={
+            "ncpus": 4,
+            "mem": "16GB",
+            "walltime": "00:00:30",
+            "storage": ["gdata/foo"],
+        },
+    ) == (
+        """#!/bin/bash
+#PBS -l wd
+#PBS -l ncpus=4
+#PBS -l mem=16GB
+#PBS -l walltime=00:00:30
+#PBS -q normal
+#PBS -P tm70
+#PBS -j oe
+#PBS -m e
+#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70+gdata/foo
+
+module purge
+module load foo
+module load bar
+module load baz
+
+/absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
+if [ $? -ne 0 ]; then
+    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
+    exit 1
+fi
+
+"""
+    )
+
+    # Success case: if the pbs_config is empty, use the default values
+    assert render_job_script(
+        project="tm70",
+        config_path="/path/to/config.yaml",
+        modules=["foo", "bar", "baz"],
+        skip_bitwise_cmp=True,
+        benchcab_path="/absolute/path/to/benchcab",
+        pbs_config={},
     ) == (
         f"""#!/bin/bash
 #PBS -l wd
-#PBS -l ncpus={internal.NCPUS}
-#PBS -l mem={internal.MEM}
-#PBS -l walltime={internal.WALL_TIME}
+#PBS -l ncpus={internal.FLUXSITE_DEFAULT_PBS["ncpus"]}
+#PBS -l mem={internal.FLUXSITE_DEFAULT_PBS["mem"]}
+#PBS -l walltime={internal.FLUXSITE_DEFAULT_PBS["walltime"]}
 #PBS -q normal
 #PBS -P tm70
 #PBS -j oe

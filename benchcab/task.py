@@ -334,7 +334,9 @@ def run_tasks(tasks: list[Task], verbose=False):
         task.run(verbose=verbose)
 
 
-def run_tasks_in_parallel(tasks: list[Task], verbose=False):
+def run_tasks_in_parallel(
+    tasks: list[Task], n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"], verbose=False
+):
     """Runs tasks in `tasks` in parallel across multiple processes."""
 
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
@@ -342,7 +344,7 @@ def run_tasks_in_parallel(tasks: list[Task], verbose=False):
         task_queue.put(task)
 
     processes = []
-    for _ in range(internal.NCPUS):
+    for _ in range(n_processes):
         proc = multiprocessing.Process(target=worker_run, args=[task_queue, verbose])
         proc.start()
         processes.append(proc)

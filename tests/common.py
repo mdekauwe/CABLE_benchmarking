@@ -55,6 +55,15 @@ def get_mock_config() -> dict:
                 }
             },
         ],
+        "fluxsite": {
+            "pbs": {
+                "ncpus": 16,
+                "mem": "64G",
+                "walltime": "01:00:00",
+                "storage": ["gdata/foo123"],
+            },
+            "multiprocessing": True,
+        },
     }
     return config
 
