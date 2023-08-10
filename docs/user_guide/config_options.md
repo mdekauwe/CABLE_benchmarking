@@ -44,7 +44,8 @@ The different running modes of `benchcab` are solely dependent on the options us
 : NCI modules to use for compiling CABLE
 
 ### `fluxsite`
-: Contains settings specific to fluxsite tests.
+: Contains settings specific to fluxsite tests. 
+: This key is **optional**. Default settings for the fluxsite tests will be used if it is not present
 
 #### `pbs`
 
