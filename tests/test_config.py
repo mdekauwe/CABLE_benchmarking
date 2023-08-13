@@ -1,4 +1,4 @@
-"""`pytest` tests for bench_config.py"""
+"""`pytest` tests for config.py"""
 
 import os
 import pytest
@@ -6,7 +6,7 @@ import yaml
 
 from tests.common import TMP_DIR
 from tests.common import get_mock_config
-from benchcab.bench_config import check_config, read_config
+from benchcab.config import check_config, read_config
 from benchcab import internal
 
 
