@@ -124,6 +124,14 @@ def check_config(config: dict):
                 f"The 'patch' field in realisation '{branch_id}' must be a "
                 "dictionary that is compatible with the f90nml python package."
             )
+        # the "patch_remove" key is optional
+        if "patch_remove" in branch_config and not isinstance(
+            branch_config["patch_remove"], dict
+        ):
+            raise TypeError(
+                f"The 'patch_remove' field in realisation '{branch_id}' must be a "
+                "dictionary that is compatible with the f90nml python package."
+            )
         # the "build_script" key is optional
         if "build_script" in branch_config and not isinstance(
             branch_config["build_script"], str

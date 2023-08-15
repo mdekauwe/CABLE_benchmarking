@@ -32,6 +32,11 @@ def test_check_config():
     config["realisations"][0].pop("patch")
     check_config(config)
 
+    # Success case: branch configuration with missing patch_remove key
+    config = get_mock_config()
+    config["realisations"][0].pop("patch_remove")
+    check_config(config)
+
     # Success case: test config when realisations contains more than two keys
     config = get_mock_config()
     config["realisations"].append({"path": "path/to/my_new_branch"})
@@ -202,6 +207,16 @@ def test_check_config():
     ):
         config = get_mock_config()
         config["realisations"][1]["patch"] = r"cable_user%ENABLE_SOME_FEATURE = .FALSE."
+        check_config(config)
+
+    # Failure case: type of patch_remove key is not a dictionary
+    with pytest.raises(
+        TypeError,
+        match="The 'patch_remove' field in realisation '1' must be a dictionary that is "
+        "compatible with the f90nml python package.",
+    ):
+        config = get_mock_config()
+        config["realisations"][1]["patch_remove"] = r"cable_user%ENABLE_SOME_FEATURE"
         check_config(config)
 
     # Failure case: type of build_script key is not a string

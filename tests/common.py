@@ -27,6 +27,7 @@ def get_mock_config() -> dict:
                 "revision": 9000,
                 "path": "trunk",
                 "patch": {},
+                "patch_remove": {},
                 "build_script": "",
             },
             {
@@ -34,6 +35,7 @@ def get_mock_config() -> dict:
                 "revision": -1,
                 "path": "branches/Users/sean/my-branch",
                 "patch": {"cable": {"cable_user": {"ENABLE_SOME_FEATURE": False}}},
+                "patch_remove": {},
                 "build_script": "",
             },
         ],
