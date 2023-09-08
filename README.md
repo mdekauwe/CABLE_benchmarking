@@ -1,14 +1,14 @@
-# CABLE benchmarking
+# benchcab
 
 [![codecov](https://codecov.io/gh/CABLE-LSM/benchcab/branch/master/graph/badge.svg?token=JJYE1YZDXQ)](https://codecov.io/gh/CABLE-LSM/benchcab)
 
-Repository to benchmark CABLE. The benchmark will run the exact same configurations on two CABLE branches specified by the user, e.g. a user branch (with personal changes) against the head of the trunk. The results should be attached with all new [tickets](https://trac.nci.org.au/trac/cable/report/1).
+`benchcab` is a testing framework that tests the CABLE land surface model across a range of model configurations and model versions. The tool checks out the model versions specified by the user, builds the required executables, and runs each model version across N standard science configurations. Model outputs are then piped into a benchmark analysis via [modelevaluation.org][meorg] from which the user can assess model performance.
 
-The code will: (i) check out; (ii) build; and (iii) run branches across N standard science configurations. It is possible to produce some plots locally. But the outputs should be uploaded to [the modelevaluation website](https://modelevaluation.org/) for further benchmarking and evaluation.
+The full documentation is available at [benchcab.readthedocs.io][docs].
 
-For the moment, the benchmarking only works on NCI supercomputer.
+## Acknowledgements
 
-You can see the full documentation to use it at https://benchcab.readthedocs.io/en/latest/
+- `benchcab` is a continuation of the efforts made by Martin De Kauwe ([@mdekauwe](https://github.com/mdekauwe)) and Gab Abramowitz ([@gabsun](https://github.com/gabsun)) in developing a CABLE benchmarking framework - we thank them for their contribution.
 
-## Support
-Please leave your questions as [Issues](https://github.com/CABLE-LSM/benchcab/issues) to receive support
+[docs]: https://benchcab.readthedocs.io
+[meorg]: https://modelevaluation.org
