@@ -35,72 +35,161 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 ## Technical options
 
-### `project`
+### project
 
-: NCI project ID to charge the simulations to.
+: **Default:** _required option, no default_. :octicons-dash-24: NCI project ID to charge the simulations to.
 
-### `modules`
+``` yaml
 
-: NCI modules to use for compiling CABLE
+project: nf33
 
-### `fluxsite`
-: Contains settings specific to fluxsite tests. 
-: This key is **optional**. Default settings for the fluxsite tests will be used if it is not present
+```
 
-#### `pbs`
+### modules
 
-: Contains settings specific to the PBS scheduler at NCI for the PBS script running the CABLE simulations at FLUXNET sites and the bitwise comparison for these simulations. 
-: This key is **optional**. Default values for the PBS settings will apply if it is not specified.
+: **Default:** _required option, no default_. :octicons-dash-24: NCI modules to use for compiling CABLE
 
-##### `ncpus`
+``` yaml
 
-: The number of CPU cores to allocate for the PBS job, i.e. the `-l ncpus=<4>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]). 
-: This key is **optional** and can be omitted from the config file. By default `ncpus` is set to `18`.
+modules: [
+  intel-compiler/2021.1.1,
+  netcdf/4.7.4,
+  openmpi/4.1.0
+]
 
-##### `mem`
+```
 
-: The total memory limit for the PBS job, i.e. the `-l mem=<10GB>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
-: This key is **optional** and can be omitted from the config file. By default `mem` is set to `30GB`.
+### fluxsite
+Contains settings specific to fluxsite tests.
 
-##### `walltime`
+This key is _optional_. **Default** settings for the fluxsite tests will be used if it is not present
 
-: The wall clock time limit for the PBS job, i.e. `-l walltime=<HH:MM:SS>` PBS flag (see [PBS Directives Explained][nci-pbs-directives]).
-: This key is **optional** and can be omitted from the config file. By default `walltime` is set to `6:00:00`.
-
-##### `storage`
-
-: A list of extra storage flags required for the PBS job, i.e. `-l storage=<scratch/a00>` (see [PBS Directives Explained][nci-pbs-directives]).
-: This key is **optional** and can be omitted from the config file. By default `storage` is set to `[]`.
-
-#### `multiprocess`
-
-: Enables or disables multiprocessing for executing embarrassingly parallel tasks.
-: This key is **optional** and can be omitted from the config file. By default `multiprocess` is set to `True`.
-
-Example:
 ```yaml
 fluxsite:
   pbs:
-    ncpus: 16
-    mem: 64GB
-    walltime: 00:01:00
+    ncpus: 18
+    mem: 30GB
+    walltime: 06:00:00
     storage: [scratch/a00, gdata/xy11]
   multiprocess: True
 ```
 
+#### pbs
+
+Contains settings specific to the PBS scheduler at NCI for the PBS script running the CABLE simulations at FLUXNET sites and the bitwise comparison for these simulations.
+
+This key is _optional_. **Default** values for the PBS settings will apply if it is not specified.
+
+```yaml
+fluxsite:
+  pbs:
+    ncpus: 18
+    mem: 30GB
+    walltime: 06:00:00
+    storage: [scratch/a00, gdata/xy11]
+```
+
+[`ncpus`](#+pbs.ncpus){ #+pbs.ncpus }
+
+: **Default:** 18, _optional key_. :octicons-dash-24: The number of CPU cores to allocate for the PBS job, i.e. the `-l ncpus=<4>` PBS flag in [PBS Directives Explained][nci-pbs-directives].
+
+```yaml
+
+fluxsite:
+  pbs:
+    ncpus: 18
+
+```
+
+[`mem`](#+pbs.mem){ #+pbs.mem }
+
+: **Default:** 30GB, _optional key_. :octicons-dash-24: The total memory limit for the PBS job, i.e. the `-l mem=<10GB>` PBS flag in [PBS Directives Explained][nci-pbs-directives].
+
+```yaml
+
+fluxsite:
+  pbs:
+    mem: 30GB
+
+```
+
+[`walltime`](#+pbs.walltime){ #+pbs.walltime }
+
+: **Default:** `6:00:00`, _optional key_. :octicons-dash-24: The wall clock time limit for the PBS job, i.e. `-l walltime=<HH:MM:SS>` PBS flag in [PBS Directives Explained][nci-pbs-directives].
+
+```yaml
+
+fluxsite:
+  pbs:
+    walltime: 6:00:00
+
+```
+[`storage`](#+pbs.storage){ #+pbs.storage }
+
+: **Default:** [], _optional key_. :octicons-dash-24: List of extra storage flags required for the PBS job, i.e. `-l storage=<scratch/a00>` in [PBS Directives Explained][nci-pbs-directives].
+
+```yaml
+
+fluxsite:
+  pbs:
+    storage: [scratch/a00, gdata/xy11]
+
+```
+
+#### multiprocess
+
+: **Default:** True, _optional key_. :octicons-dash-24: Enables or disables multiprocessing for executing embarrassingly parallel tasks.
+
+```yaml
+
+fluxsites:
+  multiprocess: True
+
+```
+
 ## Simulations options
 
-### `realisations`
+### realisations
 
-: Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys:
+Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys.
 
-#### `path`
+```yaml
+realisations: [
+  { # head of the trunk
+    path: "trunk",
+  },
+  { # some development branch
+    path: "branches/Users/foo/my_branch",
+    patch: {
+      cable: {
+        cable_user: {
+          FWSOIL_SWITCH: "Lai and Ktaul 2000"
+        }
+      }
+    },
+    patch_remove: {
+      cable: {
+        soilparmnew: nil
+      }
+    }
+  }
+]
+```
 
-: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
-: Example:
+[path](#+realisation.path){ #+realisation.path }
 
-    - to checkout `https://trac.nci.org.au/svn/cable/trunk`, set `path: "trunk"`
-    - to checkout `https://trac.nci.org.au/svn/cable/branches/Users/foo/my_branch`, set `path: "branches/Users/foo/my_branch"`
+: **Default:** _required option, no default_. :octicons-dash-24: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
+
+```yaml
+realisations: {
+  path: "trunk" # (1) 
+}
+  path: "branches/Users/foo/my_branch" # (2)
+
+```
+
+1. To checkout `https://trac.nci.org.au/svn/cable/trunk`
+2. To checkout `https://trac.nci.org.au/svn/cable/branches/Users/foo/my_branch`
 
 #### `name`
 
@@ -129,29 +218,6 @@ fluxsite:
 : The `patch_remove` key must be a dictionary-like data structure that is compliant with the [`f90nml`][f90nml-github] python package. Note, when specifying a namelist parameter in `patch_remove`, the value of the namelist parameter is ignored.
 : This key is **optional** and can be omitted from the config file (in which case `patch_remove` does not modify the namelist file).
 
-Example:
-```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch",
-    patch: {
-      cable: {
-        cable_user: {
-          FWSOIL_SWITCH: "Lai and Ktaul 2000"
-        }
-      }
-    },
-    patch_remove: {
-      cable: {
-        soilparmnew: nil
-      }
-    }
-  }
-]
-```
 
 ### `experiment`
 
