@@ -2,7 +2,13 @@
 
 [![Documentation status][readthedocs_badge]][docs] [![Test coverage][codecov_badge]][codecov_summary] [![Conda package status][conda_badge]][conda]
 
-`benchcab` is a testing framework that tests the CABLE land surface model across a range of model configurations and model versions. The tool checks out the model versions specified by the user, builds the required executables, and runs each model version across N standard science configurations. Model outputs are then piped into a benchmark analysis via [modelevaluation.org][meorg] from which the user can assess model performance.
+`benchcab` is a testing framework that tests the CABLE land surface model across a range of model configurations and model versions. The tool:
+- checks out the model versions specified by the user
+- builds the required executables
+- runs each model version across N standard science configurations
+- performs bitwise comparison checks on model outputs across model versions
+
+The user can then pipe the model outputs into a benchmark analysis via [modelevaluation.org][meorg] to assess model performance.
 
 The full documentation is available at [benchcab.readthedocs.io][docs].
 
