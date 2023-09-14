@@ -159,7 +159,7 @@ The following files and directories are created when `benchcab run` executes suc
 
 `runs/fluxsite/tasks`
 
-:   directory that contains task directories. CABLE runs are organised into tasks where a task consists of a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
+:   directory that contains task directories. A task consists of a CABLE run for a branch (realisation), a meteorological forcing, and a science configuration. In the above directory structure, `<task>` uses the following naming convention:
 
 ```
 <met_file_basename>_R<realisation_key>_S<science_config_key>
