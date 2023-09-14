@@ -141,7 +141,7 @@ DEFAULT_SCIENCE_CONFIGURATIONS = [
 # on modelevaluation.org
 MEORG_EXPERIMENTS = {
     # List of FLUXNET site ids associated with the 'Five site test'
-    # experiment (workspace: NRI Land testing), see:
+    # experiment (workspace: benchcab-evaluation), see:
     # https://modelevaluation.org/experiment/display/xNZx2hSvn4PMKAa9R
     "five-site-test": [
         "AU-Tum",
@@ -151,7 +151,7 @@ MEORG_EXPERIMENTS = {
         "US-Whs",
     ],
     # List of FLUXNET site ids associated with the 'Forty two site test'
-    # experiment (workspace: NRI Land testing), see:
+    # experiment (workspace: benchcab-evaluation), see:
     # https://modelevaluation.org/experiment/display/urTKSXEsojdvEPwdR
     "forty-two-site-test": [
         "AU-Tum",
