@@ -33,9 +33,7 @@ The different running modes of `benchcab` are solely dependent on the options us
     * Specify the [science configurations](#`science_configurations`) you want to run. [`patch`](#+realsation.patch) will be applied on top of the science configurations listed.
 
 
-## Technical options
-
-### project
+## project
 
 : **Default:** _required option, no default_. :octicons-dash-24: NCI project ID to charge the simulations to.
 
@@ -45,7 +43,7 @@ project: nf33
 
 ```
 
-### modules
+## modules
 
 : **Default:** _required option, no default_. :octicons-dash-24: NCI modules to use for compiling CABLE
 
@@ -59,7 +57,25 @@ modules: [
 
 ```
 
-### fluxsite
+## experiment
+
+: **Default:** _required option, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
+
+    - [`forty-two-site-test`][forty-two-me]: to run simulations using 42 FLUXNET sites
+    - [`five-site-test`][five-me]: to run simulations using 5 FLUXNET sites
+    - `AU-Tum`: to run simulations at the Tumbarumba (AU) site
+    - `AU-How`: to run simulations at the Howard Spring (AU) site
+    - `FI-Hyy`: to run simulations at the Hyytiala (FI) site
+    - `US-Var`: to run simulations at the Vaira Ranch-Ione (US) site
+    - `US-Whs`: to run simulations at the Walnut Gulch Lucky Hills Shrub (US) site
+
+```yaml
+
+experiment: "AU-How"
+
+```
+
+## fluxsite
 Contains settings specific to fluxsite tests.
 
 This key is _optional_. **Default** settings for the fluxsite tests will be used if it is not present
@@ -74,7 +90,7 @@ fluxsite:
   multiprocess: True
 ```
 
-#### pbs
+### pbs
 
 Contains settings specific to the PBS scheduler at NCI for the PBS script running the CABLE simulations at FLUXNET sites and the bitwise comparison for these simulations.
 
@@ -136,7 +152,7 @@ fluxsite:
 
 ```
 
-#### multiprocess
+### multiprocess
 
 : **Default:** True, _optional key_. :octicons-dash-24: Enables or disables multiprocessing for executing embarrassingly parallel tasks.
 
@@ -147,9 +163,7 @@ fluxsites:
 
 ```
 
-## Simulations options
-
-### realisations
+## realisations
 
 Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys.
 
@@ -296,25 +310,8 @@ realisations: [
 
 1. The value is ignored and does not have to be a possible value for the namelist option.
 
-### experiment
 
-: **Default:** _required option, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
-
-    - [`forty-two-site-test`][forty-two-me]: to run simulations using 42 FLUXNET sites
-    - [`five-site-test`][five-me]: to run simulations using 5 FLUXNET sites
-    - `AU-Tum`: to run simulations at the Tumbarumba (AU) site
-    - `AU-How`: to run simulations at the Howard Spring (AU) site
-    - `FI-Hyy`: to run simulations at the Hyytiala (FI) site
-    - `US-Var`: to run simulations at the Vaira Ranch-Ione (US) site
-    - `US-Whs`: to run simulations at the Walnut Gulch Lucky Hills Shrub (US) site
-
-```yaml
-
-experiment: "AU-How"
-
-```
-
-### science_configurations
+## science_configurations
 
 : **Default:** unset, no impact, _optional key_. :octicons-dash-24: User defined science configurations. Science configurations that are specified here will replace [the default science configurations](default_science_configurations.md). In the output filenames, each configuration is identified with S<N\> where N is an integer starting from 0 for the first listed configuration and increasing by 1 for each subsequent configuration.
 
