@@ -22,6 +22,7 @@ class SubprocessWrapperInterface(AbstractBaseClass):
         capture_output: bool = False,
         output_file: Optional[pathlib.Path] = None,
         verbose: bool = False,
+        env: Optional[dict] = None,
     ) -> subprocess.CompletedProcess:
         """A wrapper around the `subprocess.run` function for executing system commands."""
 
@@ -35,6 +36,7 @@ class SubprocessWrapper(SubprocessWrapperInterface):
         capture_output: bool = False,
         output_file: Optional[pathlib.Path] = None,
         verbose: bool = False,
+        env: Optional[dict] = None,
     ) -> subprocess.CompletedProcess:
         kwargs: Any = {}
         with contextlib.ExitStack() as stack:
@@ -48,6 +50,9 @@ class SubprocessWrapper(SubprocessWrapperInterface):
             else:
                 kwargs["stdout"] = None if verbose else subprocess.DEVNULL
             kwargs["stderr"] = subprocess.STDOUT
+
+            if env:
+                kwargs["env"] = env
 
             if verbose:
                 print(cmd)

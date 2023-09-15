@@ -1,5 +1,7 @@
 """`pytest` tests for repository.py"""
 
+import os
+import shutil
 import io
 import contextlib
 import pytest
@@ -111,24 +113,49 @@ def test_svn_info_show_item():
 def test_build():
     """Tests for `CableRepository.build()`."""
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
-    build_script_path = repo_dir / "offline" / "build3.sh"
+    offline_dir = repo_dir / "offline"
     custom_build_script_path = repo_dir / "my-custom-build.sh"
     mock_modules = ["foo", "bar"]
+    mock_netcdf_root = "/mock/path/to/root"
+    default_env = {
+        "NCDIR": f"{mock_netcdf_root}/lib/Intel",
+        "NCMOD": f"{mock_netcdf_root}/include/Intel",
+        "CFLAGS": "-O2 -fp-model precise",
+        "LDFLAGS": f"-L{mock_netcdf_root}/lib/Intel -O0",
+        "LD": "-lnetcdf -lnetcdff",
+        "FC": "ifort",
+    }
 
-    # Success case: execute the default build command
-    build_script_path.parent.mkdir(parents=True, exist_ok=True)
-    build_script_path.touch(exist_ok=True)
+    # Success case: test default build
+    offline_dir.mkdir(parents=True, exist_ok=True)
+    (offline_dir / "Makefile").touch(exist_ok=True)
+    (offline_dir / "parallel_cable").touch(exist_ok=True)
+    (offline_dir / "serial_cable").touch(exist_ok=True)
+    (offline_dir / "foo.f90").touch(exist_ok=True)
+    os.environ["NETCDF_ROOT"] = mock_netcdf_root
     mock_subprocess = MockSubprocessWrapper()
+    mock_subprocess.side_effect = lambda: (
+        offline_dir / ".tmp" / internal.CABLE_EXE
+    ).touch(exist_ok=True)
     mock_environment_modules = MockEnvironmentModules()
     repo = get_mock_repo(mock_subprocess, mock_environment_modules)
-    repo.build(mock_modules)
-    assert "./tmp-build.sh" in mock_subprocess.commands
+    repo.build(mock_modules, offline_source_files=["offline/*90"])
+    assert (offline_dir / ".tmp" / "foo.f90").exists()
+    assert "make -f Makefile" in mock_subprocess.commands
+    assert (
+        f"./serial_cable \"{default_env['FC']}\" \"{default_env['CFLAGS']}\""
+        f" \"{default_env['LDFLAGS']}\" \"{default_env['LD']}\" \"{default_env['NCMOD']}\""
+        in mock_subprocess.commands
+    )
+    assert all(kv in mock_subprocess.env.items() for kv in default_env.items())
     assert (
         "module load " + " ".join(mock_modules)
     ) in mock_environment_modules.commands
     assert (
         "module unload " + " ".join(mock_modules)
     ) in mock_environment_modules.commands
+    assert (offline_dir / internal.CABLE_EXE).exists()
+    shutil.rmtree(offline_dir / ".tmp")
 
     # Success case: execute the build command for a custom build script
     custom_build_script_path.parent.mkdir(parents=True, exist_ok=True)
@@ -147,12 +174,21 @@ def test_build():
     ) in mock_environment_modules.commands
 
     # Success case: test non-verbose standard output
-    build_script_path.parent.mkdir(parents=True, exist_ok=True)
-    build_script_path.touch(exist_ok=True)
-    repo = get_mock_repo()
+    offline_dir.mkdir(parents=True, exist_ok=True)
+    (offline_dir / "Makefile").touch(exist_ok=True)
+    (offline_dir / "parallel_cable").touch(exist_ok=True)
+    (offline_dir / "serial_cable").touch(exist_ok=True)
+    (offline_dir / "foo.f90").touch(exist_ok=True)
+    os.environ["NETCDF_ROOT"] = mock_netcdf_root
+    mock_subprocess = MockSubprocessWrapper()
+    mock_subprocess.side_effect = lambda: (
+        offline_dir / ".tmp" / internal.CABLE_EXE
+    ).touch(exist_ok=True)
+    repo = get_mock_repo(subprocess_handler=mock_subprocess)
     with contextlib.redirect_stdout(io.StringIO()) as buf:
-        repo.build(mock_modules)
+        repo.build(mock_modules, offline_source_files=["offline/*90"])
     assert buf.getvalue() == "Compiling CABLE serially for realisation trunk...\n"
+    shutil.rmtree(offline_dir / ".tmp")
 
     # Success case: test non-verbose standard output for a custom build script
     custom_build_script_path.parent.mkdir(parents=True, exist_ok=True)
@@ -166,20 +202,31 @@ def test_build():
     )
 
     # Success case: test verbose standard output
-    build_script_path.parent.mkdir(parents=True, exist_ok=True)
-    build_script_path.touch(exist_ok=True)
-    repo = get_mock_repo()
+    offline_dir.mkdir(parents=True, exist_ok=True)
+    (offline_dir / "Makefile").touch(exist_ok=True)
+    (offline_dir / "parallel_cable").touch(exist_ok=True)
+    (offline_dir / "serial_cable").touch(exist_ok=True)
+    (offline_dir / "foo.f90").touch(exist_ok=True)
+    os.environ["NETCDF_ROOT"] = mock_netcdf_root
+    mock_subprocess = MockSubprocessWrapper()
+    mock_subprocess.side_effect = lambda: (
+        offline_dir / ".tmp" / internal.CABLE_EXE
+    ).touch(exist_ok=True)
+    repo = get_mock_repo(subprocess_handler=mock_subprocess)
     with contextlib.redirect_stdout(io.StringIO()) as buf:
-        repo.build(mock_modules, verbose=True)
+        repo.build(mock_modules, offline_source_files=["offline/*90"], verbose=True)
     assert buf.getvalue() == (
         "Compiling CABLE serially for realisation trunk...\n"
-        f"Copying {build_script_path} to {build_script_path.parent}/tmp-build.sh\n"
-        f"chmod +x {build_script_path.parent}/tmp-build.sh\n"
-        "Modifying tmp-build.sh: remove lines that call environment "
-        "modules\n"
+        "mkdir src/trunk/offline/.tmp\n"
+        "cp -p src/trunk/offline/foo.f90 src/trunk/offline/.tmp\n"
+        "cp -p src/trunk/offline/Makefile src/trunk/offline/.tmp\n"
+        "cp -p src/trunk/offline/parallel_cable src/trunk/offline/.tmp\n"
+        "cp -p src/trunk/offline/serial_cable src/trunk/offline/.tmp\n"
         f"Loading modules: {' '.join(mock_modules)}\n"
         f"Unloading modules: {' '.join(mock_modules)}\n"
+        "mv src/trunk/offline/.tmp/cable src/trunk/offline/cable\n"
     )
+    shutil.rmtree(offline_dir / ".tmp")
 
     # Success case: test verbose standard output for a custom build script
     custom_build_script_path.parent.mkdir(parents=True, exist_ok=True)
@@ -198,14 +245,15 @@ def test_build():
         f"Unloading modules: {' '.join(mock_modules)}\n"
     )
 
-    # Failure case: cannot find default build script
-    build_script_path.parent.mkdir(parents=True, exist_ok=True)
-    build_script_path.touch(exist_ok=True)
-    build_script_path.unlink()
+    # Failure case: cannot find custom build script
+    custom_build_script_path.parent.mkdir(parents=True, exist_ok=True)
+    custom_build_script_path.touch(exist_ok=True)
+    custom_build_script_path.unlink()
     repo = get_mock_repo()
+    repo.build_script = str(custom_build_script_path.relative_to(repo_dir))
     with pytest.raises(
         FileNotFoundError,
-        match=f"The build script, {MOCK_CWD}/src/trunk/offline/build3.sh, could not be "
+        match=f"The build script, {custom_build_script_path}, could not be "
         "found. Do you need to specify a different build script with the 'build_script' "
         "option in config.yaml?",
     ):
