@@ -298,7 +298,7 @@ realisations: [
 
 ### experiment
 
-: **Default:** _required option, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **NRI Land testing** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
+: **Default:** _required option, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
 
     - [`forty-two-site-test`][forty-two-me]: to run simulations using 42 FLUXNET sites
     - [`five-site-test`][five-me]: to run simulations using 5 FLUXNET sites
