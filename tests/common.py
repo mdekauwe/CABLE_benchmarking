@@ -78,7 +78,6 @@ class MockSubprocessWrapper(SubprocessWrapperInterface):
         self.stdout = "mock standard output"
         self.error_on_call = False
         self.env = {}
-        self.side_effect = lambda: None
 
     def run_cmd(
         self,
@@ -89,7 +88,6 @@ class MockSubprocessWrapper(SubprocessWrapperInterface):
         env: Optional[dict] = None,
     ) -> CompletedProcess:
         self.commands.append(cmd)
-        self.side_effect()
         if self.error_on_call:
             raise CalledProcessError(returncode=1, cmd=cmd, output=self.stdout)
         if output_file:

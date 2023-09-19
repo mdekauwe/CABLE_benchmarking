@@ -10,7 +10,7 @@ from typing import Optional
 from benchcab import internal
 from benchcab.environment_modules import EnvironmentModulesInterface, EnvironmentModules
 from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
-from benchcab.utils.os import chdir
+from benchcab.utils.fs import chdir, copy2, rename
 
 
 class CableRepository:
@@ -75,101 +75,8 @@ class CableRepository:
         )
         return proc.stdout.strip()
 
-    def build(
-        self,
-        modules: list[str],
-        offline_source_files: Optional[list[str]] = None,
-        verbose=False,
-    ) -> None:
-        """Build CABLE using the default build script or a custom build script."""
-
-        if self.build_script:
-            self._custom_build(modules=modules, verbose=verbose)
-            return
-
-        mpi = internal.MPI
-        print(
-            f"Compiling CABLE {'with MPI' if mpi else 'serially'} for "
-            f"realisation {self.name}..."
-        )
-
-        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
-        tmp_dir = path_to_repo / "offline" / ".tmp"
-        if not tmp_dir.exists():
-            if verbose:
-                print(f"mkdir {tmp_dir.relative_to(self.root_dir)}")
-            tmp_dir.mkdir()
-
-        for pattern in (
-            offline_source_files
-            if offline_source_files
-            else internal.OFFLINE_SOURCE_FILES
-        ):
-            for path in path_to_repo.glob(pattern):
-                if not path.is_file():
-                    continue
-                if verbose:
-                    print(
-                        f"cp -p {path.relative_to(self.root_dir)} "
-                        f"{tmp_dir.relative_to(self.root_dir)}"
-                    )
-                shutil.copy2(path, tmp_dir)
-
-        src, dest = path_to_repo / "offline" / "Makefile", tmp_dir
-        if verbose:
-            print(
-                f"cp -p {src.relative_to(self.root_dir)} {dest.relative_to(self.root_dir)}"
-            )
-        shutil.copy2(src, dest)
-
-        src, dest = path_to_repo / "offline" / "parallel_cable", tmp_dir
-        if verbose:
-            print(
-                f"cp -p {src.relative_to(self.root_dir)} {dest.relative_to(self.root_dir)}"
-            )
-        shutil.copy2(src, dest)
-
-        src, dest = path_to_repo / "offline" / "serial_cable", tmp_dir
-        if verbose:
-            print(
-                f"cp -p {src.relative_to(self.root_dir)} {dest.relative_to(self.root_dir)}"
-            )
-        shutil.copy2(src, dest)
-
-        with chdir(tmp_dir), self.modules_handler.load(modules, verbose=verbose):
-            env = os.environ.copy()
-            env["NCDIR"] = f"{env['NETCDF_ROOT']}/lib/Intel"
-            env["NCMOD"] = f"{env['NETCDF_ROOT']}/include/Intel"
-            env["CFLAGS"] = "-O2 -fp-model precise"
-            env["LDFLAGS"] = f"-L{env['NETCDF_ROOT']}/lib/Intel -O0"
-            env["LD"] = "-lnetcdf -lnetcdff"
-            env["FC"] = "mpif90" if mpi else "ifort"
-
-            self.subprocess_handler.run_cmd(
-                "make -f Makefile", env=env, verbose=verbose
-            )
-            self.subprocess_handler.run_cmd(
-                f"./{'parallel_cable' if mpi else 'serial_cable'} \"{env['FC']}\" "
-                f"\"{env['CFLAGS']}\" \"{env['LDFLAGS']}\" \"{env['LD']}\" \"{env['NCMOD']}\"",
-                env=env,
-                verbose=verbose,
-            )
-
-        src, dest = (
-            tmp_dir / internal.CABLE_EXE,
-            path_to_repo / "offline" / internal.CABLE_EXE,
-        )
-        if verbose:
-            print(
-                f"mv {src.relative_to(self.root_dir)} {dest.relative_to(self.root_dir)}"
-            )
-        src.rename(dest)
-
-    def _custom_build(self, modules: list[str], verbose=False):
-        print(
-            "Compiling CABLE using custom build script for "
-            f"realisation {self.name}..."
-        )
+    def custom_build(self, modules: list[str], verbose=False):
+        """Build CABLE using a custom build script."""
 
         build_script_path = (
             self.root_dir / internal.SRC_DIR / self.name / self.build_script
@@ -206,6 +113,81 @@ class CableRepository:
                 f"./{tmp_script_path.name}",
                 verbose=verbose,
             )
+
+    def pre_build(self, verbose=False):
+        """Runs CABLE pre-build steps."""
+
+        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
+        tmp_dir = path_to_repo / "offline" / ".tmp"
+        if not tmp_dir.exists():
+            if verbose:
+                print(f"mkdir {tmp_dir.relative_to(self.root_dir)}")
+            tmp_dir.mkdir()
+
+        for pattern in internal.OFFLINE_SOURCE_FILES:
+            for path in path_to_repo.glob(pattern):
+                if not path.is_file():
+                    continue
+                copy2(
+                    path.relative_to(self.root_dir),
+                    tmp_dir.relative_to(self.root_dir),
+                    verbose=verbose,
+                )
+
+        copy2(
+            (path_to_repo / "offline" / "Makefile").relative_to(self.root_dir),
+            tmp_dir.relative_to(self.root_dir),
+            verbose=verbose,
+        )
+
+        copy2(
+            (path_to_repo / "offline" / "parallel_cable").relative_to(self.root_dir),
+            tmp_dir.relative_to(self.root_dir),
+            verbose=verbose,
+        )
+
+        copy2(
+            (path_to_repo / "offline" / "serial_cable").relative_to(self.root_dir),
+            tmp_dir.relative_to(self.root_dir),
+            verbose=verbose,
+        )
+
+    def run_build(self, modules: list[str], verbose=False):
+        """Runs CABLE build scripts."""
+
+        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
+        tmp_dir = path_to_repo / "offline" / ".tmp"
+
+        with chdir(tmp_dir), self.modules_handler.load(modules, verbose=verbose):
+            env = os.environ.copy()
+            env["NCDIR"] = f"{env['NETCDF_ROOT']}/lib/Intel"
+            env["NCMOD"] = f"{env['NETCDF_ROOT']}/include/Intel"
+            env["CFLAGS"] = "-O2 -fp-model precise"
+            env["LDFLAGS"] = f"-L{env['NETCDF_ROOT']}/lib/Intel -O0"
+            env["LD"] = "-lnetcdf -lnetcdff"
+            env["FC"] = "mpif90" if internal.MPI else "ifort"
+
+            self.subprocess_handler.run_cmd(
+                "make -f Makefile", env=env, verbose=verbose
+            )
+            self.subprocess_handler.run_cmd(
+                f"./{'parallel_cable' if internal.MPI else 'serial_cable'} \"{env['FC']}\" "
+                f"\"{env['CFLAGS']}\" \"{env['LDFLAGS']}\" \"{env['LD']}\" \"{env['NCMOD']}\"",
+                env=env,
+                verbose=verbose,
+            )
+
+    def post_build(self, verbose=False):
+        """Runs CABLE post-build steps."""
+
+        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
+        tmp_dir = path_to_repo / "offline" / ".tmp"
+
+        rename(
+            (tmp_dir / internal.CABLE_EXE).relative_to(self.root_dir),
+            (path_to_repo / "offline" / internal.CABLE_EXE).relative_to(self.root_dir),
+            verbose=verbose,
+        )
 
 
 def remove_module_lines(file_path: Path) -> None:
