@@ -228,6 +228,7 @@ def test_post_build():
     (tmp_dir / internal.CABLE_EXE).touch()
     repo = get_mock_repo()
     repo.post_build()
+    assert not (offline_dir / ".tmp" / internal.CABLE_EXE).exists()
     assert (offline_dir / internal.CABLE_EXE).exists()
 
     # Success case: test non-verbose standard output

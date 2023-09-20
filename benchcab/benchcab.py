@@ -201,10 +201,8 @@ class Benchcab:
                     modules=self.config["modules"], verbose=self.args.verbose
                 )
             else:
-                print(
-                    f"Compiling CABLE {'with MPI' if internal.MPI else 'serially'} for "
-                    f"realisation {repo.name}..."
-                )
+                build_mode = "with MPI" if internal.MPI else "serially"
+                print(f"Compiling CABLE {build_mode} for realisation {repo.name}...")
                 repo.pre_build(verbose=self.args.verbose)
                 repo.run_build(
                     modules=self.config["modules"], verbose=self.args.verbose
