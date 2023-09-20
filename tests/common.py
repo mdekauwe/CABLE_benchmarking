@@ -77,6 +77,7 @@ class MockSubprocessWrapper(SubprocessWrapperInterface):
         self.commands: list[str] = []
         self.stdout = "mock standard output"
         self.error_on_call = False
+        self.env = {}
 
     def run_cmd(
         self,
@@ -84,12 +85,15 @@ class MockSubprocessWrapper(SubprocessWrapperInterface):
         capture_output: bool = False,
         output_file: Optional[Path] = None,
         verbose: bool = False,
+        env: Optional[dict] = None,
     ) -> CompletedProcess:
         self.commands.append(cmd)
         if self.error_on_call:
             raise CalledProcessError(returncode=1, cmd=cmd, output=self.stdout)
         if output_file:
             output_file.touch()
+        if env:
+            self.env = env
         return CompletedProcess(cmd, returncode=0, stdout=self.stdout)
 
 

@@ -1,5 +1,6 @@
 """`pytest` tests for utils/subprocess.py"""
 
+import os
 import subprocess
 import pytest
 
@@ -78,6 +79,12 @@ def test_run_cmd(capfd):
     captured = capfd.readouterr()
     assert captured.out == "echo foo\n"
     assert not captured.err
+
+    # Success case: test command is run with environment
+    proc = subprocess_handler.run_cmd(
+        "echo $FOO", capture_output=True, env={"FOO": "bar", **os.environ}
+    )
+    assert proc.stdout == "bar\n"
 
     # Failure case: check non-zero return code throws an exception
     with pytest.raises(subprocess.CalledProcessError):

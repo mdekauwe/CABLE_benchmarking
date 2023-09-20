@@ -192,7 +192,22 @@ class Benchcab:
     def build(self):
         """Endpoint for `benchcab build`."""
         for repo in self.repos:
-            repo.build(modules=self.config["modules"], verbose=self.args.verbose)
+            if repo.build_script:
+                print(
+                    "Compiling CABLE using custom build script for "
+                    f"realisation {repo.name}..."
+                )
+                repo.custom_build(
+                    modules=self.config["modules"], verbose=self.args.verbose
+                )
+            else:
+                build_mode = "with MPI" if internal.MPI else "serially"
+                print(f"Compiling CABLE {build_mode} for realisation {repo.name}...")
+                repo.pre_build(verbose=self.args.verbose)
+                repo.run_build(
+                    modules=self.config["modules"], verbose=self.args.verbose
+                )
+                repo.post_build(verbose=self.args.verbose)
             print(f"Successfully compiled CABLE for realisation {repo.name}")
         print("")
 

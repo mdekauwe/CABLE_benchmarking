@@ -100,6 +100,23 @@ CABLE_FIXED_CO2_CONC = 400.0
 # CABLE standard output filename
 CABLE_STDOUT_FILENAME = "out.txt"
 
+OFFLINE_SOURCE_FILES = [
+    "science/albedo/*90",
+    "science/radiation/*90",
+    "science/canopy/*90",
+    "science/casa-cnp/*90",
+    "science/gw_hydro/*90",
+    "science/misc/*90",
+    "science/roughness/*90",
+    "science/soilsnow/*90",
+    "science/landuse/*90",
+    "offline/*90",
+    "util/*90",
+    "params/*90",
+    "science/sli/*90",
+    "science/pop/*90",
+]
+
 # Contains the default science configurations used to run the CABLE test suite
 # (when a science config file is not provided by the user)
 DEFAULT_SCIENCE_CONFIGURATIONS = [

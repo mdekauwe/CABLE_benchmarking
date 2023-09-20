@@ -16,7 +16,7 @@ from benchcab import internal
 from benchcab.repository import CableRepository
 from benchcab.comparison import ComparisonTask
 from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
-from benchcab.utils.os import chdir
+from benchcab.utils.fs import chdir
 
 
 # fmt: off
