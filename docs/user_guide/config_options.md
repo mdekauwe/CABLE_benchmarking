@@ -1,8 +1,5 @@
 # config.yaml options
 
-!!! note "Required options"
-    All keys listed here are required unless stated otherwise.
-
 The different running modes of `benchcab` are solely dependent on the options used in `config.yaml`. The following gives some typical ways to configure `benchcab` for each mode, but the tool is not restricted to these choices of options:
 
 === "Regression test"
@@ -35,7 +32,7 @@ The different running modes of `benchcab` are solely dependent on the options us
 
 ## project
 
-: **Default:** _required option, no default_. :octicons-dash-24: NCI project ID to charge the simulations to.
+: **Default:** _required key, no default_. :octicons-dash-24: NCI project ID to charge the simulations to.
 
 ``` yaml
 
@@ -45,7 +42,7 @@ project: nf33
 
 ## modules
 
-: **Default:** _required option, no default_. :octicons-dash-24: NCI modules to use for compiling CABLE
+: **Default:** _required key, no default_. :octicons-dash-24: NCI modules to use for compiling CABLE
 
 ``` yaml
 
@@ -59,15 +56,17 @@ modules: [
 
 ## experiment
 
-: **Default:** _required option, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
+: **Default:** _required key, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
 
-    - [`forty-two-site-test`][forty-two-me]: to run simulations using 42 FLUXNET sites
-    - [`five-site-test`][five-me]: to run simulations using 5 FLUXNET sites
-    - `AU-Tum`: to run simulations at the Tumbarumba (AU) site
-    - `AU-How`: to run simulations at the Howard Spring (AU) site
-    - `FI-Hyy`: to run simulations at the Hyytiala (FI) site
-    - `US-Var`: to run simulations at the Vaira Ranch-Ione (US) site
-    - `US-Whs`: to run simulations at the Walnut Gulch Lucky Hills Shrub (US) site
+: | Key value | Experiment description |
+|-----------|------------------------|
+| [`forty-two-site-test`][forty-two-me] | Run simulations for 42 FLUXNET sites |
+| [`five-site-test`][five-me] | Run simulations for 5 FLUXNET sites |
+| `AU-Tum` | Run simulations at the Tumbarumba (AU) site |
+| `AU-How` | Run simulations at the Howard Spring (AU) site |
+| `FI-Hyy` | Run simulations at the Hyytiala (FI) site |
+| `US-Var` | Run simulations at the Vaira Ranch-Ione (US) site |
+| `US-Whs` | Run simulations at the Walnut Gulch Lucky Hills Shrub (US) site |
 
 ```yaml
 
@@ -192,7 +191,7 @@ realisations: [
 
 [`path`](#+realisation.path){ #+realisation.path }
 
-: **Default:** _required option, no default_. :octicons-dash-24: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
+: **Default:** _required key, no default_. :octicons-dash-24: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
 
 ```yaml
 realisations: [
