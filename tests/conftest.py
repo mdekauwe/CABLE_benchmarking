@@ -3,13 +3,14 @@
 import os
 import shutil
 from pathlib import Path
+
 import pytest
 
 from .common import MOCK_CWD
 
 
 @pytest.fixture(autouse=True)
-def run_around_tests():
+def _run_around_tests():
     """`pytest` autouse fixture that runs around each test."""
 
     # Setup:

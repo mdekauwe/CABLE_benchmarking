@@ -2,14 +2,16 @@
 
 import contextlib
 import io
-from subprocess import CalledProcessError
 from pathlib import Path
+from subprocess import CalledProcessError
+
 import pytest
 
-from benchcab.benchcab import Benchcab
 from benchcab import internal
+from benchcab.benchcab import Benchcab
 from benchcab.utils.subprocess import SubprocessWrapperInterface
-from .common import MockSubprocessWrapper, get_mock_config, MOCK_CWD
+
+from .common import MOCK_CWD, MockSubprocessWrapper, get_mock_config
 
 
 def get_mock_app(

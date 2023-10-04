@@ -1,26 +1,28 @@
 """`pytest` tests for fluxsite.py"""
 
-from pathlib import Path
-import io
 import contextlib
-import pytest
+import io
+import math
+from pathlib import Path
+
 import f90nml
 import netCDF4
+import pytest
 
+from benchcab import __version__, internal
 from benchcab.fluxsite import (
+    CableError,
+    Task,
+    get_comparison_name,
+    get_fluxsite_comparisons,
+    get_fluxsite_tasks,
     patch_namelist,
     patch_remove_namelist,
-    get_fluxsite_tasks,
-    get_fluxsite_comparisons,
-    get_comparison_name,
-    Task,
-    CableError,
 )
-from benchcab import internal
-from benchcab import __version__
 from benchcab.repository import CableRepository
 from benchcab.utils.subprocess import SubprocessWrapperInterface
-from .common import MOCK_CWD, get_mock_config, MockSubprocessWrapper
+
+from .common import MOCK_CWD, MockSubprocessWrapper, get_mock_config
 
 
 def get_mock_task(
@@ -363,10 +365,10 @@ def test_add_provenance_info():
     fluxsite_output_dir.mkdir()
 
     # Create mock namelist file in task directory:
-    f90nml.write(
-        {"cable": {"filename": {"met": "/path/to/met/file", "foo": 123}, "bar": True}},
-        task_dir / internal.CABLE_NML,
-    )
+    mock_namelist = {
+        "cable": {"filename": {"met": "/path/to/met/file", "foo": 123}, "bar": True}
+    }
+    f90nml.write(mock_namelist, task_dir / internal.CABLE_NML)
 
     # Create mock netcdf output file as if CABLE had just been run:
     nc_output_path = fluxsite_output_dir / task.get_output_filename()
@@ -379,8 +381,8 @@ def test_add_provenance_info():
         assert atts["cable_branch"] == mock_subprocess.stdout
         assert atts["svn_revision_number"] == mock_subprocess.stdout
         assert atts["benchcab_version"] == __version__
-        assert atts[r"filename%met"] == "/path/to/met/file"
-        assert atts[r"filename%foo"] == 123
+        assert atts[r"filename%met"] == mock_namelist["cable"]["filename"]["met"]
+        assert atts[r"filename%foo"] == mock_namelist["cable"]["filename"]["foo"]
         assert atts[r"bar"] == ".true."
 
     # Success case: test non-verbose output
@@ -445,8 +447,9 @@ def test_get_fluxsite_comparisons():
         sci_config={"foo": "bar"},
         sci_conf_id=0,
     )
-    comparisons = get_fluxsite_comparisons([task_a, task_b], root_dir=MOCK_CWD)
-    assert len(comparisons) == 1
+    tasks = [task_a, task_b]
+    comparisons = get_fluxsite_comparisons(tasks, root_dir=MOCK_CWD)
+    assert len(comparisons) == math.comb(len(tasks), 2)
     assert comparisons[0].files == (
         output_dir / task_a.get_output_filename(),
         output_dir / task_b.get_output_filename(),
@@ -473,8 +476,9 @@ def test_get_fluxsite_comparisons():
         sci_config={"foo": "bar"},
         sci_conf_id=0,
     )
-    comparisons = get_fluxsite_comparisons([task_a, task_b, task_c], root_dir=MOCK_CWD)
-    assert len(comparisons) == 3
+    tasks = [task_a, task_b, task_c]
+    comparisons = get_fluxsite_comparisons(tasks, root_dir=MOCK_CWD)
+    assert len(comparisons) == math.comb(len(tasks), 2)
     assert comparisons[0].files == (
         output_dir / task_a.get_output_filename(),
         output_dir / task_b.get_output_filename(),

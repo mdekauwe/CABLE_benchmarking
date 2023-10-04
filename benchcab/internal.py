@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from typing import Any
 
-
 _, NODENAME, _, _, _ = os.uname()
 
 CONFIG_REQUIRED_KEYS = ["realisations", "project", "modules", "experiment"]

@@ -1,9 +1,10 @@
 """A module containing utility functions that wraps around the `subprocess` module."""
 
-from abc import ABC as AbstractBaseClass, abstractmethod
-import subprocess
 import contextlib
 import pathlib
+import subprocess
+from abc import ABC as AbstractBaseClass
+from abc import abstractmethod
 from typing import Any, Optional
 
 

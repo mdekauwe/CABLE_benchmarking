@@ -1,15 +1,17 @@
 """`pytest` tests for repository.py"""
 
+import contextlib
+import io
 import os
 import shutil
-import io
-import contextlib
+
 import pytest
 
 from benchcab import internal
 from benchcab.environment_modules import EnvironmentModulesInterface
-from benchcab.utils.subprocess import SubprocessWrapperInterface
 from benchcab.repository import CableRepository, remove_module_lines
+from benchcab.utils.subprocess import SubprocessWrapperInterface
+
 from .common import MOCK_CWD, MockEnvironmentModules, MockSubprocessWrapper
 
 
@@ -27,15 +29,17 @@ def get_mock_repo(
 
 def test_repo_id():
     """Tests for `CableRepository.repo_id`."""
+    mock_repo_id = 123
 
     # Success case: get repository ID
-    repo = CableRepository("path/to/repo", repo_id=123)
-    assert repo.repo_id == 123
+    repo = CableRepository("path/to/repo", repo_id=mock_repo_id)
+    assert repo.repo_id == mock_repo_id
 
     # Success case: set repository ID
-    repo = CableRepository("path/to/repo", repo_id=123)
-    repo.repo_id = 456
-    assert repo.repo_id == 456
+    new_repo_id = 456
+    repo = CableRepository("path/to/repo", repo_id=mock_repo_id)
+    repo.repo_id = new_repo_id
+    assert repo.repo_id == new_repo_id
 
     # Failure case: access undefined repository ID
     repo = CableRepository("path/to/repo")
@@ -310,7 +314,7 @@ def test_remove_module_lines():
 
     # Success case: test 'module' lines are removed from mock shell script
     file_path = MOCK_CWD / "test-build.sh"
-    with open(file_path, "w", encoding="utf-8") as file:
+    with file_path.open("w", encoding="utf-8") as file:
         file.write(
             """#!/bin/bash
 module add bar
@@ -337,7 +341,7 @@ host_gadi()
 
     remove_module_lines(file_path)
 
-    with open(file_path, "r", encoding="utf-8") as file:
+    with file_path.open("r", encoding="utf-8") as file:
         assert file.read() == (
             """#!/bin/bash
 

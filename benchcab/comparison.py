@@ -5,9 +5,8 @@ import queue
 from pathlib import Path
 from subprocess import CalledProcessError
 
-
 from benchcab import internal
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 
 class ComparisonTask:
@@ -44,7 +43,7 @@ class ComparisonTask:
                 / internal.FLUXSITE_BITWISE_CMP_DIR
                 / f"{self.task_name}.txt"
             )
-            with open(output_file, "w", encoding="utf-8") as file:
+            with output_file.open("w", encoding="utf-8") as file:
                 file.write(exc.stdout)
             print(
                 f"Failure: files {file_a.name} {file_b.name} differ. "

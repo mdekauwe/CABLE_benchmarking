@@ -1,6 +1,7 @@
 """`pytest` tests for cli.py"""
 
 import pytest
+
 from benchcab.cli import generate_parser
 
 

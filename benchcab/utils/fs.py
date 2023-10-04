@@ -1,8 +1,8 @@
 """Contains utility functions for interacting with the file system."""
 
+import contextlib
 import os
 import shutil
-import contextlib
 from pathlib import Path
 
 

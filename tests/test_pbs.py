@@ -1,7 +1,7 @@
 """`pytest` tests for utils/pbs.py"""
 
-from benchcab.utils.pbs import render_job_script
 from benchcab import internal
+from benchcab.utils.pbs import render_job_script
 
 
 def test_render_job_script():

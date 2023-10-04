@@ -6,6 +6,7 @@ import io
 from benchcab import internal
 from benchcab.comparison import ComparisonTask
 from benchcab.utils.subprocess import SubprocessWrapperInterface
+
 from .common import MOCK_CWD, MockSubprocessWrapper
 
 
@@ -59,7 +60,7 @@ def test_run_comparison():
     task = get_mock_comparison_task(subprocess_handler=mock_subprocess)
     stdout_file = bitwise_cmp_dir / f"{task.task_name}.txt"
     task.run()
-    with open(stdout_file, "r", encoding="utf-8") as file:
+    with stdout_file.open("r", encoding="utf-8") as file:
         assert file.read() == mock_subprocess.stdout
 
     # Failure case: test non-verbose standard output on failure

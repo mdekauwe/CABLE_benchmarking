@@ -1,12 +1,13 @@
 """Contains a wrapper around the environment modules API."""
 
-import sys
 import contextlib
-from abc import ABC as AbstractBaseClass, abstractmethod
+import sys
+from abc import ABC as AbstractBaseClass
+from abc import abstractmethod
 
 sys.path.append("/opt/Modules/v4.3.0/init")
 try:
-    from python import module  # pylint: disable=import-error
+    from python import module
 except ImportError:
     print(
         "Environment modules error: unable to import "

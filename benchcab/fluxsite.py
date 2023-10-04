@@ -1,27 +1,23 @@
 """A module containing functions and data structures for running fluxsite tasks."""
 
-
-import shutil
 import multiprocessing
 import queue
+import shutil
 from pathlib import Path
-from typing import TypeVar, Dict, Any
 from subprocess import CalledProcessError
+from typing import Any, Dict, TypeVar
 
+import f90nml
 import flatdict
 import netCDF4
-import f90nml
 
-from benchcab import __version__
-from benchcab import internal
-from benchcab.repository import CableRepository
+from benchcab import __version__, internal
 from benchcab.comparison import ComparisonTask
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.repository import CableRepository
 from benchcab.utils.fs import chdir
-
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 # fmt: off
-# pylint: disable=invalid-name,missing-function-docstring,line-too-long
 # ======================================================
 # Copyright (c) 2017 - 2022 Samuel Colvin and other contributors
 # from https://github.com/pydantic/pydantic/blob/fd2991fe6a73819b48c906e3c3274e8e47d0f761/pydantic/utils.py#L200
@@ -40,7 +36,6 @@ def deep_update(mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, A
     return updated_mapping
 
 # ======================================================
-# pylint: enable=invalid-name,missing-function-docstring,line-too-long
 # fmt: on
 
 

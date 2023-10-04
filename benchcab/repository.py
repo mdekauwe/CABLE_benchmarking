@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import Optional
 
 from benchcab import internal
-from benchcab.environment_modules import EnvironmentModulesInterface, EnvironmentModules
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.utils.fs import chdir, copy2, rename
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 
 class CableRepository:

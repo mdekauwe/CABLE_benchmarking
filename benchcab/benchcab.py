@@ -1,31 +1,31 @@
 """Contains the main program entry point for `benchcab`."""
 
-import sys
-import os
 import grp
+import os
 import shutil
+import sys
 from pathlib import Path
-from typing import Optional
 from subprocess import CalledProcessError
+from typing import Optional
 
 from benchcab import internal
-from benchcab.internal import get_met_forcing_file_names
+from benchcab.cli import generate_parser
+from benchcab.comparison import run_comparisons, run_comparisons_in_parallel
 from benchcab.config import read_config
-from benchcab.workdir import setup_fluxsite_directory_tree, setup_src_dir
-from benchcab.repository import CableRepository
+from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.fluxsite import (
-    get_fluxsite_tasks,
+    Task,
     get_fluxsite_comparisons,
+    get_fluxsite_tasks,
     run_tasks,
     run_tasks_in_parallel,
-    Task,
 )
-from benchcab.comparison import run_comparisons, run_comparisons_in_parallel
-from benchcab.cli import generate_parser
-from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
-from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
-from benchcab.utils.pbs import render_job_script
+from benchcab.internal import get_met_forcing_file_names
+from benchcab.repository import CableRepository
 from benchcab.utils.fs import next_path
+from benchcab.utils.pbs import render_job_script
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
+from benchcab.workdir import setup_fluxsite_directory_tree, setup_src_dir
 
 
 class Benchcab:
@@ -43,7 +43,7 @@ class Benchcab:
         validate_env: bool = True,
     ) -> None:
         self.args = generate_parser().parse_args(argv[1:] if argv[1:] else ["-h"])
-        self.config = config if config else read_config(self.args.config)
+        self.config = config if config else read_config(Path(self.args.config))
         self.repos = [
             CableRepository(**config, repo_id=id)
             for id, config in enumerate(self.config["realisations"])
@@ -184,7 +184,7 @@ class Benchcab:
         print(
             f"Writing revision number info to {rev_number_log_path.relative_to(self.root_dir)}"
         )
-        with open(rev_number_log_path, "w", encoding="utf-8") as file:
+        with rev_number_log_path.open("w", encoding="utf-8") as file:
             file.write(rev_number_log)
 
         print("")

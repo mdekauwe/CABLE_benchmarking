@@ -1,12 +1,12 @@
 """Helper functions for `pytest`."""
 
 import tempfile
-from subprocess import CompletedProcess, CalledProcessError
 from pathlib import Path
+from subprocess import CalledProcessError, CompletedProcess
 from typing import Optional
 
-from benchcab.utils.subprocess import SubprocessWrapperInterface
 from benchcab.environment_modules import EnvironmentModulesInterface
+from benchcab.utils.subprocess import SubprocessWrapperInterface
 
 MOCK_CWD = TMP_DIR = Path(tempfile.mkdtemp(prefix="benchcab_tests"))
 

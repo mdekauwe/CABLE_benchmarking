@@ -1,6 +1,7 @@
 """A module containing all *_config() functions."""
 
 from pathlib import Path
+
 import yaml
 
 from benchcab import internal
@@ -142,10 +143,10 @@ def check_config(config: dict):
             )
 
 
-def read_config(config_path: str) -> dict:
+def read_config(config_path: Path) -> dict:
     """Reads the config file and returns a dictionary containing the configurations."""
 
-    with open(Path(config_path), "r", encoding="utf-8") as file:
+    with config_path.open("r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     check_config(config)

@@ -2,9 +2,11 @@
 
 import os
 import subprocess
+
 import pytest
 
 from benchcab.utils.subprocess import SubprocessWrapper
+
 from .common import TMP_DIR
 
 
@@ -65,7 +67,7 @@ def test_run_cmd(capfd):
     # Success case: test stdout is redirected to file
     file_path = TMP_DIR / "out.txt"
     subprocess_handler.run_cmd("echo foo", output_file=file_path)
-    with open(file_path, "r", encoding="utf-8") as file:
+    with file_path.open("r", encoding="utf-8") as file:
         assert file.read() == "foo\n"
     captured = capfd.readouterr()
     assert not captured.out

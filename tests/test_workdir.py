@@ -1,20 +1,18 @@
 """`pytest` tests for workdir.py"""
 
-import io
 import contextlib
+import io
 import shutil
 from pathlib import Path
 
-
-from tests.common import MOCK_CWD
-from tests.common import get_mock_config
 from benchcab.fluxsite import Task
 from benchcab.repository import CableRepository
 from benchcab.workdir import (
-    setup_fluxsite_directory_tree,
     clean_directory_tree,
+    setup_fluxsite_directory_tree,
     setup_src_dir,
 )
+from tests.common import MOCK_CWD, get_mock_config
 
 
 def setup_mock_tasks() -> list[Task]:

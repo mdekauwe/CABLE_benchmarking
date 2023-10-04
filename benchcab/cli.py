@@ -1,9 +1,8 @@
 """Contains the definition of the command line interface used for `benchcab`."""
 
 import argparse
+
 import benchcab
-
-
 from benchcab.internal import OPTIONAL_COMMANDS
 
 
