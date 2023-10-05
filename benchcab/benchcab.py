@@ -25,7 +25,7 @@ from benchcab.cli import generate_parser
 from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 from benchcab.utils.pbs import render_job_script
-from benchcab.utils.logging import next_path
+from benchcab.utils.fs import next_path
 
 
 class Benchcab:
