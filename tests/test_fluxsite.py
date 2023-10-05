@@ -17,6 +17,7 @@ from benchcab.fluxsite import (
     CableError,
 )
 from benchcab import internal
+from benchcab import __version__
 from benchcab.repository import CableRepository
 from benchcab.utils.subprocess import SubprocessWrapperInterface
 from .common import MOCK_CWD, get_mock_config, MockSubprocessWrapper
@@ -377,6 +378,7 @@ def test_add_provenance_info():
         atts = vars(nc_output)
         assert atts["cable_branch"] == mock_subprocess.stdout
         assert atts["svn_revision_number"] == mock_subprocess.stdout
+        assert atts["benchcab_version"] == __version__
         assert atts[r"filename%met"] == "/path/to/met/file"
         assert atts[r"filename%foo"] == 123
         assert atts[r"bar"] == ".true."

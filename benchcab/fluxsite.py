@@ -12,6 +12,7 @@ import flatdict
 import netCDF4
 import f90nml
 
+from benchcab import __version__
 from benchcab import internal
 from benchcab.repository import CableRepository
 from benchcab.comparison import ComparisonTask
@@ -341,6 +342,7 @@ class Task:
                     **{
                         "cable_branch": self.repo.svn_info_show_item("url"),
                         "svn_revision_number": self.repo.svn_info_show_item("revision"),
+                        "benchcab_version": __version__,
                     },
                 }
             )
