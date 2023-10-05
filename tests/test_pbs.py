@@ -23,7 +23,7 @@ def test_render_job_script():
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
 
 module purge
 module load foo
@@ -61,7 +61,7 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
 
 module purge
 module load foo
@@ -99,7 +99,7 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
 
 module purge
 module load foo
@@ -138,7 +138,7 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70+gdata/foo
+#PBS -l storage=gdata/ks32+gdata/hh5+gdata/foo
 
 module purge
 module load foo
@@ -172,7 +172,7 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
 
 module purge
 module load foo
