@@ -68,9 +68,7 @@ def patch_namelist(nml_path: Path, patch: dict):
         return
 
     nml = f90nml.read(nml_path)
-    # remove namelist file as f90nml cannot write to an existing file
-    nml_path.unlink()
-    f90nml.write(deep_update(nml, patch), nml_path)
+    f90nml.write(deep_update(nml, patch), nml_path, force=True)
 
 
 def patch_remove_namelist(nml_path: Path, patch_remove: dict):
@@ -80,10 +78,8 @@ def patch_remove_namelist(nml_path: Path, patch_remove: dict):
     """
 
     nml = f90nml.read(nml_path)
-    # remove namelist file as f90nml cannot write to an existing file
-    nml_path.unlink()
     try:
-        f90nml.write(deep_del(nml, patch_remove), nml_path)
+        f90nml.write(deep_del(nml, patch_remove), nml_path, force=True)
     except KeyError as exc:
         raise KeyError(
             f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
