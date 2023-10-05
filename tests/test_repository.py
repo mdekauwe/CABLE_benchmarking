@@ -158,6 +158,15 @@ def test_run_build():
     mock_modules = ["foo", "bar"]
     (MOCK_CWD / internal.SRC_DIR / "trunk" / "offline" / ".tmp").mkdir(parents=True)
 
+    environment_vars = {
+        "NCDIR": f"{mock_netcdf_root}/lib/Intel",
+        "NCMOD": f"{mock_netcdf_root}/include/Intel",
+        "CFLAGS": "-O2 -fp-model precise",
+        "LDFLAGS": f"-L{mock_netcdf_root}/lib/Intel -O0",
+        "LD": "-lnetcdf -lnetcdff",
+        "FC": "ifort",
+    }
+
     # This is required so that we can use the NETCDF_ROOT environment variable
     # when running `make`, and `serial_cable` and `parallel_cable` scripts:
     os.environ["NETCDF_ROOT"] = mock_netcdf_root
@@ -188,17 +197,8 @@ def test_run_build():
     mock_subprocess = MockSubprocessWrapper()
     repo = get_mock_repo(subprocess_handler=mock_subprocess)
     repo.run_build(mock_modules)
-    assert all(
-        kv in mock_subprocess.env.items()
-        for kv in {
-            "NCDIR": f"{mock_netcdf_root}/lib/Intel",
-            "NCMOD": f"{mock_netcdf_root}/include/Intel",
-            "CFLAGS": "-O2 -fp-model precise",
-            "LDFLAGS": f"-L{mock_netcdf_root}/lib/Intel -O0",
-            "LD": "-lnetcdf -lnetcdff",
-            "FC": "ifort",
-        }.items()
-    )
+    for kv in environment_vars.items():
+        assert (kv in mock_subprocess.env.items())
 
     # Success case: test non-verbose standard output
     repo = get_mock_repo()
