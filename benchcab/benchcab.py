@@ -11,7 +11,7 @@ from subprocess import CalledProcessError
 from benchcab import internal
 from benchcab.internal import get_met_forcing_file_names
 from benchcab.config import read_config
-from benchcab.workdir import setup_fluxsite_directory_tree, setup_src_dir
+from benchcab.workdir import fluxsite_directory_tree_list, setup_fluxsite_directory_tree, setup_src_dir
 from benchcab.repository import CableRepository
 from benchcab.fluxsite import (
     get_fluxsite_tasks,
@@ -215,7 +215,9 @@ class Benchcab:
         """Endpoint for `benchcab fluxsite-setup-work-dir`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         print("Setting up run directory tree for fluxsite tests...")
-        setup_fluxsite_directory_tree(fluxsite_tasks=tasks, verbose=self.args.verbose)
+        fluxsite_paths = fluxsite_directory_tree_list(
+            fluxsite_tasks=tasks)
+        setup_fluxsite_directory_tree(fluxsite_paths=fluxsite_paths, verbose=self.args.verbose)
         print("Setting up tasks...")
         for task in tasks:
             task.setup_task(verbose=self.args.verbose)

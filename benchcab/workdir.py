@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import shutil
+from typing import Union
 
 from benchcab import internal
 from benchcab.fluxsite import Task
@@ -28,60 +29,59 @@ def setup_src_dir(root_dir=internal.CWD):
         os.makedirs(src_dir)
 
 
-def setup_fluxsite_directory_tree(
-    fluxsite_tasks: list[Task], root_dir=internal.CWD, verbose=False
-):
-    """Generate the directory structure used of `benchcab`."""
+def fluxsite_directory_tree_list(fluxsite_tasks: list[Task], root_dir=internal.CWD) -> set:
+    """Generate a list of all the work directories used for fluxsite tests"""
 
-    run_dir = Path(root_dir, internal.RUN_DIR)
-    if not run_dir.exists():
-        os.makedirs(run_dir)
+    # Create the list of directories as sets because the order is not important
+    # and we want to avoid duplications.
+    fluxsite_paths = []
 
-    fluxsite_run_dir = Path(root_dir, internal.FLUXSITE_RUN_DIR)
-    if not fluxsite_run_dir.exists():
-        os.makedirs(fluxsite_run_dir)
+    # Run directory
+    fluxsite_paths.append(Path(root_dir, internal.RUN_DIR))
 
-    fluxsite_log_dir = Path(root_dir, internal.FLUXSITE_LOG_DIR)
-    if not fluxsite_log_dir.exists():
-        print(
-            f"Creating {fluxsite_log_dir.relative_to(root_dir)} directory: {fluxsite_log_dir}"
-        )
-        os.makedirs(fluxsite_log_dir)
+    # Fluxsite run directory
+    fluxsite_paths.append(Path(root_dir, internal.FLUXSITE_RUN_DIR))
 
-    fluxsite_output_dir = Path(root_dir, internal.FLUXSITE_OUTPUT_DIR)
-    if not fluxsite_output_dir.exists():
-        print(
-            f"Creating {fluxsite_output_dir.relative_to(root_dir)} directory: {fluxsite_output_dir}"
-        )
-        os.makedirs(fluxsite_output_dir)
+    # Fluxsite log directory
+    fluxsite_paths.append(Path(root_dir, internal.FLUXSITE_LOG_DIR))
 
-    fluxsite_tasks_dir = Path(root_dir, internal.FLUXSITE_TASKS_DIR)
-    if not fluxsite_tasks_dir.exists():
-        print(
-            f"Creating {fluxsite_tasks_dir.relative_to(root_dir)} directory: {fluxsite_tasks_dir}"
-        )
-        os.makedirs(fluxsite_tasks_dir)
+    # Fluxsite output directory
+    fluxsite_paths.append(Path(root_dir, internal.FLUXSITE_OUTPUT_DIR))
 
-    fluxsite_analysis_dir = Path(root_dir, internal.FLUXSITE_ANALYSIS_DIR)
-    if not fluxsite_analysis_dir.exists():
-        print(
-            f"Creating {fluxsite_analysis_dir.relative_to(root_dir)} directory: "
-            f"{fluxsite_analysis_dir}"
-        )
-        os.makedirs(fluxsite_analysis_dir)
+    # Fluxsite tasks directory
+    fluxsite_paths.append(Path(root_dir, internal.FLUXSITE_TASKS_DIR))
 
-    fluxsite_bitwise_cmp_dir = Path(root_dir, internal.FLUXSITE_BITWISE_CMP_DIR)
-    if not fluxsite_bitwise_cmp_dir.exists():
-        print(
-            f"Creating {fluxsite_bitwise_cmp_dir.relative_to(root_dir)} directory: "
-            f"{fluxsite_bitwise_cmp_dir}"
-        )
-        os.makedirs(fluxsite_bitwise_cmp_dir)
+    # Fluxsite analysis directory
+    fluxsite_paths.append(Path(root_dir, internal.FLUXSITE_ANALYSIS_DIR))
 
-    print("Creating task directories...")
+    # Fluxsite bit-wise comparison directory
+    fluxsite_paths.append(Path(root_dir, internal.FLUXSITE_BITWISE_CMP_DIR))
+
+    # Fluxsite tasks directories. append all of them as a set().
+    task_paths = []
     for task in fluxsite_tasks:
-        task_dir = Path(root_dir, internal.FLUXSITE_TASKS_DIR, task.get_task_name())
-        if not task_dir.exists():
-            if verbose:
-                print(f"Creating {task_dir.relative_to(root_dir)}: " f"{task_dir}")
-            os.makedirs(task_dir)
+        task_paths.append(
+            Path(root_dir, internal.FLUXSITE_TASKS_DIR, task.get_task_name()))
+    fluxsite_paths.append(task_paths)
+
+    return fluxsite_paths
+
+
+def setup_fluxsite_directory_tree(
+    fluxsite_paths: list[Union[Path, list]], root_dir=internal.CWD, verbose=False
+):
+    """Generate the directory structure used by `benchcab`."""
+
+    for work_path in fluxsite_paths:
+        if isinstance(work_path, list):
+            print("Creating task directories...")
+
+            for task_dir in work_path:
+                if verbose:
+                    print(f"Creating {task_dir.relative_to(root_dir)}: {task_dir}")
+                task_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            print(
+                f"Creating {work_path.relative_to(root_dir)} directory: {work_path}"
+            )
+            work_path.mkdir(parents=True, exist_ok=True)
