@@ -1,4 +1,4 @@
-"""`pytest` tests for cli.py"""
+"""`pytest` tests for `cli.py`."""
 
 import pytest
 
@@ -7,7 +7,6 @@ from benchcab.cli import generate_parser
 
 def test_cli_parser():
     """Tests for `generate_parser()`."""
-
     parser = generate_parser()
 
     # Success case: default benchcab command

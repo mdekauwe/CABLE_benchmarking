@@ -1,4 +1,4 @@
-"""`pytest` tests for fluxsite.py"""
+"""`pytest` tests for `fluxsite.py`."""
 
 import contextlib
 import io
@@ -29,7 +29,6 @@ def get_mock_task(
     subprocess_handler: SubprocessWrapperInterface = MockSubprocessWrapper(),
 ) -> Task:
     """Returns a mock `Task` instance."""
-
     repo = CableRepository(
         repo_id=1,
         path="path/to/test-branch",
@@ -126,7 +125,6 @@ def test_get_output_filename():
 
 def test_fetch_files():
     """Tests for `fetch_files()`."""
-
     # Success case: fetch files required to run CABLE
     task = get_mock_task()
 
@@ -158,7 +156,6 @@ def test_fetch_files():
 
 def test_clean_task():
     """Tests for `clean_task()`."""
-
     # Success case: fetch then clean files
     task = get_mock_task()
 
@@ -200,7 +197,6 @@ def test_clean_task():
 
 def test_patch_namelist():
     """Tests for `patch_namelist()`."""
-
     nml_path = MOCK_CWD / "test.nml"
 
     # Success case: patch non-existing namelist file
@@ -227,7 +223,6 @@ def test_patch_namelist():
 
 def test_patch_remove_namelist():
     """Tests for `patch_remove_namelist()`."""
-
     nml_path = MOCK_CWD / "test.nml"
 
     # Success case: remove a namelist parameter from derrived type
@@ -268,7 +263,6 @@ def test_patch_remove_namelist():
 
 def test_setup_task():
     """Tests for `setup_task()`."""
-
     task = get_mock_task()
     task_dir = Path(MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name())
 
@@ -326,7 +320,6 @@ def test_setup_task():
 
 def test_run_cable():
     """Tests for `run_cable()`."""
-
     mock_subprocess = MockSubprocessWrapper()
     task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
@@ -356,7 +349,6 @@ def test_run_cable():
 
 def test_add_provenance_info():
     """Tests for `add_provenance_info()`."""
-
     mock_subprocess = MockSubprocessWrapper()
     task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
@@ -401,7 +393,6 @@ def test_add_provenance_info():
 
 def test_get_fluxsite_tasks():
     """Tests for `get_fluxsite_tasks()`."""
-
     # Success case: get task list for two branches, two fluxsite met
     # forcing files and two science configurations
     config = get_mock_config()
@@ -430,7 +421,6 @@ def test_get_fluxsite_tasks():
 
 def test_get_fluxsite_comparisons():
     """Tests for `get_fluxsite_comparisons()`."""
-
     output_dir = MOCK_CWD / internal.FLUXSITE_OUTPUT_DIR
 
     # Success case: comparisons for two branches with two tasks
@@ -498,7 +488,6 @@ def test_get_fluxsite_comparisons():
 
 def test_get_comparison_name():
     """Tests for `get_comparison_name()`."""
-
     # Success case: check comparison name convention
     assert (
         get_comparison_name(

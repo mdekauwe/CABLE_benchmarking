@@ -8,7 +8,6 @@ from benchcab.internal import OPTIONAL_COMMANDS
 
 def generate_parser() -> argparse.ArgumentParser:
     """Returns the instance of `argparse.ArgumentParser` used for `benchcab`."""
-
     # parent parser that contains the help argument
     args_help = argparse.ArgumentParser(add_help=False)
     args_help.add_argument(

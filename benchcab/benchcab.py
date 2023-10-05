@@ -57,8 +57,7 @@ class Benchcab:
             )
 
     def _validate_environment(self, project: str, modules: list):
-        """Performs checks on current user environment"""
-
+        """Performs checks on current user environment."""
         if "gadi.nci" not in internal.NODENAME:
             print("Error: benchcab is currently implemented only on Gadi")
             sys.exit(1)
@@ -118,9 +117,9 @@ class Benchcab:
 
     def fluxsite_submit_job(self) -> None:
         """Submits the PBS job script step in the fluxsite test workflow."""
-
         if self.benchcab_exe_path is None:
-            raise RuntimeError("Path to benchcab executable is undefined.")
+            msg = "Path to benchcab executable is undefined."
+            raise RuntimeError(msg)
 
         job_script_path = self.root_dir / internal.QSUB_FNAME
         print(
@@ -162,7 +161,6 @@ class Benchcab:
 
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
-
         setup_src_dir()
 
         print("Checking out repositories...")
@@ -242,7 +240,6 @@ class Benchcab:
 
     def fluxsite_bitwise_cmp(self):
         """Endpoint for `benchcab fluxsite-bitwise-cmp`."""
-
         if not self.modules_handler.module_is_loaded("nccmp/1.8.5.0"):
             self.modules_handler.module_load(
                 "nccmp/1.8.5.0"
@@ -290,7 +287,6 @@ class Benchcab:
 
     def main(self):
         """Main function for `benchcab`."""
-
         if self.args.subcommand == "run":
             self.run()
 
@@ -324,7 +320,6 @@ def main():
 
     This is required for setup.py entry_points
     """
-
     app = Benchcab(argv=sys.argv, benchcab_exe_path=shutil.which(sys.argv[0]))
     app.main()
 

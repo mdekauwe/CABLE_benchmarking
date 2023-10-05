@@ -1,4 +1,4 @@
-"""`pytest` tests for benchcab.py"""
+"""`pytest` tests for `benchcab.py`."""
 
 import contextlib
 import io
@@ -32,7 +32,6 @@ def get_mock_app(
 
 def test_fluxsite_submit_job():
     """Tests for `Benchcab.fluxsite_submit_job()`."""
-
     # Success case: test qsub command is executed
     mock_subprocess = MockSubprocessWrapper()
     app = get_mock_app(mock_subprocess)

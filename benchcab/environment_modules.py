@@ -2,7 +2,7 @@
 
 import contextlib
 import sys
-from abc import ABC as AbstractBaseClass
+from abc import ABC as AbstractBaseClass  # noqa: N811
 from abc import abstractmethod
 
 sys.path.append("/opt/Modules/v4.3.0/init")
@@ -22,8 +22,7 @@ class EnvironmentModulesError(Exception):
 
 
 class EnvironmentModulesInterface(AbstractBaseClass):
-    """An abstract class (interface) that defines abstract methods for interacting
-    with the environment modules API.
+    """An abstract class (interface) that defines abstract methods for interacting with the environment modules API.
 
     An interface is defined so that we can easily mock the environment modules API
     in our unit tests.
@@ -31,19 +30,19 @@ class EnvironmentModulesInterface(AbstractBaseClass):
 
     @abstractmethod
     def module_is_avail(self, *args: str) -> bool:
-        """Wrapper around `module is-avail modulefile...`"""
+        """Wrapper around `module is-avail modulefile...`."""
 
     @abstractmethod
     def module_is_loaded(self, *args: str) -> bool:
-        """Wrapper around `module is-loaded modulefile...`"""
+        """Wrapper around `module is-loaded modulefile...`."""
 
     @abstractmethod
     def module_load(self, *args: str) -> None:
-        """Wrapper around `module load modulefile...`"""
+        """Wrapper around `module load modulefile...`."""
 
     @abstractmethod
     def module_unload(self, *args: str) -> None:
-        """Wrapper around `module unload modulefile...`"""
+        """Wrapper around `module unload modulefile...`."""
 
     @contextlib.contextmanager
     def load(self, modules: list[str], verbose=False):

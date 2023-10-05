@@ -1,4 +1,4 @@
-"""`pytest` tests for utils/subprocess.py"""
+"""`pytest` tests for `utils/subprocess.py`."""
 
 import os
 import subprocess
@@ -12,7 +12,6 @@ from .common import TMP_DIR
 
 def test_run_cmd(capfd):
     """Tests for `run_cmd()`."""
-
     subprocess_handler = SubprocessWrapper()
 
     # Success case: test stdout is suppressed in non-verbose mode

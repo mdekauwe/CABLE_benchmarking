@@ -12,7 +12,6 @@ from .common import MOCK_CWD
 @pytest.fixture(autouse=True)
 def _run_around_tests():
     """`pytest` autouse fixture that runs around each test."""
-
     # Setup:
     prevdir = Path.cwd()
     if MOCK_CWD.exists():

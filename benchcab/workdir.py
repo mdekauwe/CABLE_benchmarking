@@ -20,7 +20,6 @@ def clean_directory_tree(root_dir=internal.CWD):
 
 def setup_src_dir(root_dir=internal.CWD):
     """Make `src` directory."""
-
     src_dir = Path(root_dir, internal.SRC_DIR)
     if not src_dir.exists():
         print(f"Creating {src_dir.relative_to(root_dir)} directory: {src_dir}")
@@ -31,7 +30,6 @@ def setup_fluxsite_directory_tree(
     fluxsite_tasks: list[Task], root_dir=internal.CWD, verbose=False
 ):
     """Generate the directory structure used of `benchcab`."""
-
     run_dir = Path(root_dir, internal.RUN_DIR)
     if not run_dir.exists():
         run_dir.mkdir()

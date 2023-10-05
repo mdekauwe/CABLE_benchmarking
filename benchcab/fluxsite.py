@@ -58,7 +58,6 @@ def patch_namelist(nml_path: Path, patch: dict):
 
     The `patch` dictionary must comply with the `f90nml` api.
     """
-
     if not nml_path.exists():
         f90nml.write(patch, nml_path)
         return
@@ -72,14 +71,12 @@ def patch_remove_namelist(nml_path: Path, patch_remove: dict):
 
     The `patch_remove` dictionary must comply with the `f90nml` api.
     """
-
     nml = f90nml.read(nml_path)
     try:
         f90nml.write(deep_del(nml, patch_remove), nml_path, force=True)
     except KeyError as exc:
-        raise KeyError(
-            f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
-        ) from exc
+        msg = f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
+        raise KeyError(msg) from exc
 
 
 f90_logical_repr = {True: ".true.", False: ".false."}
@@ -131,7 +128,6 @@ class Task:
         4. make appropriate adjustments to namelist files
         5. apply a branch patch if specified
         """
-
         if verbose:
             print(f"Setting up task: {self.get_task_name()}")
 
@@ -199,7 +195,6 @@ class Task:
 
     def clean_task(self, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""
-
         if verbose:
             print("  Cleaning task")
 
@@ -240,7 +235,6 @@ class Task:
         - copies contents of 'namelists' directory to 'runs/fluxsite/tasks/<task_name>' directory.
         - copies cable executable from source to 'runs/fluxsite/tasks/<task_name>' directory.
         """
-
         task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / self.get_task_name()
 
         if verbose:
@@ -369,7 +363,6 @@ def run_tasks_in_parallel(
     tasks: list[Task], n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"], verbose=False
 ):
     """Runs tasks in `tasks` in parallel across multiple processes."""
-
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
     for task in tasks:
         task_queue.put(task)

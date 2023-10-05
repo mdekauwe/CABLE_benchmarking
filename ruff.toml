@@ -1,3 +1,6 @@
 # See https://docs.astral.sh/ruff/rules/
-select = ["F", "E", "I", "PL", "PTH", "PT"]
-ignore = ["E501"]
+select = ["F", "E", "I", "PL", "PTH", "PT", "N", "EM", "D"]
+ignore = [
+    "E501",  # https://docs.astral.sh/ruff/rules/line-too-long/
+    "D401",  # https://docs.astral.sh/ruff/rules/non-imperative-mood/
+]

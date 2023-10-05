@@ -219,14 +219,13 @@ OPTIONAL_COMMANDS = ["fluxsite-bitwise-cmp"]
 
 
 def get_met_forcing_file_names(experiment: str) -> list[str]:
-    """Get a list of meteorological forcing file basenames specified by an experiment
+    """Get a list of meteorological forcing file basenames specified by an experiment.
 
     The `experiment` argument either specifies a key in `MEORG_EXPERIMENTS` or a site id
     within the five-site-test experiment.
 
     Assume all site ids map uniquely to a met file in MET_DIR.
     """
-
     if experiment in MEORG_EXPERIMENTS["five-site-test"]:
         # the user is specifying a single met site
         return [next(MET_DIR.glob(f"{experiment}*")).name]

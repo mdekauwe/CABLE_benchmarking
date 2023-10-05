@@ -1,4 +1,4 @@
-"""`pytest` tests for repository.py"""
+"""`pytest` tests for `repository.py`."""
 
 import contextlib
 import io
@@ -49,7 +49,6 @@ def test_repo_id():
 
 def test_checkout():
     """Tests for `CableRepository.checkout()`."""
-
     # Success case: checkout mock repository
     mock_subprocess = MockSubprocessWrapper()
     repo = get_mock_repo(mock_subprocess)
@@ -92,7 +91,6 @@ def test_checkout():
 
 def test_svn_info_show_item():
     """Tests for `CableRepository.svn_info_show_item()`."""
-
     # Success case: call svn info command and get result
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.stdout = "mock standard output"
@@ -116,7 +114,6 @@ def test_svn_info_show_item():
 
 def test_pre_build():
     """Tests for `CableRepository.pre_build()`."""
-
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
     offline_dir = repo_dir / "offline"
     offline_dir.mkdir(parents=True)
@@ -157,7 +154,6 @@ def test_pre_build():
 
 def test_run_build():
     """Tests for `CableRepository.run_build()`."""
-
     mock_netcdf_root = "/mock/path/to/root"
     mock_modules = ["foo", "bar"]
     (MOCK_CWD / internal.SRC_DIR / "trunk" / "offline" / ".tmp").mkdir(parents=True)
@@ -222,7 +218,6 @@ def test_run_build():
 
 def test_post_build():
     """Tests for `CableRepository.post_build()`."""
-
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
     offline_dir = repo_dir / "offline"
     tmp_dir = offline_dir / ".tmp"
@@ -254,7 +249,6 @@ def test_post_build():
 
 def test_custom_build():
     """Tests for `CableRepository.custom_build()`."""
-
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
     custom_build_script_path = repo_dir / "my-custom-build.sh"
     custom_build_script_path.parent.mkdir(parents=True)
@@ -311,7 +305,6 @@ def test_custom_build():
 
 def test_remove_module_lines():
     """Tests for `remove_module_lines()`."""
-
     # Success case: test 'module' lines are removed from mock shell script
     file_path = MOCK_CWD / "test-build.sh"
     with file_path.open("w", encoding="utf-8") as file:

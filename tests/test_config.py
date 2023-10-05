@@ -1,4 +1,4 @@
-"""`pytest` tests for config.py"""
+"""`pytest` tests for `config.py`."""
 
 import pytest
 import yaml
@@ -10,7 +10,6 @@ from tests.common import TMP_DIR, get_mock_config
 
 def test_check_config():
     """Tests for `check_config()`."""
-
     # Success case: test barebones config is valid
     config = get_mock_config()
     check_config(config)
@@ -304,7 +303,6 @@ def test_check_config():
 
 def test_read_config():
     """Tests for `read_config()`."""
-
     # Success case: write config to file, then read config from file
     config = get_mock_config()
     filename = TMP_DIR / "config-barebones.yaml"

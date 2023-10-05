@@ -25,7 +25,6 @@ class ComparisonTask:
 
     def run(self, verbose=False) -> None:
         """Executes `nccmp -df` on the NetCDF files pointed to by `self.files`."""
-
         file_a, file_b = self.files
         if verbose:
             print(f"Comparing files {file_a.name} and {file_b.name} bitwise...")
@@ -63,7 +62,6 @@ def run_comparisons_in_parallel(
     verbose=False,
 ) -> None:
     """Runs bitwise comparison tasks in parallel across multiple processes."""
-
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
     for task in comparison_tasks:
         task_queue.put(task)
