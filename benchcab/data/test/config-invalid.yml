@@ -1,0 +1,19 @@
+# A sample configuration that should fail validation.
+project: w97
+
+experiment:  NON EXISTENT EXPERIMENT!!!
+
+realisations: [
+  {
+    path: "trunk",
+  },
+  {
+    path: "branches/Users/ccc561/v3.0-YP-changes",
+  }
+]
+
+modules: [
+  intel-compiler/2021.1.1,
+  netcdf/4.7.4,
+  openmpi/4.1.0
+]

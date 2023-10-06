@@ -1,0 +1,67 @@
+project:
+  type: "string"
+
+modules:
+  type: "list"
+  schema:
+    type: "string"
+
+experiment:
+  type: "string"
+  allowed: [
+    "five-site-test",
+    "forty-two-site-test",
+    "AU-Tum",
+    "AU-How",
+    "FI-Hyy",
+    "US-Var",
+    "US-Whs"
+  ]
+
+science_configuration:
+  type: "list"
+  schema: 
+    type: "dict"
+
+realisations:
+  type: "list"
+  required: true
+  schema:
+    type: "dict"
+    schema:
+      path:
+        type: "string"
+      name:
+        type: "string"
+        required: false
+      build_script:
+        type: "string"
+        required: false
+      revision:
+        type: "string"
+        required: false
+      patch:
+        type: "dict"
+        required: false
+
+fluxsite:
+  type: "dict"
+  required: false
+  schema:
+    multiprocessing:
+      type: "boolean"
+    pbs:
+      type: "dict"
+      schema:
+        ncpus:
+          type: "integer"
+          required: false
+        mem:
+          type: "integer"
+          required: false
+        walltime:
+          type: "integer"
+          required: false
+        storage:
+          type: "integer"
+          required: false
