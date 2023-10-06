@@ -11,7 +11,7 @@ from subprocess import CalledProcessError
 from benchcab import internal
 from benchcab.internal import get_met_forcing_file_names
 from benchcab.config import read_config
-from benchcab.workdir import fluxsite_directory_tree_list, setup_fluxsite_directory_tree, setup_src_dir
+from benchcab.workdir import setup_fluxsite_directory_tree
 from benchcab.repository import CableRepository
 from benchcab.fluxsite import (
     get_fluxsite_tasks,
@@ -25,7 +25,7 @@ from benchcab.cli import generate_parser
 from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 from benchcab.utils.pbs import render_job_script
-from benchcab.utils.fs import next_path
+from benchcab.utils.fs import next_path, mkdir, chdir
 
 
 class Benchcab:
@@ -163,7 +163,8 @@ class Benchcab:
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
 
-        setup_src_dir()
+        with chdir(self.root_dir):
+            mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
 
         print("Checking out repositories...")
         rev_number_log = ""
@@ -215,9 +216,7 @@ class Benchcab:
         """Endpoint for `benchcab fluxsite-setup-work-dir`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         print("Setting up run directory tree for fluxsite tests...")
-        fluxsite_paths = fluxsite_directory_tree_list(
-            fluxsite_tasks=tasks)
-        setup_fluxsite_directory_tree(fluxsite_paths=fluxsite_paths, verbose=self.args.verbose)
+        setup_fluxsite_directory_tree(verbose=self.args.verbose)
         print("Setting up tasks...")
         for task in tasks:
             task.setup_task(verbose=self.args.verbose)

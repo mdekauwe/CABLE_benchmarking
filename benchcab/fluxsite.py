@@ -16,7 +16,7 @@ from benchcab import internal
 from benchcab.repository import CableRepository
 from benchcab.comparison import ComparisonTask
 from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
-from benchcab.utils.fs import chdir
+from benchcab.utils.fs import chdir, mkdir
 
 
 # fmt: off
@@ -132,16 +132,23 @@ class Task:
         """Does all file manipulations to run cable in the task directory.
 
         These include:
-        1. cleaning output, namelist, log files and cable executables if they exist
-        2. copying namelist files (cable.nml, pft_params.nml and cable_soil_parm.nml)
+        1. creating the task directory if it does not exist.
+        2. cleaning output, namelist, log files and cable executables if they exist
+        3. copying namelist files (cable.nml, pft_params.nml and cable_soil_parm.nml)
         into the `runs/fluxsite/tasks/<task_name>` directory.
-        3. copying the cable executable from the source directory
-        4. make appropriate adjustments to namelist files
-        5. apply a branch patch if specified
+        4. copying the cable executable from the source directory
+        5. make appropriate adjustments to namelist files
+        6. apply a branch patch if specified
         """
 
         if verbose:
             print(f"Setting up task: {self.get_task_name()}")
+
+        with chdir(self.root_dir):
+            mkdir(
+                internal.FLUXSITE_TASKS_DIR / self.get_task_name(),
+                verbose=verbose, parents=True, exist_ok=True
+            )
 
         self.clean_task(verbose=verbose)
         self.fetch_files(verbose=verbose)

@@ -307,6 +307,7 @@ def test_setup_task():
         task.setup_task(verbose=True)
     assert buf.getvalue() == (
         "Setting up task: forcing-file_R1_S0\n"
+        "Creating runs/fluxsite/tasks/forcing-file_R1_S0 directory\n"
         "  Cleaning task\n"
         f"  Copying namelist files from {MOCK_CWD}/namelists to "
         f"{MOCK_CWD / 'runs/fluxsite/tasks/forcing-file_R1_S0'}\n"
