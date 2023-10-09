@@ -1,15 +1,17 @@
-"""`pytest` tests for benchcab.py"""
+"""`pytest` tests for `benchcab.py`."""
 
 import contextlib
 import io
-from subprocess import CalledProcessError
 from pathlib import Path
+from subprocess import CalledProcessError
+
 import pytest
 
-from benchcab.benchcab import Benchcab
 from benchcab import internal
+from benchcab.benchcab import Benchcab
 from benchcab.utils.subprocess import SubprocessWrapperInterface
-from .common import MockSubprocessWrapper, get_mock_config, MOCK_CWD
+
+from .common import MOCK_CWD, MockSubprocessWrapper, get_mock_config
 
 
 def get_mock_app(
@@ -30,7 +32,6 @@ def get_mock_app(
 
 def test_fluxsite_submit_job():
     """Tests for `Benchcab.fluxsite_submit_job()`."""
-
     # Success case: test qsub command is executed
     mock_subprocess = MockSubprocessWrapper()
     app = get_mock_app(mock_subprocess)

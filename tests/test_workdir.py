@@ -1,25 +1,22 @@
-"""`pytest` tests for workdir.py"""
+"""`pytest` tests for `workdir.py`."""
 
-import io
 import contextlib
+import io
 import shutil
 from pathlib import Path
 
-
-from tests.common import MOCK_CWD
-from tests.common import get_mock_config
 from benchcab.fluxsite import Task
 from benchcab.repository import CableRepository
 from benchcab.workdir import (
-    setup_fluxsite_directory_tree,
     clean_directory_tree,
+    setup_fluxsite_directory_tree,
     setup_src_dir,
 )
+from tests.common import MOCK_CWD, get_mock_config
 
 
 def setup_mock_tasks() -> list[Task]:
     """Return a mock list of fluxsite tasks."""
-
     config = get_mock_config()
     repo_a = CableRepository("trunk", repo_id=0)
     repo_b = CableRepository("path/to/my-branch", repo_id=1)
@@ -44,7 +41,6 @@ def setup_mock_tasks() -> list[Task]:
 
 def test_setup_directory_tree():
     """Tests for `setup_fluxsite_directory_tree()`."""
-
     # Success case: generate fluxsite directory structure
     tasks = setup_mock_tasks()
     setup_fluxsite_directory_tree(fluxsite_tasks=tasks, root_dir=MOCK_CWD)
@@ -121,7 +117,6 @@ def test_setup_directory_tree():
 
 def test_clean_directory_tree():
     """Tests for `clean_directory_tree()`."""
-
     # Success case: directory tree does not exist after clean
     tasks = setup_mock_tasks()
     setup_fluxsite_directory_tree(fluxsite_tasks=tasks, root_dir=MOCK_CWD)
@@ -136,7 +131,6 @@ def test_clean_directory_tree():
 
 def test_setup_src_dir():
     """Tests for `setup_src_dir()`."""
-
     # Success case: make src directory
     setup_src_dir(root_dir=MOCK_CWD)
     assert Path(MOCK_CWD, "src").exists()

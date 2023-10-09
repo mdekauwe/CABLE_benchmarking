@@ -1,33 +1,34 @@
-"""`pytest` tests for fluxsite.py"""
+"""`pytest` tests for `fluxsite.py`."""
 
-from pathlib import Path
-import io
 import contextlib
-import pytest
+import io
+import math
+from pathlib import Path
+
 import f90nml
 import netCDF4
+import pytest
 
+from benchcab import __version__, internal
 from benchcab.fluxsite import (
+    CableError,
+    Task,
+    get_comparison_name,
+    get_fluxsite_comparisons,
+    get_fluxsite_tasks,
     patch_namelist,
     patch_remove_namelist,
-    get_fluxsite_tasks,
-    get_fluxsite_comparisons,
-    get_comparison_name,
-    Task,
-    CableError,
 )
-from benchcab import internal
-from benchcab import __version__
 from benchcab.repository import CableRepository
 from benchcab.utils.subprocess import SubprocessWrapperInterface
-from .common import MOCK_CWD, get_mock_config, MockSubprocessWrapper
+
+from .common import MOCK_CWD, MockSubprocessWrapper, get_mock_config
 
 
 def get_mock_task(
     subprocess_handler: SubprocessWrapperInterface = MockSubprocessWrapper(),
 ) -> Task:
     """Returns a mock `Task` instance."""
-
     repo = CableRepository(
         repo_id=1,
         path="path/to/test-branch",
@@ -124,7 +125,6 @@ def test_get_output_filename():
 
 def test_fetch_files():
     """Tests for `fetch_files()`."""
-
     # Success case: fetch files required to run CABLE
     task = get_mock_task()
 
@@ -156,7 +156,6 @@ def test_fetch_files():
 
 def test_clean_task():
     """Tests for `clean_task()`."""
-
     # Success case: fetch then clean files
     task = get_mock_task()
 
@@ -198,7 +197,6 @@ def test_clean_task():
 
 def test_patch_namelist():
     """Tests for `patch_namelist()`."""
-
     nml_path = MOCK_CWD / "test.nml"
 
     # Success case: patch non-existing namelist file
@@ -225,7 +223,6 @@ def test_patch_namelist():
 
 def test_patch_remove_namelist():
     """Tests for `patch_remove_namelist()`."""
-
     nml_path = MOCK_CWD / "test.nml"
 
     # Success case: remove a namelist parameter from derrived type
@@ -266,7 +263,6 @@ def test_patch_remove_namelist():
 
 def test_setup_task():
     """Tests for `setup_task()`."""
-
     task = get_mock_task()
     task_dir = Path(MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name())
 
@@ -324,7 +320,6 @@ def test_setup_task():
 
 def test_run_cable():
     """Tests for `run_cable()`."""
-
     mock_subprocess = MockSubprocessWrapper()
     task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
@@ -354,7 +349,6 @@ def test_run_cable():
 
 def test_add_provenance_info():
     """Tests for `add_provenance_info()`."""
-
     mock_subprocess = MockSubprocessWrapper()
     task = get_mock_task(subprocess_handler=mock_subprocess)
     task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
@@ -363,10 +357,10 @@ def test_add_provenance_info():
     fluxsite_output_dir.mkdir()
 
     # Create mock namelist file in task directory:
-    f90nml.write(
-        {"cable": {"filename": {"met": "/path/to/met/file", "foo": 123}, "bar": True}},
-        task_dir / internal.CABLE_NML,
-    )
+    mock_namelist = {
+        "cable": {"filename": {"met": "/path/to/met/file", "foo": 123}, "bar": True}
+    }
+    f90nml.write(mock_namelist, task_dir / internal.CABLE_NML)
 
     # Create mock netcdf output file as if CABLE had just been run:
     nc_output_path = fluxsite_output_dir / task.get_output_filename()
@@ -379,8 +373,8 @@ def test_add_provenance_info():
         assert atts["cable_branch"] == mock_subprocess.stdout
         assert atts["svn_revision_number"] == mock_subprocess.stdout
         assert atts["benchcab_version"] == __version__
-        assert atts[r"filename%met"] == "/path/to/met/file"
-        assert atts[r"filename%foo"] == 123
+        assert atts[r"filename%met"] == mock_namelist["cable"]["filename"]["met"]
+        assert atts[r"filename%foo"] == mock_namelist["cable"]["filename"]["foo"]
         assert atts[r"bar"] == ".true."
 
     # Success case: test non-verbose output
@@ -399,7 +393,6 @@ def test_add_provenance_info():
 
 def test_get_fluxsite_tasks():
     """Tests for `get_fluxsite_tasks()`."""
-
     # Success case: get task list for two branches, two fluxsite met
     # forcing files and two science configurations
     config = get_mock_config()
@@ -428,7 +421,6 @@ def test_get_fluxsite_tasks():
 
 def test_get_fluxsite_comparisons():
     """Tests for `get_fluxsite_comparisons()`."""
-
     output_dir = MOCK_CWD / internal.FLUXSITE_OUTPUT_DIR
 
     # Success case: comparisons for two branches with two tasks
@@ -445,8 +437,9 @@ def test_get_fluxsite_comparisons():
         sci_config={"foo": "bar"},
         sci_conf_id=0,
     )
-    comparisons = get_fluxsite_comparisons([task_a, task_b], root_dir=MOCK_CWD)
-    assert len(comparisons) == 1
+    tasks = [task_a, task_b]
+    comparisons = get_fluxsite_comparisons(tasks, root_dir=MOCK_CWD)
+    assert len(comparisons) == math.comb(len(tasks), 2)
     assert comparisons[0].files == (
         output_dir / task_a.get_output_filename(),
         output_dir / task_b.get_output_filename(),
@@ -473,8 +466,9 @@ def test_get_fluxsite_comparisons():
         sci_config={"foo": "bar"},
         sci_conf_id=0,
     )
-    comparisons = get_fluxsite_comparisons([task_a, task_b, task_c], root_dir=MOCK_CWD)
-    assert len(comparisons) == 3
+    tasks = [task_a, task_b, task_c]
+    comparisons = get_fluxsite_comparisons(tasks, root_dir=MOCK_CWD)
+    assert len(comparisons) == math.comb(len(tasks), 2)
     assert comparisons[0].files == (
         output_dir / task_a.get_output_filename(),
         output_dir / task_b.get_output_filename(),
@@ -494,7 +488,6 @@ def test_get_fluxsite_comparisons():
 
 def test_get_comparison_name():
     """Tests for `get_comparison_name()`."""
-
     # Success case: check comparison name convention
     assert (
         get_comparison_name(

@@ -19,7 +19,6 @@ def render_job_script(
     This includes things such as running CABLE and running bitwise comparison jobs
     between model output files.
     """
-
     if pbs_config is None:
         pbs_config = internal.FLUXSITE_DEFAULT_PBS
 

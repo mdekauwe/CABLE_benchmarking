@@ -1,15 +1,15 @@
 """A module containing utility functions that wraps around the `subprocess` module."""
 
-from abc import ABC as AbstractBaseClass, abstractmethod
-import subprocess
 import contextlib
 import pathlib
+import subprocess
+from abc import ABC as AbstractBaseClass  # noqa: N811
+from abc import abstractmethod
 from typing import Any, Optional
 
 
 class SubprocessWrapperInterface(AbstractBaseClass):
-    """An abstract class (interface) that defines abstract methods for running
-    subprocess commands.
+    """An abstract class (interface) that defines abstract methods for running subprocess commands.
 
     An interface is defined so that we can easily mock the subprocess API in our
     unit tests.

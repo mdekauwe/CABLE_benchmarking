@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import Optional
 
 from benchcab import internal
-from benchcab.environment_modules import EnvironmentModulesInterface, EnvironmentModules
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.utils.fs import chdir, copy2, rename
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 
 class CableRepository:
@@ -42,7 +42,8 @@ class CableRepository:
     def repo_id(self) -> int:
         """Get or set the repo ID."""
         if self._repo_id is None:
-            raise RuntimeError("Attempting to access undefined repo ID")
+            msg = "Attempting to access undefined repo ID"
+            raise RuntimeError(msg)
         return self._repo_id
 
     @repo_id.setter
@@ -77,17 +78,17 @@ class CableRepository:
 
     def custom_build(self, modules: list[str], verbose=False):
         """Build CABLE using a custom build script."""
-
         build_script_path = (
             self.root_dir / internal.SRC_DIR / self.name / self.build_script
         )
 
         if not build_script_path.is_file():
-            raise FileNotFoundError(
+            msg = (
                 f"The build script, {build_script_path}, could not be found. "
                 "Do you need to specify a different build script with the "
-                "'build_script' option in config.yaml?",
+                "'build_script' option in config.yaml?"
             )
+            raise FileNotFoundError(msg)
 
         tmp_script_path = build_script_path.parent / "tmp-build.sh"
 
@@ -116,7 +117,6 @@ class CableRepository:
 
     def pre_build(self, verbose=False):
         """Runs CABLE pre-build steps."""
-
         path_to_repo = self.root_dir / internal.SRC_DIR / self.name
         tmp_dir = path_to_repo / "offline" / ".tmp"
         if not tmp_dir.exists():
@@ -154,7 +154,6 @@ class CableRepository:
 
     def run_build(self, modules: list[str], verbose=False):
         """Runs CABLE build scripts."""
-
         path_to_repo = self.root_dir / internal.SRC_DIR / self.name
         tmp_dir = path_to_repo / "offline" / ".tmp"
 
@@ -179,7 +178,6 @@ class CableRepository:
 
     def post_build(self, verbose=False):
         """Runs CABLE post-build steps."""
-
         path_to_repo = self.root_dir / internal.SRC_DIR / self.name
         tmp_dir = path_to_repo / "offline" / ".tmp"
 

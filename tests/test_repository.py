@@ -1,15 +1,17 @@
-"""`pytest` tests for repository.py"""
+"""`pytest` tests for `repository.py`."""
 
+import contextlib
+import io
 import os
 import shutil
-import io
-import contextlib
+
 import pytest
 
 from benchcab import internal
 from benchcab.environment_modules import EnvironmentModulesInterface
-from benchcab.utils.subprocess import SubprocessWrapperInterface
 from benchcab.repository import CableRepository, remove_module_lines
+from benchcab.utils.subprocess import SubprocessWrapperInterface
+
 from .common import MOCK_CWD, MockEnvironmentModules, MockSubprocessWrapper
 
 
@@ -27,15 +29,17 @@ def get_mock_repo(
 
 def test_repo_id():
     """Tests for `CableRepository.repo_id`."""
+    mock_repo_id = 123
 
     # Success case: get repository ID
-    repo = CableRepository("path/to/repo", repo_id=123)
-    assert repo.repo_id == 123
+    repo = CableRepository("path/to/repo", repo_id=mock_repo_id)
+    assert repo.repo_id == mock_repo_id
 
     # Success case: set repository ID
-    repo = CableRepository("path/to/repo", repo_id=123)
-    repo.repo_id = 456
-    assert repo.repo_id == 456
+    new_repo_id = 456
+    repo = CableRepository("path/to/repo", repo_id=mock_repo_id)
+    repo.repo_id = new_repo_id
+    assert repo.repo_id == new_repo_id
 
     # Failure case: access undefined repository ID
     repo = CableRepository("path/to/repo")
@@ -45,7 +49,6 @@ def test_repo_id():
 
 def test_checkout():
     """Tests for `CableRepository.checkout()`."""
-
     # Success case: checkout mock repository
     mock_subprocess = MockSubprocessWrapper()
     repo = get_mock_repo(mock_subprocess)
@@ -88,7 +91,6 @@ def test_checkout():
 
 def test_svn_info_show_item():
     """Tests for `CableRepository.svn_info_show_item()`."""
-
     # Success case: call svn info command and get result
     mock_subprocess = MockSubprocessWrapper()
     mock_subprocess.stdout = "mock standard output"
@@ -112,7 +114,6 @@ def test_svn_info_show_item():
 
 def test_pre_build():
     """Tests for `CableRepository.pre_build()`."""
-
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
     offline_dir = repo_dir / "offline"
     offline_dir.mkdir(parents=True)
@@ -153,7 +154,6 @@ def test_pre_build():
 
 def test_run_build():
     """Tests for `CableRepository.run_build()`."""
-
     mock_netcdf_root = "/mock/path/to/root"
     mock_modules = ["foo", "bar"]
     (MOCK_CWD / internal.SRC_DIR / "trunk" / "offline" / ".tmp").mkdir(parents=True)
@@ -218,7 +218,6 @@ def test_run_build():
 
 def test_post_build():
     """Tests for `CableRepository.post_build()`."""
-
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
     offline_dir = repo_dir / "offline"
     tmp_dir = offline_dir / ".tmp"
@@ -250,7 +249,6 @@ def test_post_build():
 
 def test_custom_build():
     """Tests for `CableRepository.custom_build()`."""
-
     repo_dir = MOCK_CWD / internal.SRC_DIR / "trunk"
     custom_build_script_path = repo_dir / "my-custom-build.sh"
     custom_build_script_path.parent.mkdir(parents=True)
@@ -307,10 +305,9 @@ def test_custom_build():
 
 def test_remove_module_lines():
     """Tests for `remove_module_lines()`."""
-
     # Success case: test 'module' lines are removed from mock shell script
     file_path = MOCK_CWD / "test-build.sh"
-    with open(file_path, "w", encoding="utf-8") as file:
+    with file_path.open("w", encoding="utf-8") as file:
         file.write(
             """#!/bin/bash
 module add bar
@@ -337,7 +334,7 @@ host_gadi()
 
     remove_module_lines(file_path)
 
-    with open(file_path, "r", encoding="utf-8") as file:
+    with file_path.open("r", encoding="utf-8") as file:
         assert file.read() == (
             """#!/bin/bash
 

@@ -1,12 +1,11 @@
-"""`pytest` tests for utils/pbs.py"""
+"""`pytest` tests for `utils/pbs.py`."""
 
-from benchcab.utils.pbs import render_job_script
 from benchcab import internal
+from benchcab.utils.pbs import render_job_script
 
 
 def test_render_job_script():
     """Tests for `render_job_script()`."""
-
     # Success case: test default job script generated is correct
     assert render_job_script(
         project="tm70",
