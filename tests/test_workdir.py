@@ -1,15 +1,11 @@
-"""`pytest` tests for workdir.py"""
+"""`pytest` tests for `workdir.py`."""
 
 import shutil
 from pathlib import Path
 
-
-from tests.common import MOCK_CWD
-from benchcab.workdir import (
-    setup_fluxsite_directory_tree,
-    clean_directory_tree,
-)
 from benchcab.utils.fs import mkdir
+from benchcab.workdir import clean_directory_tree
+from tests.common import MOCK_CWD
 
 
 def setup_mock_fluxsite_directory_list():
@@ -41,7 +37,6 @@ def test_setup_directory_tree():
 
 def test_clean_directory_tree():
     """Tests for `clean_directory_tree()`."""
-
     # Success case: directory tree does not exist after clean
     setup_fluxsite_directory_tree(root_dir=MOCK_CWD)
 

@@ -1,4 +1,4 @@
-"""`pytest` tests for utils/fs.py"""
+"""`pytest` tests for `utils/fs.py`."""
 
 import pytest
 import io
@@ -6,12 +6,12 @@ import contextlib
 from pathlib import Path
 
 from benchcab.utils.fs import next_path, mkdir
+
 from .common import MOCK_CWD
 
 
 def test_next_path():
     """Tests for `next_path()`."""
-
     pattern = "rev_number-*.log"
 
     # Success case: get next path in 'empty' CWD

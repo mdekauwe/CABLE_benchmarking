@@ -1,8 +1,8 @@
 """A module containing functions for generating the directory structure
 used for `benchcab`."""
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 from benchcab import internal
 from benchcab.utils.fs import mkdir, chdir

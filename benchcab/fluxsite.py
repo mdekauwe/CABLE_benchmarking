@@ -1,26 +1,23 @@
 """A module containing functions and data structures for running fluxsite tasks."""
 
-
-import shutil
 import multiprocessing
 import queue
+import shutil
 from pathlib import Path
-from typing import TypeVar, Dict, Any
 from subprocess import CalledProcessError
+from typing import Any, Dict, TypeVar
 
+import f90nml
 import flatdict
 import netCDF4
-import f90nml
 
-from benchcab import internal
-from benchcab.repository import CableRepository
+from benchcab import __version__, internal
 from benchcab.comparison import ComparisonTask
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.repository import CableRepository
 from benchcab.utils.fs import chdir, mkdir
-
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 # fmt: off
-# pylint: disable=invalid-name,missing-function-docstring,line-too-long
 # ======================================================
 # Copyright (c) 2017 - 2022 Samuel Colvin and other contributors
 # from https://github.com/pydantic/pydantic/blob/fd2991fe6a73819b48c906e3c3274e8e47d0f761/pydantic/utils.py#L200
@@ -39,7 +36,6 @@ def deep_update(mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, A
     return updated_mapping
 
 # ======================================================
-# pylint: enable=invalid-name,missing-function-docstring,line-too-long
 # fmt: on
 
 
@@ -62,15 +58,12 @@ def patch_namelist(nml_path: Path, patch: dict):
 
     The `patch` dictionary must comply with the `f90nml` api.
     """
-
     if not nml_path.exists():
         f90nml.write(patch, nml_path)
         return
 
     nml = f90nml.read(nml_path)
-    # remove namelist file as f90nml cannot write to an existing file
-    nml_path.unlink()
-    f90nml.write(deep_update(nml, patch), nml_path)
+    f90nml.write(deep_update(nml, patch), nml_path, force=True)
 
 
 def patch_remove_namelist(nml_path: Path, patch_remove: dict):
@@ -78,16 +71,12 @@ def patch_remove_namelist(nml_path: Path, patch_remove: dict):
 
     The `patch_remove` dictionary must comply with the `f90nml` api.
     """
-
     nml = f90nml.read(nml_path)
-    # remove namelist file as f90nml cannot write to an existing file
-    nml_path.unlink()
     try:
-        f90nml.write(deep_del(nml, patch_remove), nml_path)
+        f90nml.write(deep_del(nml, patch_remove), nml_path, force=True)
     except KeyError as exc:
-        raise KeyError(
-            f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
-        ) from exc
+        msg = f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
+        raise KeyError(msg) from exc
 
 
 f90_logical_repr = {True: ".true.", False: ".false."}
@@ -140,7 +129,6 @@ class Task:
         5. make appropriate adjustments to namelist files
         6. apply a branch patch if specified
         """
-
         if verbose:
             print(f"Setting up task: {self.get_task_name()}")
 
@@ -214,7 +202,6 @@ class Task:
 
     def clean_task(self, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""
-
         if verbose:
             print("  Cleaning task")
 
@@ -255,7 +242,6 @@ class Task:
         - copies contents of 'namelists' directory to 'runs/fluxsite/tasks/<task_name>' directory.
         - copies cable executable from source to 'runs/fluxsite/tasks/<task_name>' directory.
         """
-
         task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / self.get_task_name()
 
         if verbose:
@@ -348,6 +334,7 @@ class Task:
                     **{
                         "cable_branch": self.repo.svn_info_show_item("url"),
                         "svn_revision_number": self.repo.svn_info_show_item("revision"),
+                        "benchcab_version": __version__,
                     },
                 }
             )
@@ -383,7 +370,6 @@ def run_tasks_in_parallel(
     tasks: list[Task], n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"], verbose=False
 ):
     """Runs tasks in `tasks` in parallel across multiple processes."""
-
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
     for task in tasks:
         task_queue.put(task)

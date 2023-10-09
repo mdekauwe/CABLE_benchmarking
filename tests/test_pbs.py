@@ -1,12 +1,11 @@
-"""`pytest` tests for utils/pbs.py"""
+"""`pytest` tests for `utils/pbs.py`."""
 
-from benchcab.utils.pbs import render_job_script
 from benchcab import internal
+from benchcab.utils.pbs import render_job_script
 
 
 def test_render_job_script():
     """Tests for `render_job_script()`."""
-
     # Success case: test default job script generated is correct
     assert render_job_script(
         project="tm70",
@@ -23,7 +22,9 @@ def test_render_job_script():
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
+
+set -ex
 
 module purge
 module load foo
@@ -31,16 +32,9 @@ module load bar
 module load baz
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
 
 /absolute/path/to/benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
-    exit 1
-fi
+
 """
     )
 
@@ -61,7 +55,9 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
+
+set -ex
 
 module purge
 module load foo
@@ -69,16 +65,9 @@ module load bar
 module load baz
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml -v
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
 
 /absolute/path/to/benchcab fluxsite-bitwise-cmp --config=/path/to/config.yaml -v
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
-    exit 1
-fi
+
 """
     )
 
@@ -99,7 +88,9 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
+
+set -ex
 
 module purge
 module load foo
@@ -107,10 +98,6 @@ module load bar
 module load baz
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
 
 """
     )
@@ -138,7 +125,9 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70+gdata/foo
+#PBS -l storage=gdata/ks32+gdata/hh5+gdata/foo
+
+set -ex
 
 module purge
 module load foo
@@ -146,10 +135,6 @@ module load bar
 module load baz
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
 
 """
     )
@@ -172,7 +157,9 @@ fi
 #PBS -P tm70
 #PBS -j oe
 #PBS -m e
-#PBS -l storage=gdata/ks32+gdata/hh5+gdata/tm70
+#PBS -l storage=gdata/ks32+gdata/hh5
+
+set -ex
 
 module purge
 module load foo
@@ -180,10 +167,6 @@ module load bar
 module load baz
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
 
 """
     )

@@ -19,7 +19,6 @@ def render_job_script(
     This includes things such as running CABLE and running bitwise comparison jobs
     between model output files.
     """
-
     if pbs_config is None:
         pbs_config = internal.FLUXSITE_DEFAULT_PBS
 
@@ -33,7 +32,6 @@ def render_job_script(
     storage_flags = [
         "gdata/ks32",
         "gdata/hh5",
-        f"gdata/{project}",
         *pbs_config.get("storage", internal.FLUXSITE_DEFAULT_PBS["storage"]),
     ]
     return f"""#!/bin/bash
@@ -47,18 +45,13 @@ def render_job_script(
 #PBS -m e
 #PBS -l storage={'+'.join(storage_flags)}
 
+set -ex
+
 module purge
 {module_load_lines}
 
 {benchcab_path} fluxsite-run-tasks --config={config_path} {verbose_flag}
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-run-tasks failed. Exiting...'
-    exit 1
-fi
 {'' if skip_bitwise_cmp else f'''
 {benchcab_path} fluxsite-bitwise-cmp --config={config_path} {verbose_flag}
-if [ $? -ne 0 ]; then
-    echo 'Error: benchcab fluxsite-bitwise-cmp failed. Exiting...'
-    exit 1
-fi''' }
+''' }
 """
