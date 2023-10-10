@@ -27,7 +27,7 @@ def test_run_comparison():
     """Tests for `run_comparison()`."""
     file_a = MOCK_CWD / "file_a.nc"
     file_b = MOCK_CWD / "file_b.nc"
-    bitwise_cmp_dir = MOCK_CWD / internal.FLUXSITE_BITWISE_CMP_DIR
+    bitwise_cmp_dir = MOCK_CWD / internal.FLUXSITE_DIRS["BITWISE_CMP"]
     bitwise_cmp_dir.mkdir(parents=True)
 
     # Success case: run comparison

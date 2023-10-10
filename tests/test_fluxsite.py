@@ -70,11 +70,11 @@ def setup_mock_namelists_directory():
 
 def setup_mock_run_directory(task: Task):
     """Setup mock run directory for a single task."""
-    task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
+    task_dir = MOCK_CWD / internal.FLUXSITE_DIRS["TASKS"] / task.get_task_name()
     task_dir.mkdir(parents=True)
-    output_dir = MOCK_CWD / internal.FLUXSITE_OUTPUT_DIR
+    output_dir = MOCK_CWD / internal.FLUXSITE_DIRS["OUTPUT"]
     output_dir.mkdir(parents=True)
-    log_dir = MOCK_CWD / internal.FLUXSITE_LOG_DIR
+    log_dir = MOCK_CWD / internal.FLUXSITE_DIRS["LOG"]
     log_dir.mkdir(parents=True)
 
 
@@ -92,12 +92,12 @@ def do_mock_checkout_and_build():
 def do_mock_run(task: Task):
     """Make mock log files and output files as if benchcab has just been run."""
     output_path = Path(
-        MOCK_CWD, internal.FLUXSITE_OUTPUT_DIR, task.get_output_filename()
+        MOCK_CWD, internal.FLUXSITE_DIRS["OUTPUT"], task.get_output_filename()
     )
     output_path.touch()
     assert output_path.exists()
 
-    log_path = Path(MOCK_CWD, internal.FLUXSITE_LOG_DIR, task.get_log_filename())
+    log_path = Path(MOCK_CWD, internal.FLUXSITE_DIRS["LOG"], task.get_log_filename())
     log_path.touch()
     assert log_path.exists()
 
@@ -135,22 +135,22 @@ def test_fetch_files():
     task.fetch_files()
 
     assert Path(
-        MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name(), internal.CABLE_NML
+        MOCK_CWD, internal.FLUXSITE_DIRS["TASKS"], task.get_task_name(), internal.CABLE_NML
     ).exists()
     assert Path(
         MOCK_CWD,
-        internal.FLUXSITE_TASKS_DIR,
+        internal.FLUXSITE_DIRS["TASKS"],
         task.get_task_name(),
         internal.CABLE_VEGETATION_NML,
     ).exists()
     assert Path(
         MOCK_CWD,
-        internal.FLUXSITE_TASKS_DIR,
+        internal.FLUXSITE_DIRS["TASKS"],
         task.get_task_name(),
         internal.CABLE_SOIL_NML,
     ).exists()
     assert Path(
-        MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name(), internal.CABLE_EXE
+        MOCK_CWD, internal.FLUXSITE_DIRS["TASKS"], task.get_task_name(), internal.CABLE_EXE
     ).exists()
 
 
@@ -170,28 +170,28 @@ def test_clean_task():
     task.clean_task()
 
     assert not Path(
-        MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name(), internal.CABLE_NML
+        MOCK_CWD, internal.FLUXSITE_DIRS["TASKS"], task.get_task_name(), internal.CABLE_NML
     ).exists()
     assert not Path(
         MOCK_CWD,
-        internal.FLUXSITE_TASKS_DIR,
+        internal.FLUXSITE_DIRS["TASKS"],
         task.get_task_name(),
         internal.CABLE_VEGETATION_NML,
     ).exists()
     assert not Path(
         MOCK_CWD,
-        internal.FLUXSITE_TASKS_DIR,
+        internal.FLUXSITE_DIRS["TASKS"],
         task.get_task_name(),
         internal.CABLE_SOIL_NML,
     ).exists()
     assert not Path(
-        MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name(), internal.CABLE_EXE
+        MOCK_CWD, internal.FLUXSITE_DIRS["TASKS"], task.get_task_name(), internal.CABLE_EXE
     ).exists()
     assert not Path(
-        MOCK_CWD, internal.FLUXSITE_OUTPUT_DIR, task.get_output_filename()
+        MOCK_CWD, internal.FLUXSITE_DIRS["OUTPUT"], task.get_output_filename()
     ).exists()
     assert not Path(
-        MOCK_CWD, internal.FLUXSITE_LOG_DIR, task.get_log_filename()
+        MOCK_CWD, internal.FLUXSITE_DIRS["LOG"], task.get_log_filename()
     ).exists()
 
 
@@ -264,7 +264,7 @@ def test_patch_remove_namelist():
 def test_setup_task():
     """Tests for `setup_task()`."""
     task = get_mock_task()
-    task_dir = Path(MOCK_CWD, internal.FLUXSITE_TASKS_DIR, task.get_task_name())
+    task_dir = Path(MOCK_CWD, internal.FLUXSITE_DIRS["TASKS"], task.get_task_name())
 
     setup_mock_namelists_directory()
     setup_mock_run_directory(task)
@@ -277,9 +277,9 @@ def test_setup_task():
         "filename": {
             "met": str(internal.MET_DIR / "forcing-file.nc"),
             "out": str(
-                MOCK_CWD / internal.FLUXSITE_OUTPUT_DIR / task.get_output_filename()
+                MOCK_CWD / internal.FLUXSITE_DIRS["OUTPUT"] / task.get_output_filename()
             ),
-            "log": str(MOCK_CWD / internal.FLUXSITE_LOG_DIR / task.get_log_filename()),
+            "log": str(MOCK_CWD / internal.FLUXSITE_DIRS["LOG"] / task.get_log_filename()),
             "restart_out": " ",
             "type": str(MOCK_CWD / internal.GRID_FILE),
         },
@@ -323,7 +323,7 @@ def test_run_cable():
     """Tests for `run_cable()`."""
     mock_subprocess = MockSubprocessWrapper()
     task = get_mock_task(subprocess_handler=mock_subprocess)
-    task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
+    task_dir = MOCK_CWD / internal.FLUXSITE_DIRS["TASKS"] / task.get_task_name()
     task_dir.mkdir(parents=True)
 
     # Success case: run CABLE executable in subprocess
@@ -352,10 +352,10 @@ def test_add_provenance_info():
     """Tests for `add_provenance_info()`."""
     mock_subprocess = MockSubprocessWrapper()
     task = get_mock_task(subprocess_handler=mock_subprocess)
-    task_dir = MOCK_CWD / internal.FLUXSITE_TASKS_DIR / task.get_task_name()
+    task_dir = MOCK_CWD / internal.FLUXSITE_DIRS["TASKS"] / task.get_task_name()
     task_dir.mkdir(parents=True)
-    fluxsite_output_dir = MOCK_CWD / internal.FLUXSITE_OUTPUT_DIR
-    fluxsite_output_dir.mkdir()
+    FLUXSITE_OUTPUT_DIR = MOCK_CWD / internal.FLUXSITE_DIRS["OUTPUT"]
+    FLUXSITE_OUTPUT_DIR.mkdir()
 
     # Create mock namelist file in task directory:
     mock_namelist = {
@@ -364,7 +364,7 @@ def test_add_provenance_info():
     f90nml.write(mock_namelist, task_dir / internal.CABLE_NML)
 
     # Create mock netcdf output file as if CABLE had just been run:
-    nc_output_path = fluxsite_output_dir / task.get_output_filename()
+    nc_output_path = FLUXSITE_OUTPUT_DIR / task.get_output_filename()
     netCDF4.Dataset(nc_output_path, "w")
 
     # Success case: add global attributes to netcdf file
@@ -422,7 +422,7 @@ def test_get_fluxsite_tasks():
 
 def test_get_fluxsite_comparisons():
     """Tests for `get_fluxsite_comparisons()`."""
-    output_dir = MOCK_CWD / internal.FLUXSITE_OUTPUT_DIR
+    output_dir = MOCK_CWD / internal.FLUXSITE_DIRS["OUTPUT"]
 
     # Success case: comparisons for two branches with two tasks
     # met0_S0_R0 met0_S0_R1

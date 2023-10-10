@@ -132,18 +132,17 @@ class Task:
         if verbose:
             print(f"Setting up task: {self.get_task_name()}")
 
-        with chdir(self.root_dir):
-            mkdir(
-                internal.FLUXSITE_TASKS_DIR / self.get_task_name(),
-                verbose=verbose, parents=True, exist_ok=True
-            )
+        mkdir(
+            internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name(),
+            verbose=verbose, parents=True, exist_ok=True
+        )
 
         self.clean_task(verbose=verbose)
         self.fetch_files(verbose=verbose)
 
         nml_path = (
             self.root_dir
-            / internal.FLUXSITE_TASKS_DIR
+            / internal.FLUXSITE_DIRS["TASKS"]
             / self.get_task_name()
             / internal.CABLE_NML
         )
@@ -158,12 +157,12 @@ class Task:
                         "met": str(internal.MET_DIR / self.met_forcing_file),
                         "out": str(
                             self.root_dir
-                            / internal.FLUXSITE_OUTPUT_DIR
+                            / internal.FLUXSITE_DIRS["OUTPUT"]
                             / self.get_output_filename()
                         ),
                         "log": str(
                             self.root_dir
-                            / internal.FLUXSITE_LOG_DIR
+                            / internal.FLUXSITE_DIRS["LOG"]
                             / self.get_log_filename()
                         ),
                         "restart_out": " ",
@@ -205,7 +204,7 @@ class Task:
         if verbose:
             print("  Cleaning task")
 
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / self.get_task_name()
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
 
         cable_exe = task_dir / internal.CABLE_EXE
         if cable_exe.exists():
@@ -224,12 +223,12 @@ class Task:
             cable_soil_nml.unlink()
 
         output_file = (
-            self.root_dir / internal.FLUXSITE_OUTPUT_DIR / self.get_output_filename()
+            self.root_dir / internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
         )
         if output_file.exists():
             output_file.unlink()
 
-        log_file = self.root_dir / internal.FLUXSITE_LOG_DIR / self.get_log_filename()
+        log_file = self.root_dir / internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
         if log_file.exists():
             log_file.unlink()
 
@@ -242,7 +241,7 @@ class Task:
         - copies contents of 'namelists' directory to 'runs/fluxsite/tasks/<task_name>' directory.
         - copies cable executable from source to 'runs/fluxsite/tasks/<task_name>' directory.
         """
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / self.get_task_name()
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
 
         if verbose:
             print(
@@ -273,7 +272,7 @@ class Task:
     def run(self, verbose=False):
         """Runs a single fluxsite task."""
         task_name = self.get_task_name()
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / task_name
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / task_name
         if verbose:
             print(
                 f"Running task {task_name}... CABLE standard output "
@@ -291,7 +290,7 @@ class Task:
         Raises `CableError` when CABLE returns a non-zero exit code.
         """
         task_name = self.get_task_name()
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / task_name
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / task_name
         stdout_path = task_dir / internal.CABLE_STDOUT_FILENAME
 
         try:
@@ -312,11 +311,11 @@ class Task:
         the namelist file used to run cable.
         """
         nc_output_path = (
-            self.root_dir / internal.FLUXSITE_OUTPUT_DIR / self.get_output_filename()
+            self.root_dir / internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
         )
         nml = f90nml.read(
             self.root_dir
-            / internal.FLUXSITE_TASKS_DIR
+            / internal.FLUXSITE_DIRS["TASKS"]
             / self.get_task_name()
             / internal.CABLE_NML
         )
@@ -403,7 +402,7 @@ def get_fluxsite_comparisons(
     forcing, but differ in realisations. When multiple realisations are
     specified, return all pair wise combinations between all realisations.
     """
-    output_dir = root_dir / internal.FLUXSITE_OUTPUT_DIR
+    output_dir = root_dir / internal.FLUXSITE_DIRS["OUTPUT"]
     return [
         ComparisonTask(
             files=(

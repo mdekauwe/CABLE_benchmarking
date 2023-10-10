@@ -47,11 +47,11 @@ def test_fluxsite_submit_job():
         f"nodes: {internal.QSUB_FNAME}\n"
         f"PBS job submitted: {mock_subprocess.stdout}\n"
         "The CABLE log file for each task is written to "
-        f"{internal.FLUXSITE_LOG_DIR}/<task_name>_log.txt\n"
+        f"{internal.FLUXSITE_DIRS['LOG']}/<task_name>_log.txt\n"
         "The CABLE standard output for each task is written to "
-        f"{internal.FLUXSITE_TASKS_DIR}/<task_name>/out.txt\n"
+        f"{internal.FLUXSITE_DIRS['TASKS']}/<task_name>/out.txt\n"
         "The NetCDF output for each task is written to "
-        f"{internal.FLUXSITE_OUTPUT_DIR}/<task_name>_out.nc\n"
+        f"{internal.FLUXSITE_DIRS['OUTPUT']}/<task_name>_out.nc\n"
     )
 
     # Failure case: qsub non-zero exit code prints an error message

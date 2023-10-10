@@ -20,8 +20,9 @@ from benchcab.fluxsite import (
     run_tasks,
     run_tasks_in_parallel,
 )
+from benchcab.internal import get_met_forcing_file_names
 from benchcab.repository import CableRepository
-from benchcab.utils.fs import next_path, mkdir, chdir
+from benchcab.utils.fs import next_path, mkdir
 from benchcab.utils.pbs import render_job_script
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 from benchcab.workdir import setup_fluxsite_directory_tree
@@ -151,18 +152,17 @@ class Benchcab:
         print(
             f"PBS job submitted: {proc.stdout.strip()}\n"
             "The CABLE log file for each task is written to "
-            f"{internal.FLUXSITE_LOG_DIR}/<task_name>_log.txt\n"
+            f"{internal.FLUXSITE_DIRS['LOG']}/<task_name>_log.txt\n"
             "The CABLE standard output for each task is written to "
-            f"{internal.FLUXSITE_TASKS_DIR}/<task_name>/out.txt\n"
+            f"{internal.FLUXSITE_DIRS['TASKS']}/<task_name>/out.txt\n"
             "The NetCDF output for each task is written to "
-            f"{internal.FLUXSITE_OUTPUT_DIR}/<task_name>_out.nc"
+            f"{internal.FLUXSITE_DIRS['OUTPUT']}/<task_name>_out.nc"
         )
 
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
 
-        with chdir(self.root_dir):
-            mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
+        mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
 
         print("Checking out repositories...")
         rev_number_log = ""
