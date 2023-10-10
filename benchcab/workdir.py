@@ -1,5 +1,4 @@
-"""A module containing functions for generating the directory structure
-used for `benchcab`."""
+"""Functions for generating the directory structure used for `benchcab`."""
 
 import shutil
 
@@ -24,6 +23,5 @@ def setup_fluxsite_directory_tree(verbose=False):
     verbose : bool, default False
         Additional level of logging if True
     """
-
     for path in internal.FLUXSITE_DIRS.values():
         mkdir(path, verbose=verbose, parents=True, exist_ok=True)

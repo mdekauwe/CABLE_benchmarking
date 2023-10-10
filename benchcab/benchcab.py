@@ -22,7 +22,7 @@ from benchcab.fluxsite import (
 )
 from benchcab.internal import get_met_forcing_file_names
 from benchcab.repository import CableRepository
-from benchcab.utils.fs import next_path, mkdir
+from benchcab.utils.fs import mkdir, next_path
 from benchcab.utils.pbs import render_job_script
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 from benchcab.workdir import setup_fluxsite_directory_tree
@@ -161,7 +161,6 @@ class Benchcab:
 
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
-
         mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
 
         print("Checking out repositories...")
