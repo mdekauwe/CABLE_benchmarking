@@ -1,11 +1,9 @@
 """`pytest` tests for `workdir.py`."""
 
-import shutil
 from pathlib import Path
 
 import pytest
 
-from benchcab.utils.fs import mkdir
 from benchcab.workdir import (
     clean_directory_tree,
     setup_fluxsite_directory_tree,
@@ -34,13 +32,11 @@ def test_setup_directory_tree():
     for path in setup_mock_fluxsite_directory_list():
         assert path.exists()
 
-    shutil.rmtree(Path("runs"))
-
 
 @pytest.mark.parametrize("test_path", [Path("runs"), Path("src")])
 def test_clean_directory_tree(test_path):
     """Tests for `clean_directory_tree()`."""
     # Success case: directory tree does not exist after clean
-    mkdir(test_path)
+    test_path.mkdir()
     clean_directory_tree()
     assert not test_path.exists()
