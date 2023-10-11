@@ -39,7 +39,7 @@ class ComparisonTask:
         except CalledProcessError as exc:
             output_file = (
                 self.root_dir
-                / internal.FLUXSITE_BITWISE_CMP_DIR
+                / internal.FLUXSITE_DIRS["BITWISE_CMP"]
                 / f"{self.task_name}.txt"
             )
             with output_file.open("w", encoding="utf-8") as file:

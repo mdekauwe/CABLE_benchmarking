@@ -52,3 +52,21 @@ def next_path(path: Path, path_pattern: str, sep: str = "-"):
         new_file_index = int(last_file_index) + 1
 
     return f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}"
+
+
+def mkdir(new_path: Path, verbose=False, **kwargs):
+    """Create the `new_path` directory.
+
+    Parameters
+    ----------
+    new_path : Path
+        Path to the directory to be created.
+    verbose : bool, default False
+        Additional level of logging if True
+    **kwargs : dict, optional
+        Additional options for `pathlib.Path.mkdir()`
+    """
+
+    if verbose:
+        print(f"Creating {new_path} directory")
+    new_path.mkdir(**kwargs)

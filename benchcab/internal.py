@@ -57,23 +57,27 @@ CNPBIOME_FILE = (
     CABLE_AUX_DIR / "core" / "biogeochem" / "pftlookup_csiro_v16_17tiles.csv"
 )
 
+# Fluxsite directory tree
+FLUXSITE_DIRS = {}
 # Relative path to root directory for CABLE fluxsite runs
-FLUXSITE_RUN_DIR = RUN_DIR / "fluxsite"
+FLUXSITE_DIRS["RUN"] = RUN_DIR / "fluxsite"
 
 # Relative path to directory that stores CABLE log files
-FLUXSITE_LOG_DIR = FLUXSITE_RUN_DIR / "logs"
+FLUXSITE_DIRS["LOG"] = FLUXSITE_DIRS["RUN"] / "logs"
 
 # Relative path to directory that stores CABLE output files
-FLUXSITE_OUTPUT_DIR = FLUXSITE_RUN_DIR / "outputs"
+FLUXSITE_DIRS["OUTPUT"] = FLUXSITE_DIRS["RUN"] / "outputs"
 
 # Relative path to tasks directory where cable executables are run from
-FLUXSITE_TASKS_DIR = FLUXSITE_RUN_DIR / "tasks"
+FLUXSITE_DIRS["TASKS"] = FLUXSITE_DIRS["RUN"] / "tasks"
 
 # Relative path to directory that stores results of analysis on model output
-FLUXSITE_ANALYSIS_DIR = FLUXSITE_RUN_DIR / "analysis"
+FLUXSITE_DIRS["ANALYSIS"] = FLUXSITE_DIRS["RUN"] / "analysis"
 
 # Relative path to directory that stores bitwise comparison results
-FLUXSITE_BITWISE_CMP_DIR = FLUXSITE_ANALYSIS_DIR / "bitwise-comparisons"
+FLUXSITE_DIRS["BITWISE_CMP"] = (
+    FLUXSITE_DIRS["ANALYSIS"] / "bitwise-comparisons"
+)
 
 # Path to met files:
 MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")

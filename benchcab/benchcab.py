@@ -22,10 +22,10 @@ from benchcab.fluxsite import (
 )
 from benchcab.internal import get_met_forcing_file_names
 from benchcab.repository import CableRepository
-from benchcab.utils.fs import next_path
+from benchcab.utils.fs import mkdir, next_path
 from benchcab.utils.pbs import render_job_script
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
-from benchcab.workdir import setup_fluxsite_directory_tree, setup_src_dir
+from benchcab.workdir import setup_fluxsite_directory_tree
 
 
 class Benchcab:
@@ -152,16 +152,16 @@ class Benchcab:
         print(
             f"PBS job submitted: {proc.stdout.strip()}\n"
             "The CABLE log file for each task is written to "
-            f"{internal.FLUXSITE_LOG_DIR}/<task_name>_log.txt\n"
+            f"{internal.FLUXSITE_DIRS['LOG']}/<task_name>_log.txt\n"
             "The CABLE standard output for each task is written to "
-            f"{internal.FLUXSITE_TASKS_DIR}/<task_name>/out.txt\n"
+            f"{internal.FLUXSITE_DIRS['TASKS']}/<task_name>/out.txt\n"
             "The NetCDF output for each task is written to "
-            f"{internal.FLUXSITE_OUTPUT_DIR}/<task_name>_out.nc"
+            f"{internal.FLUXSITE_DIRS['OUTPUT']}/<task_name>_out.nc"
         )
 
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
-        setup_src_dir()
+        mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
 
         print("Checking out repositories...")
         rev_number_log = ""
@@ -213,7 +213,7 @@ class Benchcab:
         """Endpoint for `benchcab fluxsite-setup-work-dir`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         print("Setting up run directory tree for fluxsite tests...")
-        setup_fluxsite_directory_tree(fluxsite_tasks=tasks, verbose=self.args.verbose)
+        setup_fluxsite_directory_tree(verbose=self.args.verbose)
         print("Setting up tasks...")
         for task in tasks:
             task.setup_task(verbose=self.args.verbose)
