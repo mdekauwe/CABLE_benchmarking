@@ -26,12 +26,12 @@ class TestRenderJobScript:
 #PBS -m e
 #PBS -l storage=gdata/ks32+gdata/hh5
 
-set -ex
-
 module purge
 module load foo
 module load bar
 module load baz
+
+set -ev
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 
@@ -60,12 +60,12 @@ module load baz
 #PBS -m e
 #PBS -l storage=gdata/ks32+gdata/hh5
 
-set -ex
-
 module purge
 module load foo
 module load bar
 module load baz
+
+set -ev
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml -v
 
@@ -94,12 +94,12 @@ module load baz
 #PBS -m e
 #PBS -l storage=gdata/ks32+gdata/hh5
 
-set -ex
-
 module purge
 module load foo
 module load bar
 module load baz
+
+set -ev
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 
@@ -132,12 +132,12 @@ module load baz
 #PBS -m e
 #PBS -l storage=gdata/ks32+gdata/hh5+gdata/foo
 
-set -ex
-
 module purge
 module load foo
 module load bar
 module load baz
+
+set -ev
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 
@@ -165,12 +165,12 @@ module load baz
 #PBS -m e
 #PBS -l storage=gdata/ks32+gdata/hh5
 
-set -ex
-
 module purge
 module load foo
 module load bar
 module load baz
+
+set -ev
 
 /absolute/path/to/benchcab fluxsite-run-tasks --config=/path/to/config.yaml 
 
