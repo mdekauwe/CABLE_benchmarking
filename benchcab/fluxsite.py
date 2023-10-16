@@ -1,8 +1,9 @@
 """A module containing functions and data structures for running fluxsite tasks."""
 
 import multiprocessing
-import queue
+import operator
 import shutil
+import sys
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any, Dict, TypeVar
@@ -134,7 +135,9 @@ class Task:
 
         mkdir(
             internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name(),
-            verbose=verbose, parents=True, exist_ok=True
+            verbose=verbose,
+            parents=True,
+            exist_ok=True,
         )
 
         self.clean_task(verbose=verbose)
@@ -204,7 +207,9 @@ class Task:
         if verbose:
             print("  Cleaning task")
 
-        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
+        task_dir = (
+            self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
+        )
 
         cable_exe = task_dir / internal.CABLE_EXE
         if cable_exe.exists():
@@ -223,12 +228,16 @@ class Task:
             cable_soil_nml.unlink()
 
         output_file = (
-            self.root_dir / internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
+            self.root_dir
+            / internal.FLUXSITE_DIRS["OUTPUT"]
+            / self.get_output_filename()
         )
         if output_file.exists():
             output_file.unlink()
 
-        log_file = self.root_dir / internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
+        log_file = (
+            self.root_dir / internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
+        )
         if log_file.exists():
             log_file.unlink()
 
@@ -241,7 +250,9 @@ class Task:
         - copies contents of 'namelists' directory to 'runs/fluxsite/tasks/<task_name>' directory.
         - copies cable executable from source to 'runs/fluxsite/tasks/<task_name>' directory.
         """
-        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
+        task_dir = (
+            self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
+        )
 
         if verbose:
             print(
@@ -282,7 +293,12 @@ class Task:
             self.run_cable(verbose=verbose)
             self.add_provenance_info(verbose=verbose)
         except CableError:
-            return
+            # Note: here we suppress CABLE specific errors so that `benchcab`
+            # exits successfully. This then allows us to run bitwise comparisons
+            # checks on whatever output files were produced without having any
+            # sort of task dependence between CABLE tasks and comparison tasks.
+            pass
+        sys.stdout.flush()
 
     def run_cable(self, verbose=False):
         """Run the CABLE executable for the given task.
@@ -311,7 +327,9 @@ class Task:
         the namelist file used to run cable.
         """
         nc_output_path = (
-            self.root_dir / internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
+            self.root_dir
+            / internal.FLUXSITE_DIRS["OUTPUT"]
+            / self.get_output_filename()
         )
         nml = f90nml.read(
             self.root_dir
@@ -369,28 +387,9 @@ def run_tasks_in_parallel(
     tasks: list[Task], n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"], verbose=False
 ):
     """Runs tasks in `tasks` in parallel across multiple processes."""
-    task_queue: multiprocessing.Queue = multiprocessing.Queue()
-    for task in tasks:
-        task_queue.put(task)
-
-    processes = []
-    for _ in range(n_processes):
-        proc = multiprocessing.Process(target=worker_run, args=[task_queue, verbose])
-        proc.start()
-        processes.append(proc)
-
-    for proc in processes:
-        proc.join()
-
-
-def worker_run(task_queue: multiprocessing.Queue, verbose=False):
-    """Runs tasks in `task_queue` until the queue is emptied."""
-    while True:
-        try:
-            task = task_queue.get_nowait()
-        except queue.Empty:
-            return
-        task.run(verbose=verbose)
+    run_task = operator.methodcaller("run", verbose=verbose)
+    with multiprocessing.Pool(n_processes) as pool:
+        pool.map(run_task, tasks, chunksize=1)
 
 
 def get_fluxsite_comparisons(
