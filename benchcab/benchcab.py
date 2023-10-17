@@ -1,31 +1,31 @@
 """Contains the main program entry point for `benchcab`."""
 
-import sys
-import os
 import grp
+import os
 import shutil
+import sys
 from pathlib import Path
-from typing import Optional
 from subprocess import CalledProcessError
+from typing import Optional
 
 from benchcab import internal
-from benchcab.internal import get_met_forcing_file_names
+from benchcab.cli import generate_parser
+from benchcab.comparison import run_comparisons, run_comparisons_in_parallel
 from benchcab.config import read_config
-from benchcab.workdir import setup_fluxsite_directory_tree, setup_src_dir
-from benchcab.repository import CableRepository
+from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.fluxsite import (
-    get_fluxsite_tasks,
+    Task,
     get_fluxsite_comparisons,
+    get_fluxsite_tasks,
     run_tasks,
     run_tasks_in_parallel,
-    Task,
 )
-from benchcab.comparison import run_comparisons, run_comparisons_in_parallel
-from benchcab.cli import generate_parser
-from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
-from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
+from benchcab.internal import get_met_forcing_file_names
+from benchcab.repository import CableRepository
+from benchcab.utils.fs import mkdir, next_path
 from benchcab.utils.pbs import render_job_script
-from benchcab.utils.fs import next_path
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
+from benchcab.workdir import setup_fluxsite_directory_tree
 
 
 class Benchcab:
@@ -43,7 +43,7 @@ class Benchcab:
         validate_env: bool = True,
     ) -> None:
         self.args = generate_parser().parse_args(argv[1:] if argv[1:] else ["-h"])
-        self.config = config if config else read_config(self.args.config)
+        self.config = config if config else read_config(Path(self.args.config))
         self.repos = [
             CableRepository(**config, repo_id=id)
             for id, config in enumerate(self.config["realisations"])
@@ -57,8 +57,7 @@ class Benchcab:
             )
 
     def _validate_environment(self, project: str, modules: list):
-        """Performs checks on current user environment"""
-
+        """Performs checks on current user environment."""
         if "gadi.nci" not in internal.NODENAME:
             print("Error: benchcab is currently implemented only on Gadi")
             sys.exit(1)
@@ -118,9 +117,9 @@ class Benchcab:
 
     def fluxsite_submit_job(self) -> None:
         """Submits the PBS job script step in the fluxsite test workflow."""
-
         if self.benchcab_exe_path is None:
-            raise RuntimeError("Path to benchcab executable is undefined.")
+            msg = "Path to benchcab executable is undefined."
+            raise RuntimeError(msg)
 
         job_script_path = self.root_dir / internal.QSUB_FNAME
         print(
@@ -153,17 +152,16 @@ class Benchcab:
         print(
             f"PBS job submitted: {proc.stdout.strip()}\n"
             "The CABLE log file for each task is written to "
-            f"{internal.FLUXSITE_LOG_DIR}/<task_name>_log.txt\n"
+            f"{internal.FLUXSITE_DIRS['LOG']}/<task_name>_log.txt\n"
             "The CABLE standard output for each task is written to "
-            f"{internal.FLUXSITE_TASKS_DIR}/<task_name>/out.txt\n"
+            f"{internal.FLUXSITE_DIRS['TASKS']}/<task_name>/out.txt\n"
             "The NetCDF output for each task is written to "
-            f"{internal.FLUXSITE_OUTPUT_DIR}/<task_name>_out.nc"
+            f"{internal.FLUXSITE_DIRS['OUTPUT']}/<task_name>_out.nc"
         )
 
     def checkout(self):
         """Endpoint for `benchcab checkout`."""
-
-        setup_src_dir()
+        mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
 
         print("Checking out repositories...")
         rev_number_log = ""
@@ -184,7 +182,7 @@ class Benchcab:
         print(
             f"Writing revision number info to {rev_number_log_path.relative_to(self.root_dir)}"
         )
-        with open(rev_number_log_path, "w", encoding="utf-8") as file:
+        with rev_number_log_path.open("w", encoding="utf-8") as file:
             file.write(rev_number_log)
 
         print("")
@@ -215,7 +213,7 @@ class Benchcab:
         """Endpoint for `benchcab fluxsite-setup-work-dir`."""
         tasks = self.tasks if self.tasks else self._initialise_tasks()
         print("Setting up run directory tree for fluxsite tests...")
-        setup_fluxsite_directory_tree(fluxsite_tasks=tasks, verbose=self.args.verbose)
+        setup_fluxsite_directory_tree(verbose=self.args.verbose)
         print("Setting up tasks...")
         for task in tasks:
             task.setup_task(verbose=self.args.verbose)
@@ -242,7 +240,6 @@ class Benchcab:
 
     def fluxsite_bitwise_cmp(self):
         """Endpoint for `benchcab fluxsite-bitwise-cmp`."""
-
         if not self.modules_handler.module_is_loaded("nccmp/1.8.5.0"):
             self.modules_handler.module_load(
                 "nccmp/1.8.5.0"
@@ -290,7 +287,6 @@ class Benchcab:
 
     def main(self):
         """Main function for `benchcab`."""
-
         if self.args.subcommand == "run":
             self.run()
 
@@ -324,7 +320,6 @@ def main():
 
     This is required for setup.py entry_points
     """
-
     app = Benchcab(argv=sys.argv, benchcab_exe_path=shutil.which(sys.argv[0]))
     app.main()
 

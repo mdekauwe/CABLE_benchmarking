@@ -5,9 +5,8 @@ import queue
 from pathlib import Path
 from subprocess import CalledProcessError
 
-
 from benchcab import internal
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 
 class ComparisonTask:
@@ -26,7 +25,6 @@ class ComparisonTask:
 
     def run(self, verbose=False) -> None:
         """Executes `nccmp -df` on the NetCDF files pointed to by `self.files`."""
-
         file_a, file_b = self.files
         if verbose:
             print(f"Comparing files {file_a.name} and {file_b.name} bitwise...")
@@ -41,10 +39,10 @@ class ComparisonTask:
         except CalledProcessError as exc:
             output_file = (
                 self.root_dir
-                / internal.FLUXSITE_BITWISE_CMP_DIR
+                / internal.FLUXSITE_DIRS["BITWISE_CMP"]
                 / f"{self.task_name}.txt"
             )
-            with open(output_file, "w", encoding="utf-8") as file:
+            with output_file.open("w", encoding="utf-8") as file:
                 file.write(exc.stdout)
             print(
                 f"Failure: files {file_a.name} {file_b.name} differ. "
@@ -64,7 +62,6 @@ def run_comparisons_in_parallel(
     verbose=False,
 ) -> None:
     """Runs bitwise comparison tasks in parallel across multiple processes."""
-
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
     for task in comparison_tasks:
         task_queue.put(task)

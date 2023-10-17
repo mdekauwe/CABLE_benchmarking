@@ -3,7 +3,7 @@ import pkgutil
 import json
 import yaml
 import os
-import importlib
+from importlib import resources
 from pathlib import Path
 
 
@@ -22,8 +22,7 @@ def get_installed_root() -> Path:
     Path
         Path to the installed root.
     """
-    return Path(importlib.resources.files('benchcab'))
-
+    return Path(resources.files('benchcab'))
 
 
 def load_package_data(filename: str) -> dict:

@@ -1,26 +1,23 @@
 """A module containing functions and data structures for running fluxsite tasks."""
 
-
-import shutil
 import multiprocessing
 import queue
+import shutil
 from pathlib import Path
-from typing import TypeVar, Dict, Any
 from subprocess import CalledProcessError
+from typing import Any, Dict, TypeVar
 
+import f90nml
 import flatdict
 import netCDF4
-import f90nml
 
-from benchcab import internal
-from benchcab.repository import CableRepository
+from benchcab import __version__, internal
 from benchcab.comparison import ComparisonTask
-from benchcab.utils.subprocess import SubprocessWrapperInterface, SubprocessWrapper
-from benchcab.utils.fs import chdir
-
+from benchcab.repository import CableRepository
+from benchcab.utils.fs import chdir, mkdir
+from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 # fmt: off
-# pylint: disable=invalid-name,missing-function-docstring,line-too-long
 # ======================================================
 # Copyright (c) 2017 - 2022 Samuel Colvin and other contributors
 # from https://github.com/pydantic/pydantic/blob/fd2991fe6a73819b48c906e3c3274e8e47d0f761/pydantic/utils.py#L200
@@ -39,7 +36,6 @@ def deep_update(mapping: Dict[KeyType, Any], *updating_mappings: Dict[KeyType, A
     return updated_mapping
 
 # ======================================================
-# pylint: enable=invalid-name,missing-function-docstring,line-too-long
 # fmt: on
 
 
@@ -62,15 +58,12 @@ def patch_namelist(nml_path: Path, patch: dict):
 
     The `patch` dictionary must comply with the `f90nml` api.
     """
-
     if not nml_path.exists():
         f90nml.write(patch, nml_path)
         return
 
     nml = f90nml.read(nml_path)
-    # remove namelist file as f90nml cannot write to an existing file
-    nml_path.unlink()
-    f90nml.write(deep_update(nml, patch), nml_path)
+    f90nml.write(deep_update(nml, patch), nml_path, force=True)
 
 
 def patch_remove_namelist(nml_path: Path, patch_remove: dict):
@@ -78,16 +71,12 @@ def patch_remove_namelist(nml_path: Path, patch_remove: dict):
 
     The `patch_remove` dictionary must comply with the `f90nml` api.
     """
-
     nml = f90nml.read(nml_path)
-    # remove namelist file as f90nml cannot write to an existing file
-    nml_path.unlink()
     try:
-        f90nml.write(deep_del(nml, patch_remove), nml_path)
+        f90nml.write(deep_del(nml, patch_remove), nml_path, force=True)
     except KeyError as exc:
-        raise KeyError(
-            f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
-        ) from exc
+        msg = f"Namelist parameters specified in `patch_remove` do not exist in {nml_path.name}."
+        raise KeyError(msg) from exc
 
 
 f90_logical_repr = {True: ".true.", False: ".false."}
@@ -132,23 +121,28 @@ class Task:
         """Does all file manipulations to run cable in the task directory.
 
         These include:
-        1. cleaning output, namelist, log files and cable executables if they exist
-        2. copying namelist files (cable.nml, pft_params.nml and cable_soil_parm.nml)
+        1. creating the task directory if it does not exist.
+        2. cleaning output, namelist, log files and cable executables if they exist
+        3. copying namelist files (cable.nml, pft_params.nml and cable_soil_parm.nml)
         into the `runs/fluxsite/tasks/<task_name>` directory.
-        3. copying the cable executable from the source directory
-        4. make appropriate adjustments to namelist files
-        5. apply a branch patch if specified
+        4. copying the cable executable from the source directory
+        5. make appropriate adjustments to namelist files
+        6. apply a branch patch if specified
         """
-
         if verbose:
             print(f"Setting up task: {self.get_task_name()}")
+
+        mkdir(
+            internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name(),
+            verbose=verbose, parents=True, exist_ok=True
+        )
 
         self.clean_task(verbose=verbose)
         self.fetch_files(verbose=verbose)
 
         nml_path = (
             self.root_dir
-            / internal.FLUXSITE_TASKS_DIR
+            / internal.FLUXSITE_DIRS["TASKS"]
             / self.get_task_name()
             / internal.CABLE_NML
         )
@@ -163,12 +157,12 @@ class Task:
                         "met": str(internal.MET_DIR / self.met_forcing_file),
                         "out": str(
                             self.root_dir
-                            / internal.FLUXSITE_OUTPUT_DIR
+                            / internal.FLUXSITE_DIRS["OUTPUT"]
                             / self.get_output_filename()
                         ),
                         "log": str(
                             self.root_dir
-                            / internal.FLUXSITE_LOG_DIR
+                            / internal.FLUXSITE_DIRS["LOG"]
                             / self.get_log_filename()
                         ),
                         "restart_out": " ",
@@ -207,11 +201,10 @@ class Task:
 
     def clean_task(self, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""
-
         if verbose:
             print("  Cleaning task")
 
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / self.get_task_name()
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
 
         cable_exe = task_dir / internal.CABLE_EXE
         if cable_exe.exists():
@@ -230,12 +223,12 @@ class Task:
             cable_soil_nml.unlink()
 
         output_file = (
-            self.root_dir / internal.FLUXSITE_OUTPUT_DIR / self.get_output_filename()
+            self.root_dir / internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
         )
         if output_file.exists():
             output_file.unlink()
 
-        log_file = self.root_dir / internal.FLUXSITE_LOG_DIR / self.get_log_filename()
+        log_file = self.root_dir / internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
         if log_file.exists():
             log_file.unlink()
 
@@ -248,8 +241,7 @@ class Task:
         - copies contents of 'namelists' directory to 'runs/fluxsite/tasks/<task_name>' directory.
         - copies cable executable from source to 'runs/fluxsite/tasks/<task_name>' directory.
         """
-
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / self.get_task_name()
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
 
         if verbose:
             print(
@@ -280,7 +272,7 @@ class Task:
     def run(self, verbose=False):
         """Runs a single fluxsite task."""
         task_name = self.get_task_name()
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / task_name
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / task_name
         if verbose:
             print(
                 f"Running task {task_name}... CABLE standard output "
@@ -298,7 +290,7 @@ class Task:
         Raises `CableError` when CABLE returns a non-zero exit code.
         """
         task_name = self.get_task_name()
-        task_dir = self.root_dir / internal.FLUXSITE_TASKS_DIR / task_name
+        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / task_name
         stdout_path = task_dir / internal.CABLE_STDOUT_FILENAME
 
         try:
@@ -319,11 +311,11 @@ class Task:
         the namelist file used to run cable.
         """
         nc_output_path = (
-            self.root_dir / internal.FLUXSITE_OUTPUT_DIR / self.get_output_filename()
+            self.root_dir / internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
         )
         nml = f90nml.read(
             self.root_dir
-            / internal.FLUXSITE_TASKS_DIR
+            / internal.FLUXSITE_DIRS["TASKS"]
             / self.get_task_name()
             / internal.CABLE_NML
         )
@@ -341,6 +333,7 @@ class Task:
                     **{
                         "cable_branch": self.repo.svn_info_show_item("url"),
                         "svn_revision_number": self.repo.svn_info_show_item("revision"),
+                        "benchcab_version": __version__,
                     },
                 }
             )
@@ -376,7 +369,6 @@ def run_tasks_in_parallel(
     tasks: list[Task], n_processes=internal.FLUXSITE_DEFAULT_PBS["ncpus"], verbose=False
 ):
     """Runs tasks in `tasks` in parallel across multiple processes."""
-
     task_queue: multiprocessing.Queue = multiprocessing.Queue()
     for task in tasks:
         task_queue.put(task)
@@ -410,7 +402,7 @@ def get_fluxsite_comparisons(
     forcing, but differ in realisations. When multiple realisations are
     specified, return all pair wise combinations between all realisations.
     """
-    output_dir = root_dir / internal.FLUXSITE_OUTPUT_DIR
+    output_dir = root_dir / internal.FLUXSITE_DIRS["OUTPUT"]
     return [
         ComparisonTask(
             files=(

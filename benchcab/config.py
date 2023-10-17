@@ -1,5 +1,6 @@
 """A module containing all *_config() functions."""
 from pathlib import Path
+
 import yaml
 from benchcab import internal
 from cerberus import Validator
