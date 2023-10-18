@@ -39,9 +39,6 @@ def load_package_data(filename: str) -> dict:
     # Alias yaml and yml.
     ext = ext if ext != 'yaml' else 'yml'
 
-    # Make sure it is one of the supported types.
-    assert ext in PACKAGE_DATA_DECODERS.keys()
-
     # Extract from the installations data directory.
     raw = pkgutil.get_data('benchcab', os.path.join('data', filename)).decode('utf-8')
 

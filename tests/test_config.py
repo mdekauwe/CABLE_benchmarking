@@ -23,7 +23,7 @@ def test_read_config_fail():
 
 
 def test_validate_config_valid():
-    """Test validate_config() for a valid confiog file."""
+    """Test validate_config() for a valid config file."""
     valid_config = bu.load_package_data('test/config-valid.yml')
     assert bc.validate_config(valid_config)
 

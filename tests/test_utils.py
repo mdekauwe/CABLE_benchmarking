@@ -20,4 +20,4 @@ def test_load_package_data_fail():
     """Test load_package_data() fails as expected."""
     
     with pytest.raises(FileNotFoundError):
-        missing = bu.load_package_data('config-missing.yml'), dict()
+        missing = bu.load_package_data('config-missing.yml')
