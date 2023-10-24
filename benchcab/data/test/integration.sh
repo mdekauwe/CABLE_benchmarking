@@ -2,7 +2,7 @@
 
 set -ex
 
-TEST_DIR=/scratch/rp23/$USER/benchcab/integration
+TEST_DIR=/scratch/$PROJECT/$USER/benchcab/integration
 EXAMPLE_REPO="git@github.com:CABLE-LSM/bench_example.git"
 
 # Remove the test work space, then recreate
@@ -15,7 +15,7 @@ cd $TEST_DIR
 git reset --hard 6287539e96fc8ef36dc578201fbf9847314147fb
 
 cat > config.yaml << EOL
-project: rp23
+project: $PROJECT
 
 experiment: AU-Tum
 
@@ -32,7 +32,7 @@ modules: [
 fluxsite:
     pbs:
         storage:
-            - scratch/rp23
+            - scratch/$PROJECT
 EOL
 
 benchcab run -v
