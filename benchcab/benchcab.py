@@ -134,7 +134,7 @@ class Benchcab:
                 verbose=self.args.verbose,
                 skip_bitwise_cmp="fluxsite-bitwise-cmp" in self.args.skip,
                 benchcab_path=str(self.benchcab_exe_path),
-                pbs_config=self.config.get("pbs"),
+                pbs_config=self.config.get("fluxsite", {}).get("pbs"),
             )
             file.write(contents)
 

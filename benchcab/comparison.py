@@ -1,7 +1,8 @@
 """A module containing functions and data structures for running comparison tasks."""
 
 import multiprocessing
-import queue
+import operator
+import sys
 from pathlib import Path
 from subprocess import CalledProcessError
 
@@ -48,6 +49,7 @@ class ComparisonTask:
                 f"Failure: files {file_a.name} {file_b.name} differ. "
                 f"Results of diff have been written to {output_file}"
             )
+        sys.stdout.flush()
 
 
 def run_comparisons(comparison_tasks: list[ComparisonTask], verbose=False) -> None:
@@ -62,27 +64,6 @@ def run_comparisons_in_parallel(
     verbose=False,
 ) -> None:
     """Runs bitwise comparison tasks in parallel across multiple processes."""
-    task_queue: multiprocessing.Queue = multiprocessing.Queue()
-    for task in comparison_tasks:
-        task_queue.put(task)
-
-    processes = []
-    for _ in range(n_processes):
-        proc = multiprocessing.Process(
-            target=worker_comparison, args=[task_queue, verbose]
-        )
-        proc.start()
-        processes.append(proc)
-
-    for proc in processes:
-        proc.join()
-
-
-def worker_comparison(task_queue: multiprocessing.Queue, verbose=False) -> None:
-    """Runs bitwise comparison tasks in `task_queue` until the queue is emptied."""
-    while True:
-        try:
-            task = task_queue.get_nowait()
-        except queue.Empty:
-            return
-        task.run(verbose=verbose)
+    run_task = operator.methodcaller("run", verbose=verbose)
+    with multiprocessing.Pool(n_processes) as pool:
+        pool.map(run_task, comparison_tasks, chunksize=1)
