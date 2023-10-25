@@ -45,10 +45,10 @@ def render_job_script(
 #PBS -m e
 #PBS -l storage={'+'.join(storage_flags)}
 
-set -ex
-
 module purge
 {module_load_lines}
+
+set -ev
 
 {benchcab_path} fluxsite-run-tasks --config={config_path} {verbose_flag}
 {'' if skip_bitwise_cmp else f'''
