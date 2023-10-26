@@ -120,6 +120,10 @@ class Benchcab:
         )
         return self.tasks
 
+    def validate_config(self, config_path: str, verbose: bool):
+        """Endpoint for `benchcab validate_config`."""
+        _ = self._get_config(config_path)
+
     def fluxsite_submit_job(
         self, config_path: str, verbose: bool, skip: list[str]
     ) -> None:

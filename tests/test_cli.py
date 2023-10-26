@@ -21,6 +21,14 @@ def test_cli_parser():
         "func": app.run,
     }
 
+    # Success case: default validate_config command
+    res = vars(parser.parse_args(["validate_config"]))
+    assert res == {
+        "config_path": "config.yaml",
+        "verbose": False,
+        "func": app.validate_config,
+    }
+
     # Success case: default checkout command
     res = vars(parser.parse_args(["checkout"]))
     assert res == {
