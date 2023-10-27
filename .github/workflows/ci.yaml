@@ -1,9 +1,9 @@
-name: PyTest
+name: CI
 
 on: [pull_request]
 
 jobs:
-  build:
+  pytest:
 
     runs-on: ubuntu-latest
 
