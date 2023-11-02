@@ -1,15 +1,13 @@
-"""Contains the main program entry point for `benchcab`."""
+"""Contains the benchcab application class."""
 
 import grp
 import os
-import shutil
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Optional
 
 from benchcab import internal
-from benchcab.cli import generate_parser
 from benchcab.comparison import run_comparisons, run_comparisons_in_parallel
 from benchcab.config import read_config
 from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
@@ -37,27 +35,21 @@ class Benchcab:
 
     def __init__(
         self,
-        argv: list[str],
         benchcab_exe_path: Optional[Path],
-        config: Optional[dict] = None,
         validate_env: bool = True,
     ) -> None:
-        self.args = generate_parser().parse_args(argv[1:] if argv[1:] else ["-h"])
-        self.config = config if config else read_config(Path(self.args.config))
-        self.repos = [
-            CableRepository(**config, repo_id=id)
-            for id, config in enumerate(self.config["realisations"])
-        ]
-        self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
         self.benchcab_exe_path = benchcab_exe_path
+        self.validate_env = validate_env
 
-        if validate_env:
-            self._validate_environment(
-                project=self.config["project"], modules=self.config["modules"]
-            )
+        self._config: Optional[dict] = None
+        self._repos: list[CableRepository] = []
+        self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
 
     def _validate_environment(self, project: str, modules: list):
         """Performs checks on current user environment."""
+        if not self.validate_env:
+            return
+
         if "gadi.nci" not in internal.NODENAME:
             print("Error: benchcab is currently implemented only on Gadi")
             sys.exit(1)
@@ -102,21 +94,38 @@ class Benchcab:
                 )
                 sys.exit(1)
 
-    def _initialise_tasks(self) -> list[Task]:
+    def _get_config(self, config_path: str) -> dict:
+        if not self._config:
+            self._config = read_config(config_path)
+        return self._config
+
+    def _get_repos(self, config: dict) -> list[CableRepository]:
+        if not self._repos:
+            self._repos = [
+                CableRepository(**repo_config, repo_id=id)
+                for id, repo_config in enumerate(config["realisations"])
+            ]
+        return self._repos
+
+    def _initialise_tasks(self, config: dict) -> list[Task]:
         """A helper method that initialises and returns the `tasks` attribute."""
         self.tasks = get_fluxsite_tasks(
-            repos=self.repos,
-            science_configurations=self.config.get(
+            repos=self._get_repos(config),
+            science_configurations=config.get(
                 "science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS
             ),
             fluxsite_forcing_file_names=get_met_forcing_file_names(
-                self.config["experiment"]
+                config["experiment"]
             ),
         )
         return self.tasks
 
-    def fluxsite_submit_job(self) -> None:
+    def fluxsite_submit_job(
+        self, config_path: str, verbose: bool, skip: list[str]
+    ) -> None:
         """Submits the PBS job script step in the fluxsite test workflow."""
+        config = self._get_config(config_path)
+        self._validate_environment(project=config["project"], modules=config["modules"])
         if self.benchcab_exe_path is None:
             msg = "Path to benchcab executable is undefined."
             raise RuntimeError(msg)
@@ -128,13 +137,13 @@ class Benchcab:
         )
         with job_script_path.open("w", encoding="utf-8") as file:
             contents = render_job_script(
-                project=self.config["project"],
-                config_path=self.args.config,
-                modules=self.config["modules"],
-                verbose=self.args.verbose,
-                skip_bitwise_cmp="fluxsite-bitwise-cmp" in self.args.skip,
+                project=config["project"],
+                config_path=config_path,
+                modules=config["modules"],
+                verbose=verbose,
+                skip_bitwise_cmp="fluxsite-bitwise-cmp" in skip,
                 benchcab_path=str(self.benchcab_exe_path),
-                pbs_config=self.config.get("fluxsite", {}).get("pbs"),
+                pbs_config=config.get("fluxsite", {}).get("pbs"),
             )
             file.write(contents)
 
@@ -142,7 +151,7 @@ class Benchcab:
             proc = self.subprocess_handler.run_cmd(
                 f"qsub {job_script_path}",
                 capture_output=True,
-                verbose=self.args.verbose,
+                verbose=verbose,
             )
         except CalledProcessError as exc:
             print("Error when submitting job to NCI queue")
@@ -159,14 +168,17 @@ class Benchcab:
             f"{internal.FLUXSITE_DIRS['OUTPUT']}/<task_name>_out.nc"
         )
 
-    def checkout(self):
+    def checkout(self, config_path: str, verbose: bool):
         """Endpoint for `benchcab checkout`."""
+        config = self._get_config(config_path)
+        self._validate_environment(project=config["project"], modules=config["modules"])
+
         mkdir(internal.SRC_DIR, exist_ok=True, verbose=True)
 
         print("Checking out repositories...")
         rev_number_log = ""
-        for repo in self.repos:
-            repo.checkout(verbose=self.args.verbose)
+        for repo in self._get_repos(config):
+            repo.checkout(verbose=verbose)
             rev_number_log += (
                 f"{repo.name} last changed revision: "
                 f"{repo.svn_info_show_item('last-changed-revision')}\n"
@@ -174,7 +186,7 @@ class Benchcab:
 
         # TODO(Sean) we should archive revision numbers for CABLE-AUX
         cable_aux_repo = CableRepository(path=internal.CABLE_AUX_RELATIVE_SVN_PATH)
-        cable_aux_repo.checkout(verbose=self.args.verbose)
+        cable_aux_repo.checkout(verbose=verbose)
 
         rev_number_log_path = self.root_dir / next_path(
             self.root_dir, "rev_number-*.log"
@@ -187,142 +199,108 @@ class Benchcab:
 
         print("")
 
-    def build(self):
+    def build(self, config_path: str, verbose: bool):
         """Endpoint for `benchcab build`."""
-        for repo in self.repos:
+        config = self._get_config(config_path)
+        self._validate_environment(project=config["project"], modules=config["modules"])
+
+        for repo in self._get_repos(config):
             if repo.build_script:
                 print(
                     "Compiling CABLE using custom build script for "
                     f"realisation {repo.name}..."
                 )
-                repo.custom_build(
-                    modules=self.config["modules"], verbose=self.args.verbose
-                )
+                repo.custom_build(modules=config["modules"], verbose=verbose)
             else:
                 build_mode = "with MPI" if internal.MPI else "serially"
                 print(f"Compiling CABLE {build_mode} for realisation {repo.name}...")
-                repo.pre_build(verbose=self.args.verbose)
-                repo.run_build(
-                    modules=self.config["modules"], verbose=self.args.verbose
-                )
-                repo.post_build(verbose=self.args.verbose)
+                repo.pre_build(verbose=verbose)
+                repo.run_build(modules=config["modules"], verbose=verbose)
+                repo.post_build(verbose=verbose)
             print(f"Successfully compiled CABLE for realisation {repo.name}")
         print("")
 
-    def fluxsite_setup_work_directory(self):
+    def fluxsite_setup_work_directory(self, config_path: str, verbose: bool):
         """Endpoint for `benchcab fluxsite-setup-work-dir`."""
-        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        config = self._get_config(config_path)
+        self._validate_environment(project=config["project"], modules=config["modules"])
+
+        tasks = self.tasks if self.tasks else self._initialise_tasks(config)
         print("Setting up run directory tree for fluxsite tests...")
-        setup_fluxsite_directory_tree(verbose=self.args.verbose)
+        setup_fluxsite_directory_tree(verbose=verbose)
         print("Setting up tasks...")
         for task in tasks:
-            task.setup_task(verbose=self.args.verbose)
+            task.setup_task(verbose=verbose)
         print("Successfully setup fluxsite tasks")
         print("")
 
-    def fluxsite_run_tasks(self):
+    def fluxsite_run_tasks(self, config_path: str, verbose: bool):
         """Endpoint for `benchcab fluxsite-run-tasks`."""
-        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        config = self._get_config(config_path)
+        self._validate_environment(project=config["project"], modules=config["modules"])
+
+        tasks = self.tasks if self.tasks else self._initialise_tasks(config)
         print("Running fluxsite tasks...")
         try:
-            multiprocess = self.config["fluxsite"]["multiprocess"]
+            multiprocess = config["fluxsite"]["multiprocess"]
         except KeyError:
             multiprocess = internal.FLUXSITE_DEFAULT_MULTIPROCESS
         if multiprocess:
-            ncpus = self.config.get("pbs", {}).get(
+            ncpus = config.get("pbs", {}).get(
                 "ncpus", internal.FLUXSITE_DEFAULT_PBS["ncpus"]
             )
-            run_tasks_in_parallel(tasks, n_processes=ncpus, verbose=self.args.verbose)
+            run_tasks_in_parallel(tasks, n_processes=ncpus, verbose=verbose)
         else:
-            run_tasks(tasks, verbose=self.args.verbose)
+            run_tasks(tasks, verbose=verbose)
         print("Successfully ran fluxsite tasks")
         print("")
 
-    def fluxsite_bitwise_cmp(self):
+    def fluxsite_bitwise_cmp(self, config_path: str, verbose: bool):
         """Endpoint for `benchcab fluxsite-bitwise-cmp`."""
+        config = self._get_config(config_path)
+        self._validate_environment(project=config["project"], modules=config["modules"])
+
         if not self.modules_handler.module_is_loaded("nccmp/1.8.5.0"):
             self.modules_handler.module_load(
                 "nccmp/1.8.5.0"
             )  # use `nccmp -df` for bitwise comparisons
 
-        tasks = self.tasks if self.tasks else self._initialise_tasks()
+        tasks = self.tasks if self.tasks else self._initialise_tasks(config)
         comparisons = get_fluxsite_comparisons(tasks)
 
         print("Running comparison tasks...")
         try:
-            multiprocess = self.config["fluxsite"]["multiprocess"]
+            multiprocess = config["fluxsite"]["multiprocess"]
         except KeyError:
             multiprocess = internal.FLUXSITE_DEFAULT_MULTIPROCESS
         if multiprocess:
             try:
-                ncpus = self.config["fluxsite"]["pbs"]["ncpus"]
+                ncpus = config["fluxsite"]["pbs"]["ncpus"]
             except KeyError:
                 ncpus = internal.FLUXSITE_DEFAULT_PBS["ncpus"]
-            run_comparisons_in_parallel(
-                comparisons, n_processes=ncpus, verbose=self.args.verbose
-            )
+            run_comparisons_in_parallel(comparisons, n_processes=ncpus, verbose=verbose)
         else:
-            run_comparisons(comparisons, verbose=self.args.verbose)
+            run_comparisons(comparisons, verbose=verbose)
         print("Successfully ran comparison tasks")
 
-    def fluxsite(self):
+    def fluxsite(
+        self, config_path: str, no_submit: bool, verbose: bool, skip: list[str]
+    ):
         """Endpoint for `benchcab fluxsite`."""
-        self.checkout()
-        self.build()
-        self.fluxsite_setup_work_directory()
-        if self.args.no_submit:
-            self.fluxsite_run_tasks()
-            if "fluxsite-bitwise-cmp" not in self.args.skip:
-                self.fluxsite_bitwise_cmp()
+        self.checkout(config_path, verbose)
+        self.build(config_path, verbose)
+        self.fluxsite_setup_work_directory(config_path, verbose)
+        if no_submit:
+            self.fluxsite_run_tasks(config_path, verbose)
+            if "fluxsite-bitwise-cmp" not in skip:
+                self.fluxsite_bitwise_cmp(config_path, verbose)
         else:
-            self.fluxsite_submit_job()
+            self.fluxsite_submit_job(config_path, verbose, skip)
 
-    def spatial(self):
+    def spatial(self, config_path: str, verbose: bool):
         """Endpoint for `benchcab spatial`."""
 
-    def run(self):
+    def run(self, config_path: str, no_submit: bool, verbose: bool, skip: list[str]):
         """Endpoint for `benchcab run`."""
-        self.fluxsite()
-        self.spatial()
-
-    def main(self):
-        """Main function for `benchcab`."""
-        if self.args.subcommand == "run":
-            self.run()
-
-        if self.args.subcommand == "checkout":
-            self.checkout()
-
-        if self.args.subcommand == "build":
-            self.build()
-
-        if self.args.subcommand == "fluxsite":
-            self.fluxsite()
-
-        if self.args.subcommand == "fluxsite-setup-work-dir":
-            self.fluxsite_setup_work_directory()
-
-        if self.args.subcommand == "fluxsite-submit-job":
-            self.fluxsite_submit_job()
-
-        if self.args.subcommand == "fluxsite-run-tasks":
-            self.fluxsite_run_tasks()
-
-        if self.args.subcommand == "fluxsite-bitwise-cmp":
-            self.fluxsite_bitwise_cmp()
-
-        if self.args.subcommand == "spatial":
-            self.spatial()
-
-
-def main():
-    """Main program entry point for `benchcab`.
-
-    This is required for setup.py entry_points
-    """
-    app = Benchcab(argv=sys.argv, benchcab_exe_path=shutil.which(sys.argv[0]))
-    app.main()
-
-
-if __name__ == "__main__":
-    main()
+        self.fluxsite(config_path, no_submit, verbose, skip)
+        self.spatial(config_path, verbose)
