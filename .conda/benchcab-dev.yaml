@@ -10,3 +10,4 @@ dependencies:
   - pyyaml
   - flatdict
   - cerberus>=1.3.5
+  - gitpython

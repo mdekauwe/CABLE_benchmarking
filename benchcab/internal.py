@@ -86,6 +86,9 @@ MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
 # CABLE SVN root url:
 CABLE_SVN_ROOT = "https://trac.nci.org.au/svn/cable"
 
+# CABLE GitHub URL:
+CABLE_GIT_URL = "https://github.com/CABLE-LSM/CABLE.git"
+
 # CABLE executable file name:
 CABLE_EXE = "cable-mpi" if MPI else "cable"
 

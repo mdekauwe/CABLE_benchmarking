@@ -19,14 +19,13 @@ project: w97
 
 experiment: five-site-test
 
-realisations: [
-  {
-    path: "trunk",
-  },
-  {
-    path: "branches/Users/ccc561/v3.0-YP-changes",
-  }
-]
+realisations:
+  - repo:
+      svn:
+        branch_path: trunk
+  - repo:
+      svn:
+        branch_path: branches/Users/ccc561/v3.0-YP-changes
 
 modules: [
   intel-compiler/2021.1.1,

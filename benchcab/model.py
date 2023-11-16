@@ -1,7 +1,7 @@
 # Copyright 2022 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""A module containing functions and data structures for manipulating CABLE repositories."""
+"""Contains functions and data structures relating to CABLE models."""
 
 import os
 import shlex
@@ -13,11 +13,12 @@ from typing import Optional
 from benchcab import internal
 from benchcab.environment_modules import EnvironmentModules, EnvironmentModulesInterface
 from benchcab.utils.fs import chdir, copy2, rename
+from benchcab.utils.repo import GitRepo, Repo
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 
 class Model:
-    """A class used to represent a CABLE repository."""
+    """A class used to represent a CABLE model version."""
 
     root_dir: Path = internal.CWD
     subprocess_handler: SubprocessWrapperInterface = SubprocessWrapper()
@@ -25,59 +26,34 @@ class Model:
 
     def __init__(
         self,
-        path: str,
+        repo: Repo,
         name: Optional[str] = None,
-        revision: Optional[int] = None,
         patch: Optional[dict] = None,
         patch_remove: Optional[dict] = None,
         build_script: Optional[str] = None,
-        repo_id: Optional[int] = None,
+        model_id: Optional[int] = None,
     ) -> None:
-        self.path = Path(path)
-        self.name = name if name else self.path.name
-        self.revision = revision
+        self.repo = repo
+        self.name = name if name else repo.get_branch_name()
         self.patch = patch
         self.patch_remove = patch_remove
         self.build_script = build_script
-        self._repo_id = repo_id
+        self._model_id = model_id
+        self.src_dir = Path()
+        if isinstance(repo, GitRepo):
+            self.src_dir = Path("src")
 
     @property
-    def repo_id(self) -> int:
-        """Get or set the repo ID."""
-        if self._repo_id is None:
-            msg = "Attempting to access undefined repo ID"
+    def model_id(self) -> int:
+        """Get or set the model ID."""
+        if self._model_id is None:
+            msg = "Attempting to access undefined model ID"
             raise RuntimeError(msg)
-        return self._repo_id
+        return self._model_id
 
-    @repo_id.setter
-    def repo_id(self, value: int):
-        self._repo_id = value
-
-    def checkout(self, verbose=False) -> None:
-        """Checkout a branch of CABLE."""
-        # TODO(Sean) do nothing if the repository has already been checked out?
-        # This also relates the 'clean' feature.
-
-        cmd = "svn checkout"
-
-        if self.revision:
-            cmd += f" -r {self.revision}"
-
-        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
-        cmd += f" {internal.CABLE_SVN_ROOT}/{self.path} {path_to_repo}"
-
-        self.subprocess_handler.run_cmd(cmd, verbose=verbose)
-
-        revision = self.svn_info_show_item("revision")
-        print(f"Successfully checked out {self.name} at revision {revision}")
-
-    def svn_info_show_item(self, item: str) -> str:
-        """A wrapper around `svn info --show-item <item> <path-to-repo>`."""
-        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
-        proc = self.subprocess_handler.run_cmd(
-            f"svn info --show-item {item} {path_to_repo}", capture_output=True
-        )
-        return proc.stdout.strip()
+    @model_id.setter
+    def model_id(self, value: int):
+        self._model_id = value
 
     def get_exe_path(self) -> Path:
         """Return the path to the built executable."""
@@ -85,6 +61,7 @@ class Model:
             self.root_dir
             / internal.SRC_DIR
             / self.name
+            / self.src_dir
             / "offline"
             / internal.CABLE_EXE
         )
@@ -131,14 +108,14 @@ class Model:
     def pre_build(self, verbose=False):
         """Runs CABLE pre-build steps."""
         path_to_repo = self.root_dir / internal.SRC_DIR / self.name
-        tmp_dir = path_to_repo / "offline" / ".tmp"
+        tmp_dir = path_to_repo / self.src_dir / "offline" / ".tmp"
         if not tmp_dir.exists():
             if verbose:
                 print(f"mkdir {tmp_dir.relative_to(self.root_dir)}")
             tmp_dir.mkdir()
 
         for pattern in internal.OFFLINE_SOURCE_FILES:
-            for path in path_to_repo.glob(pattern):
+            for path in (path_to_repo / self.src_dir).glob(pattern):
                 if not path.is_file():
                     continue
                 copy2(
@@ -148,19 +125,25 @@ class Model:
                 )
 
         copy2(
-            (path_to_repo / "offline" / "Makefile").relative_to(self.root_dir),
+            (path_to_repo / self.src_dir / "offline" / "Makefile").relative_to(
+                self.root_dir
+            ),
             tmp_dir.relative_to(self.root_dir),
             verbose=verbose,
         )
 
         copy2(
-            (path_to_repo / "offline" / "parallel_cable").relative_to(self.root_dir),
+            (path_to_repo / self.src_dir / "offline" / "parallel_cable").relative_to(
+                self.root_dir
+            ),
             tmp_dir.relative_to(self.root_dir),
             verbose=verbose,
         )
 
         copy2(
-            (path_to_repo / "offline" / "serial_cable").relative_to(self.root_dir),
+            (path_to_repo / self.src_dir / "offline" / "serial_cable").relative_to(
+                self.root_dir
+            ),
             tmp_dir.relative_to(self.root_dir),
             verbose=verbose,
         )
@@ -168,7 +151,7 @@ class Model:
     def run_build(self, modules: list[str], verbose=False):
         """Runs CABLE build scripts."""
         path_to_repo = self.root_dir / internal.SRC_DIR / self.name
-        tmp_dir = path_to_repo / "offline" / ".tmp"
+        tmp_dir = path_to_repo / self.src_dir / "offline" / ".tmp"
 
         with chdir(tmp_dir), self.modules_handler.load(modules, verbose=verbose):
             env = os.environ.copy()
@@ -192,11 +175,13 @@ class Model:
     def post_build(self, verbose=False):
         """Runs CABLE post-build steps."""
         path_to_repo = self.root_dir / internal.SRC_DIR / self.name
-        tmp_dir = path_to_repo / "offline" / ".tmp"
+        tmp_dir = path_to_repo / self.src_dir / "offline" / ".tmp"
 
         rename(
             (tmp_dir / internal.CABLE_EXE).relative_to(self.root_dir),
-            (path_to_repo / "offline" / internal.CABLE_EXE).relative_to(self.root_dir),
+            (path_to_repo / self.src_dir / "offline" / internal.CABLE_EXE).relative_to(
+                self.root_dir
+            ),
             verbose=verbose,
         )
 
