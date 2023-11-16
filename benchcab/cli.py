@@ -87,6 +87,19 @@ def generate_parser(app: Benchcab) -> argparse.ArgumentParser:
     )
     parser_run.set_defaults(func=app.run)
 
+    # subcommand: 'benchcab validate_config'
+    parser_validate_config = subparsers.add_parser(
+        "validate_config",
+        parents=[
+            args_help,
+            args_subcommand,
+        ],
+        help="Validates a benchcab configuration file.",
+        description="""Validates a benchcab configuration file.""",
+        add_help=False,
+    )
+    parser_validate_config.set_defaults(func=app.validate_config)
+
     # subcommand: 'benchcab fluxsite'
     parser_fluxsite = subparsers.add_parser(
         "fluxsite",
