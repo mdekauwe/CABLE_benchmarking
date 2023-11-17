@@ -19,7 +19,7 @@ from benchcab.fluxsite import (
     run_tasks_in_parallel,
 )
 from benchcab.internal import get_met_forcing_file_names
-from benchcab.repository import CableRepository
+from benchcab.model import Model
 from benchcab.utils.fs import mkdir, next_path
 from benchcab.utils.pbs import render_job_script
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
@@ -42,7 +42,7 @@ class Benchcab:
         self.validate_env = validate_env
 
         self._config: Optional[dict] = None
-        self._repos: list[CableRepository] = []
+        self._repos: list[Model] = []
         self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
 
     def _validate_environment(self, project: str, modules: list):
@@ -99,10 +99,10 @@ class Benchcab:
             self._config = read_config(config_path)
         return self._config
 
-    def _get_repos(self, config: dict) -> list[CableRepository]:
+    def _get_repos(self, config: dict) -> list[Model]:
         if not self._repos:
             self._repos = [
-                CableRepository(**repo_config, repo_id=id)
+                Model(**repo_config, repo_id=id)
                 for id, repo_config in enumerate(config["realisations"])
             ]
         return self._repos
@@ -189,7 +189,7 @@ class Benchcab:
             )
 
         # TODO(Sean) we should archive revision numbers for CABLE-AUX
-        cable_aux_repo = CableRepository(path=internal.CABLE_AUX_RELATIVE_SVN_PATH)
+        cable_aux_repo = Model(path=internal.CABLE_AUX_RELATIVE_SVN_PATH)
         cable_aux_repo.checkout(verbose=verbose)
 
         rev_number_log_path = self.root_dir / next_path(

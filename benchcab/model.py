@@ -13,7 +13,7 @@ from benchcab.utils.fs import chdir, copy2, rename
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
 
-class CableRepository:
+class Model:
     """A class used to represent a CABLE repository."""
 
     root_dir: Path = internal.CWD

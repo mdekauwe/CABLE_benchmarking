@@ -24,13 +24,13 @@ from benchcab.fluxsite import (
     patch_namelist,
     patch_remove_namelist,
 )
-from benchcab.repository import CableRepository
+from benchcab.model import Model
 
 
 @pytest.fixture()
 def repo(mock_cwd, mock_subprocess_handler):
-    """Returns a `CableRepository` instance."""
-    _repo = CableRepository(
+    """Returns a `Model` instance."""
+    _repo = Model(
         repo_id=1,
         path="path/to/test-branch",
         patch={"cable": {"some_branch_specific_setting": True}},
@@ -419,9 +419,9 @@ class TestGetFluxsiteTasks:
 
     @pytest.fixture()
     def repos(self, config):
-        """Return a list of `CableRepository` instances used for testing."""
+        """Return a list of `Model` instances used for testing."""
         return [
-            CableRepository(**branch_config, repo_id=id)
+            Model(**branch_config, repo_id=id)
             for id, branch_config in enumerate(config["realisations"])
         ]
 
@@ -465,7 +465,7 @@ class TestGetFluxsiteComparisons:
         """Success case: comparisons for two branches with two tasks."""
         tasks = [
             Task(
-                repo=CableRepository("path/to/repo", repo_id=repo_id),
+                repo=Model("path/to/repo", repo_id=repo_id),
                 met_forcing_file="foo.nc",
                 sci_config={"foo": "bar"},
                 sci_conf_id=0,
@@ -492,7 +492,7 @@ class TestGetFluxsiteComparisons:
         """Success case: comparisons for three branches with three tasks."""
         tasks = [
             Task(
-                repo=CableRepository("path/to/repo", repo_id=repo_id),
+                repo=Model("path/to/repo", repo_id=repo_id),
                 met_forcing_file="foo.nc",
                 sci_config={"foo": "bar"},
                 sci_conf_id=0,
@@ -541,8 +541,8 @@ class TestGetComparisonName:
         """Success case: check comparison name convention."""
         assert (
             get_comparison_name(
-                CableRepository("path/to/repo", repo_id=0),
-                CableRepository("path/to/repo", repo_id=1),
+                Model("path/to/repo", repo_id=0),
+                Model("path/to/repo", repo_id=1),
                 met_forcing_file="foo.nc",
                 sci_conf_id=0,
             )
