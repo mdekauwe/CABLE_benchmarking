@@ -264,13 +264,7 @@ class Task:
             self.root_dir / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True
         )
 
-        exe_src = (
-            self.root_dir
-            / internal.SRC_DIR
-            / self.repo.name
-            / "offline"
-            / internal.CABLE_EXE
-        )
+        exe_src = self.repo.get_exe_path()
         exe_dest = task_dir / internal.CABLE_EXE
 
         if verbose:

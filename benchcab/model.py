@@ -76,6 +76,16 @@ class Model:
         )
         return proc.stdout.strip()
 
+    def get_exe_path(self) -> Path:
+        """Return the path to the built executable."""
+        return (
+            self.root_dir
+            / internal.SRC_DIR
+            / self.name
+            / "offline"
+            / internal.CABLE_EXE
+        )
+
     def custom_build(self, modules: list[str], verbose=False):
         """Build CABLE using a custom build script."""
         build_script_path = (
