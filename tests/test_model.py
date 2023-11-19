@@ -46,6 +46,17 @@ class TestRepoID:
             _ = repo.repo_id
 
 
+class TestGetExePath:
+    """Tests for `CableRepository.get_exe_path()`."""
+
+    def test_serial_exe_path(self, repo, mock_cwd):
+        """Success case: get path to serial executable."""
+        assert (
+            repo.get_exe_path()
+            == mock_cwd / internal.SRC_DIR / repo.name / "offline" / internal.CABLE_EXE
+        )
+
+
 class TestCheckout:
     """Tests for `Model.checkout()`."""
 
