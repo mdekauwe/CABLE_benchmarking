@@ -14,7 +14,7 @@ import netCDF4
 
 from benchcab import __version__, internal
 from benchcab.comparison import ComparisonTask
-from benchcab.repository import CableRepository
+from benchcab.model import Model
 from benchcab.utils.fs import chdir, mkdir
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 
@@ -95,7 +95,7 @@ class Task:
 
     def __init__(
         self,
-        repo: CableRepository,
+        repo: Model,
         met_forcing_file: str,
         sci_conf_id: int,
         sci_config: dict,
@@ -358,7 +358,7 @@ class Task:
 
 
 def get_fluxsite_tasks(
-    repos: list[CableRepository],
+    repos: list[Model],
     science_configurations: list[dict],
     fluxsite_forcing_file_names: list[str],
 ) -> list[Task]:
@@ -431,8 +431,8 @@ def get_fluxsite_comparisons(
 
 
 def get_comparison_name(
-    repo_a: CableRepository,
-    repo_b: CableRepository,
+    repo_a: Model,
+    repo_b: Model,
     met_forcing_file: str,
     sci_conf_id: int,
 ) -> str:

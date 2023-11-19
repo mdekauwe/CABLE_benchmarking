@@ -1,4 +1,4 @@
-"""`pytest` tests for `repository.py`.
+"""`pytest` tests for `model.py`.
 
 Note: explicit teardown for generated files and directories are not required as
 the working directory used for testing is cleaned up in the `_run_around_tests`
@@ -13,15 +13,15 @@ from pathlib import Path
 import pytest
 
 from benchcab import internal
-from benchcab.repository import CableRepository, remove_module_lines
+from benchcab.model import Model, remove_module_lines
 
 from .conftest import DEFAULT_STDOUT
 
 
 @pytest.fixture()
 def repo(mock_cwd, mock_subprocess_handler, mock_environment_modules_handler):
-    """Return a mock `CableRepository` instance for testing against."""
-    _repo = CableRepository(path="trunk")
+    """Return a mock `Model` instance for testing against."""
+    _repo = Model(path="trunk")
     _repo.root_dir = mock_cwd
     _repo.subprocess_handler = mock_subprocess_handler
     _repo.modules_handler = mock_environment_modules_handler
@@ -29,7 +29,7 @@ def repo(mock_cwd, mock_subprocess_handler, mock_environment_modules_handler):
 
 
 class TestRepoID:
-    """Tests for `CableRepository.repo_id`."""
+    """Tests for `Model.repo_id`."""
 
     def test_set_and_get_repo_id(self, repo):
         """Success case: set and get repository ID."""
@@ -47,7 +47,7 @@ class TestRepoID:
 
 
 class TestCheckout:
-    """Tests for `CableRepository.checkout()`."""
+    """Tests for `Model.checkout()`."""
 
     def test_checkout_command_execution(self, repo, mock_cwd, mock_subprocess_handler):
         """Success case: `svn checkout` command is executed."""
@@ -83,7 +83,7 @@ class TestCheckout:
 
 
 class TestSVNInfoShowItem:
-    """Tests for `CableRepository.svn_info_show_item()`."""
+    """Tests for `Model.svn_info_show_item()`."""
 
     def test_svn_info_command_execution(self, repo, mock_subprocess_handler, mock_cwd):
         """Success case: call svn info command and get result."""
@@ -107,11 +107,11 @@ class TestSVNInfoShowItem:
 
 
 class TestPreBuild:
-    """Tests for `CableRepository.pre_build()`."""
+    """Tests for `Model.pre_build()`."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, repo):
-        """Setup precondition for `CableRepository.pre_build()`."""
+        """Setup precondition for `Model.pre_build()`."""
         (internal.SRC_DIR / repo.name / "offline").mkdir(parents=True)
         (internal.SRC_DIR / repo.name / "offline" / "Makefile").touch()
         (internal.SRC_DIR / repo.name / "offline" / "parallel_cable").touch()
@@ -152,7 +152,7 @@ class TestPreBuild:
 
 
 class TestRunBuild:
-    """Tests for `CableRepository.run_build()`."""
+    """Tests for `Model.run_build()`."""
 
     @pytest.fixture()
     def netcdf_root(self):
@@ -178,7 +178,7 @@ class TestRunBuild:
 
     @pytest.fixture(autouse=True)
     def _setup(self, repo, netcdf_root):
-        """Setup precondition for `CableRepository.run_build()`."""
+        """Setup precondition for `Model.run_build()`."""
         (internal.SRC_DIR / repo.name / "offline" / ".tmp").mkdir(parents=True)
 
         # This is required so that we can use the NETCDF_ROOT environment variable
@@ -232,11 +232,11 @@ class TestRunBuild:
 
 
 class TestPostBuild:
-    """Tests for `CableRepository.post_build()`."""
+    """Tests for `Model.post_build()`."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, repo):
-        """Setup precondition for `CableRepository.post_build()`."""
+        """Setup precondition for `Model.post_build()`."""
         (internal.SRC_DIR / repo.name / "offline" / ".tmp").mkdir(parents=True)
         (internal.SRC_DIR / repo.name / "offline" / ".tmp" / internal.CABLE_EXE).touch()
 
@@ -263,7 +263,7 @@ class TestPostBuild:
 
 
 class TestCustomBuild:
-    """Tests for `CableRepository.custom_build()`."""
+    """Tests for `Model.custom_build()`."""
 
     @pytest.fixture()
     def build_script(self, repo):
