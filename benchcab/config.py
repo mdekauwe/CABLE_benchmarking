@@ -1,3 +1,6 @@
+# Copyright 2022 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
+# SPDX-License-Identifier: Apache-2.0
+
 """A module containing all *_config() functions."""
 from pathlib import Path
 
@@ -8,7 +11,6 @@ import benchcab.utils as bu
 
 
 class ConfigValidationException(Exception):
-
     def __init__(self, validator: Validator):
         """Config validation exception.
 
@@ -19,11 +21,11 @@ class ConfigValidationException(Exception):
         """
 
         # Nicely format the errors.
-        errors = [f'{k} = {v}' for k, v in validator.errors.items()]
+        errors = [f"{k} = {v}" for k, v in validator.errors.items()]
 
-        # Assemble the error message and 
-        msg = '\n\nThe following errors were raised when validating the config file.\n'
-        msg += '\n'.join(errors) + '\n'
+        # Assemble the error message and
+        msg = "\n\nThe following errors were raised when validating the config file.\n"
+        msg += "\n".join(errors) + "\n"
 
         # Raise to super.
         super().__init__(msg)
@@ -47,16 +49,16 @@ def validate_config(config: dict) -> bool:
     ConfigValidationException
         Raised when the configuration file fails validation.
     """
-    
+
     # Load the schema
-    schema = bu.load_package_data('config-schema.yml')
+    schema = bu.load_package_data("config-schema.yml")
 
     # Create a validator
     v = Validator(schema)
 
     # Validate
     is_valid = v.validate(config)
-    
+
     # Valid
     if is_valid:
         return True
@@ -77,7 +79,7 @@ def read_config(config_path: str) -> dict:
     -------
     dict
         Configuration dict.
-    
+
     Raises
     ------
     ConfigValidationError

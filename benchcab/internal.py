@@ -1,3 +1,6 @@
+# Copyright 2022 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
+# SPDX-License-Identifier: Apache-2.0
+
 """internal.py: define all runtime constants in a single file."""
 
 import os
@@ -75,9 +78,7 @@ FLUXSITE_DIRS["TASKS"] = FLUXSITE_DIRS["RUN"] / "tasks"
 FLUXSITE_DIRS["ANALYSIS"] = FLUXSITE_DIRS["RUN"] / "analysis"
 
 # Relative path to directory that stores bitwise comparison results
-FLUXSITE_DIRS["BITWISE_CMP"] = (
-    FLUXSITE_DIRS["ANALYSIS"] / "bitwise-comparisons"
-)
+FLUXSITE_DIRS["BITWISE_CMP"] = FLUXSITE_DIRS["ANALYSIS"] / "bitwise-comparisons"
 
 # Path to met files:
 MET_DIR = Path("/g/data/ks32/CLEX_Data/PLUMBER2/v1-0/Met/")
