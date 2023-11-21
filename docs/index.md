@@ -8,4 +8,8 @@ It is developed and maintained by the CABLE's user community and the ACCESS-NRI.
 
 `benchcab` is distributed under [an Apache License v2.0][apache-license].
 
+## Acknowledgements
+
+`benchcab` is a continuation of the efforts made by Martin De Kauwe ([@mdekauwe](https://github.com/mdekauwe)) and Gab Abramowitz ([@gabsun](https://github.com/gabsun)) in developing a CABLE benchmarking framework - we thank them for their contribution.
+
 [apache-license]: https://www.apache.org/licenses/LICENSE-2.0
