@@ -6,4 +6,6 @@ It is developed and maintained by the CABLE's user community and the ACCESS-NRI.
 
 ## License
 
-`benchcab` is distributed under an Apache License v2.0.
+`benchcab` is distributed under [an Apache License v2.0][apache-license].
+
+[apache-license]: https://www.apache.org/licenses/LICENSE-2.0
