@@ -246,9 +246,11 @@ realisations:
         revision: 1234
 ```
 
-[`git`](#+repo.git){ #+repo.git}
+#### [`git`](#+repo.git){ #+repo.git}
 
-: **Default:** _optional key_. :octicons-dash-24: Specify a branch on the GitHub repository. By default, the [CABLE GitHub repository][cable-github] will be cloned (see [`url`](#+repo.git.url) to use a separate GitHub repository).
+Contains settings to specify a branch on the GitHub repository. By default, the [CABLE GitHub repository][cable-github] will be cloned (see [`url`](#+repo.git.url) to specify another GitHub repository).
+
+This key is _optional_. No default.
 
 ```yaml
 realisations:
