@@ -24,8 +24,8 @@ realisations:
       svn:
         branch_path: trunk
   - repo:
-      svn:
-        branch_path: branches/Users/sb8430/test-branch
+      git:
+        branch: main
 
 modules: [
   intel-compiler/2021.1.1,
