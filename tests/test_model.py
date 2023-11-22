@@ -82,7 +82,11 @@ class TestGetExePath:
         )
 
 
-@pytest.mark.skip(reason="The `checkout` method was removed.")
+# TODO(Sean) remove for issue https://github.com/CABLE-LSM/benchcab/issues/211
+@pytest.mark.skip(
+    reason="""Skip tests for `checkout` until tests for repo.py
+    have been implemented."""
+)
 class TestCheckout:
     """Tests for `Model.checkout()`."""
 
@@ -119,7 +123,11 @@ class TestCheckout:
         assert buf.getvalue() == expected
 
 
-@pytest.mark.skip(reason="The `svn_info_show_item` method was removed.")
+# TODO(Sean) remove for issue https://github.com/CABLE-LSM/benchcab/issues/211
+@pytest.mark.skip(
+    reason="""Skip tests for `svn_info_show_item` until tests for repo.py
+    have been implemented."""
+)
 class TestSVNInfoShowItem:
     """Tests for `Model.svn_info_show_item()`."""
 
