@@ -201,9 +201,11 @@ realisations:
         branch: main
 ```
 
-[`svn`](#+repo.svn){ #+repo.svn}
+#### [`svn`](#+repo.svn){ #+repo.svn}
 
-: **Default:** _optional key_. :octicons-dash-24: Specify a branch from the CABLE SVN repository (`https://trac.nci.org.au/svn/cable`).
+Contains settings to specify a branch from the CABLE SVN repository (`https://trac.nci.org.au/svn/cable`).
+
+This key is _optional_. No default.
 
 ```yaml
 realisations:
