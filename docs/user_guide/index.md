@@ -258,13 +258,13 @@ Once the benchmarking has finished running all the simulations, you need to uplo
 
 Please enter your questions as issues on [the benchcab repository][issues-benchcab].
 
-Alternatively, you can also post discussions or questions on [the ACCESS-Hive forum][hive-forum].
+Alternatively, you can also access the ACCESS-NRI User support via [the ACCESS-Hive forum][forum-support].
 
 [hh5_mynci]: https://my.nci.org.au/mancini/project/hh5
 [ks32_mynci]: https://my.nci.org.au/mancini/project/ks32
 [bench_example]: https://github.com/CABLE-LSM/bench_example.git
 [config_options]: config_options.md
-[hive-forum]: https://forum.access-hive.org.au
+[forum-support]: https://forum.access-hive.org.au/t/access-help-and-support/908
 [issues-benchcab]: https://github.com/CABLE-LSM/benchcab/issues
 [meorg]: https://modelevaluation.org/
 [model_profile_eg]: https://modelevaluation.org/model/display/fd5GFaJGYu7H4JpP5
