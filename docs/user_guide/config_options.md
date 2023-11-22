@@ -336,8 +336,8 @@ science_configurations: [
 ```
 
 [meorg]: https://modelevaluation.org/
-[forty-two-me]: https://modelevaluation.org/experiment/display/urTKSXEsojdvEPwdR
-[five-me]: https://modelevaluation.org/experiment/display/xNZx2hSvn4PMKAa9R
+[forty-two-me]: https://modelevaluation.org/experiment/display/s6k22L3WajmiS9uGv
+[five-me]: https://modelevaluation.org/experiment/display/Nb37QxkAz3FczWDd7
 [f90nml-github]: https://github.com/marshallward/f90nml
 [environment-modules]: https://modules.sourceforge.net/
 [nci-pbs-directives]: https://opus.nci.org.au/display/Help/PBS+Directives+Explained
