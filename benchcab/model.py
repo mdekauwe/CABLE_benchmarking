@@ -40,6 +40,9 @@ class Model:
         self.build_script = build_script
         self._model_id = model_id
         self.src_dir = Path()
+        # TODO(Sean) we should not have to know whether `repo` is a `GitRepo` or
+        # `SVNRepo`, we should only be working with the `Repo` interface.
+        # See issue https://github.com/CABLE-LSM/benchcab/issues/210
         if isinstance(repo, GitRepo):
             self.src_dir = Path("src")
 
