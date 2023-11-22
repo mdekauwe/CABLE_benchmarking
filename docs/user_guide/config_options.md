@@ -187,7 +187,9 @@ realisations:
 
 ### [repo](#repo)
 
-: **Default:** _required key, no default_. :octicons-dash-24: Specify the CABLE repository to test against. The `repo` key must specify either the [`svn`](#+repo.svn) key or the [`git`](#+repo.git) key.
+Contains settings to specify the CABLE branch to test against. 
+
+This key is _required_. The `repo` key must specify either the [`svn`](#+repo.svn) key or the [`git`](#+repo.git) key.
 
 ```yaml
 realisations:
