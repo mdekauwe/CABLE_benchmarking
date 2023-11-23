@@ -98,12 +98,12 @@ class Task:
 
     def __init__(
         self,
-        repo: Model,
+        model: Model,
         met_forcing_file: str,
         sci_conf_id: int,
         sci_config: dict,
     ) -> None:
-        self.repo = repo
+        self.model = model
         self.met_forcing_file = met_forcing_file
         self.sci_conf_id = sci_conf_id
         self.sci_config = sci_config
@@ -111,7 +111,7 @@ class Task:
     def get_task_name(self) -> str:
         """Returns the file name convention used for this task."""
         met_forcing_base_filename = self.met_forcing_file.split(".")[0]
-        return f"{met_forcing_base_filename}_R{self.repo.repo_id}_S{self.sci_conf_id}"
+        return f"{met_forcing_base_filename}_R{self.model.model_id}_S{self.sci_conf_id}"
 
     def get_output_filename(self) -> str:
         """Returns the file name convention used for the netcdf output file."""
@@ -191,19 +191,19 @@ class Task:
             print(f"  Adding science configurations to CABLE namelist file {nml_path}")
         patch_namelist(nml_path, self.sci_config)
 
-        if self.repo.patch:
+        if self.model.patch:
             if verbose:
                 print(
                     f"  Adding branch specific configurations to CABLE namelist file {nml_path}"
                 )
-            patch_namelist(nml_path, self.repo.patch)
+            patch_namelist(nml_path, self.model.patch)
 
-        if self.repo.patch_remove:
+        if self.model.patch_remove:
             if verbose:
                 print(
                     f"  Removing branch specific configurations from CABLE namelist file {nml_path}"
                 )
-            patch_remove_namelist(nml_path, self.repo.patch_remove)
+            patch_remove_namelist(nml_path, self.model.patch_remove)
 
     def clean_task(self, verbose=False):
         """Cleans output files, namelist files, log files and cable executables if they exist."""
@@ -267,7 +267,7 @@ class Task:
             self.root_dir / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True
         )
 
-        exe_src = self.repo.get_exe_path()
+        exe_src = self.model.get_exe_path()
         exe_dest = task_dir / internal.CABLE_EXE
 
         if verbose:
@@ -346,8 +346,8 @@ class Task:
                         ).items()
                     },
                     **{
-                        "cable_branch": self.repo.svn_info_show_item("url"),
-                        "svn_revision_number": self.repo.svn_info_show_item("revision"),
+                        "cable_branch": self.model.repo.get_branch_name(),
+                        "svn_revision_number": self.model.repo.get_revision(),
                         "benchcab_version": __version__,
                     },
                 }
@@ -355,19 +355,19 @@ class Task:
 
 
 def get_fluxsite_tasks(
-    repos: list[Model],
+    models: list[Model],
     science_configurations: list[dict],
     fluxsite_forcing_file_names: list[str],
 ) -> list[Task]:
     """Returns a list of fluxsite tasks to run."""
     tasks = [
         Task(
-            repo=repo,
+            model=model,
             met_forcing_file=file_name,
             sci_conf_id=sci_conf_id,
             sci_config=sci_config,
         )
-        for repo in repos
+        for model in models
         for file_name in fluxsite_forcing_file_names
         for sci_conf_id, sci_config in enumerate(science_configurations)
     ]
@@ -406,14 +406,14 @@ def get_fluxsite_comparisons(
                 output_dir / task_b.get_output_filename(),
             ),
             task_name=get_comparison_name(
-                task_a.repo, task_b.repo, task_a.met_forcing_file, task_a.sci_conf_id
+                task_a.model, task_b.model, task_a.met_forcing_file, task_a.sci_conf_id
             ),
         )
         for task_a in tasks
         for task_b in tasks
         if task_a.met_forcing_file == task_b.met_forcing_file
         and task_a.sci_conf_id == task_b.sci_conf_id
-        and task_a.repo.repo_id < task_b.repo.repo_id
+        and task_a.model.model_id < task_b.model.model_id
         # TODO(Sean): Review later - the following code avoids using a double
         # for loop to generate pair wise combinations, however we would have
         # to re-initialize task instances to get access to the output file path
@@ -428,8 +428,8 @@ def get_fluxsite_comparisons(
 
 
 def get_comparison_name(
-    repo_a: Model,
-    repo_b: Model,
+    model_a: Model,
+    model_b: Model,
     met_forcing_file: str,
     sci_conf_id: int,
 ) -> str:
@@ -437,5 +437,5 @@ def get_comparison_name(
     met_forcing_base_filename = met_forcing_file.split(".")[0]
     return (
         f"{met_forcing_base_filename}_S{sci_conf_id}"
-        f"_R{repo_a.repo_id}_R{repo_b.repo_id}"
+        f"_R{model_a.model_id}_R{model_b.model_id}"
     )

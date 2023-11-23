@@ -164,147 +164,190 @@ fluxsites:
 
 ## realisations
 
-Entries for each CABLE branch to use. Each entry is a dictionary, `{}`, that contains the following keys.
+Entries for each CABLE branch to use. Each entry is a key-value pair and are listed as follows:
 
 ```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch",
-    patch: {
-      cable: {
-        cable_user: {
+realisations:
+  # head of the trunk (SVN)
+  - repo:
+      svn:
+        branch_path: trunk
+  # some development branch
+  - repo:
+      svn:
+        branch_path: branches/Users/foo/my_branch
+    patch:
+      cable:
+        cable_user:
           FWSOIL_SWITCH: "Lai and Ktaul 2000"
-        }
-      }
-    },
-    patch_remove: {
-      cable: {
+    patch_remove:
+      cable:
         soilparmnew: nil
-      }
-    }
-  }
-]
 ```
 
-[`path`](#+realisation.path){ #+realisation.path }
+### [repo](#repo)
 
-: **Default:** _required key, no default_. :octicons-dash-24: The path of the branch relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
+Contains settings to specify the CABLE branch to test against. 
+
+This key is _required_. The `repo` key must specify either the [`svn`](#+repo.svn) key or the [`git`](#+repo.git) key.
 
 ```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk", # (1) 
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch", # (2)
-  }
-]
+realisations:
+  - repo:
+      svn:
+        branch_path: trunk
+  - repo:
+      git:
+        branch: main
+```
 
+#### [`svn`](#+repo.svn){ #+repo.svn}
+
+Contains settings to specify a branch from the CABLE SVN repository (`https://trac.nci.org.au/svn/cable`).
+
+This key is _optional_. No default.
+
+```yaml
+realisations:
+  - repo:
+      svn:
+        branch_path: branches/Users/foo/my_branch
+        revision: 1234
+```
+
+[`branch_path`](#+repo.svn.branch_path){ #+repo.svn.branch_path}
+
+: **Default:** _required key, no default_. :octicons-dash-24: Specify the branch path relative to the SVN root of the CABLE repository (`https://trac.nci.org.au/svn/cable`).
+
+```yaml
+realisations:
+  # head of the trunk
+  - repo:
+      svn:
+        branch_path: trunk # (1)
+  # some development branch
+  - repo:
+      svn:
+        branch_path: branches/Users/foo/my_branch # (2)
 ```
 
 1. To checkout `https://trac.nci.org.au/svn/cable/trunk`
 2. To checkout `https://trac.nci.org.au/svn/cable/branches/Users/foo/my_branch`
 
-[`name`](#+realisation.name){ #+realisation.name }
+[`revision`](#+repo.svn.revision){ #+repo.svn.revision}
 
-: **Default:** base name of [path](#+realisation.path), _optional key_. :octicons-dash-24: An alias name used internally by `benchcab` for the branch. The `name` key also specifies the directory name when checking out the branch, that is, `name` is the optional `PATH` argument to `svn checkout`.
+: **Default:** HEAD of the branch is checked out, _optional key_. :octicons-dash-24: Specify the revision number to checkout for the branch. This option can be used to ensure the reproducibility of the tests.
 
 ```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch", 
-    name: "my_feature", # (1)
-  }
-]
+realisations:
+  - repo:
+      svn:
+        branch_path: branches/Users/foo/my_branch
+        revision: 1234
+```
 
+#### [`git`](#+repo.git){ #+repo.git}
+
+Contains settings to specify a branch on the GitHub repository. By default, the [CABLE GitHub repository][cable-github] will be cloned (see [`url`](#+repo.git.url) to specify another GitHub repository).
+
+This key is _optional_. No default.
+
+```yaml
+realisations:
+  - repo:
+      git:
+        branch: my_branch
+        commit: 067b1f4a570385fce01552fdf96ced0adbbe17eb
+        url: https://github.com/SeanBryan51/CABLE.git
+```
+
+[`branch`](#+repo.git.branch){ #+repo.git.branch}
+
+: **Default:** _required key, no default_. :octicons-dash-24: Specify the GitHub branch name to be checked out.
+
+```yaml
+realisations:
+  - repo:
+      git:
+        branch: my_branch
+```
+
+[`commit`](#+repo.git.commit){ #+repo.git.commit}
+
+: **Default:** unset, _optional key_. :octicons-dash-24: Specify a specific commit to use for the branch.
+
+```yaml
+realisations:
+  - repo:
+      git:
+        branch: my_branch
+        commit: 067b1f4a570385fce01552fdf96ced0adbbe17eb
+```
+
+[`url`](#+repo.git.url){ #+repo.git.url}
+
+: **Default:** URL of the [CABLE GitHub repository][cable-github], _optional key_. :octicons-dash-24: Specify the GitHub repository url to clone from when checking out the branch.
+
+### [name](#name)
+
+: **Default:** base name of [branch_path](#+repo.svn.branch_path) if an SVN repository is given, for Git repositories the default is the branch name, _optional key_. :octicons-dash-24: An alias name used internally by `benchcab` for the branch. The `name` key also specifies the directory name of the source code when retrieving from SVN or GitHub.
+
+```yaml
+realisations:
+  - repo:
+      svn:
+        branch_path: branches/Users/foo/my_branch
+      name: my_feature # (1)
 ```
 
 1. Checkout the branch in the directory `src/my_feature`
 
-[`build_script`](#+realisation.build_script){ #+realisation.build_script }
+### [build_script](#build_script)
 
-: **Default:** unset, _optional key_. :octicons-dash-24: The path to a custom shell script to build the code in that branch, relative to the name of the branch. **Note:** any lines in the provided shell script that call the [environment modules API][environment-modules] will be ignored. To specify modules to use for the build script, please specify them using the [`modules`](#modules) key.
-
-```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch", 
-    build_script: "offline/build.sh", # (1)
-  }
-]
-```
-
-1. Uses the build script stored by `benchcab` as `src/my_branch/offline/build.sh`
-
-[`revision`](#+realisation.revision){ #+realisation.revision }
-
-: **Default:** HEAD of the branch is checked out, _optional key_. :octicons-dash-24: The revision number to checkout for the branch. This option can be used to ensure the reproducibility of the tests.
+: **Default:** unset, _optional key_. :octicons-dash-24: The path to a custom shell script to build the code in that branch, relative to the repository root directory. **Note:** any lines in the provided shell script that call the [environment modules API][environment-modules] will be ignored. To specify modules to use for the build script, please specify them using the [`modules`](#modules) key.
 
 ```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch", 
-    revision: 439,
-  }
-]
+realisations:
+  # head of the trunk
+  - path: trunk
+  # some development branch
+  - path: branches/Users/foo/my_branch
+    build_script: offline/build.sh
 ```
 
-[`patch`](#+realisation.patch){ #+realisation.patch }
+### [patch](#patch)
 
 : **Default:** unset, _optional key_. :octicons-dash-24: Branch-specific namelist settings for `cable.nml`. Settings specified in `patch` get "patched" to the base namelist settings used for both branches. Any namelist settings specified here will overwrite settings defined in the default namelist file and in the science configurations. This means these settings will be set as stipulated in the `patch` for this branch for all science configurations run by `benchcab`.
 : The `patch` key must be a dictionary-like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
 
 ```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch",
-    patch: { # (1)
-      cable: {
-        cable_user: {
-          FWSOIL_SWITCH: "Lai and Ktaul 2000", 
-        }
-      }
-    }
-  }
-]
+realisations:
+  # head of the trunk
+  - path: trunk
+  # some development branch
+  - path: branches/Users/foo/my_branch
+    patch:  # (1)
+      cable:
+        cable_user:
+          FWSOIL_SWITCH: "Lai and Ktaul 2000"
 ```
 
 1. Sets FWSOIL_SWITCH to "Lai and Ktaul 2000" for all science configurations for this branch
 
-[`patch_remove`](#+realisation.path_remove){#+realisation.patch_remove}
+### [patch_remove](#patch_remove)
 
 : **Default:** unset, no effect, _optional key. :octicons-dash-24: Specifies branch-specific namelist settings to be removed from the `cable.nml` namelist settings. When the `patch_remove` key is specified, the specified namelists are removed from all namelist files for this branch for all science configurations run by `benchcab`. When specifying a namelist parameter in `patch_remove`, the value of the namelist parameter is ignored.
 : The `patch_remove` key must be a dictionary-like data structure that is compliant with the [`f90nml`][f90nml-github] python package.
 
 ```yaml
-realisations: [
-  { # head of the trunk
-    path: "trunk",
-  },
-  { # some development branch
-    path: "branches/Users/foo/my_branch",
-    patch_remove: {
-      cable: {
-        soilparmnew: nil, # (1)
-      }
-    }
-  }
-]
+realisations:
+  # head of the trunk
+  - path: trunk
+  # some development branch
+  - path: branches/Users/foo/my_branch
+    patch_remove:
+      cable:
+        soilparmnew: nil # (1)
 ```
 
 1. The value is ignored and does not have to be a possible value for the namelist option.
@@ -341,3 +384,4 @@ science_configurations: [
 [f90nml-github]: https://github.com/marshallward/f90nml
 [environment-modules]: https://modules.sourceforge.net/
 [nci-pbs-directives]: https://opus.nci.org.au/display/Help/PBS+Directives+Explained
+[cable-github]: https://github.com/CABLE-LSM/CABLE

@@ -25,6 +25,7 @@ from benchcab.internal import get_met_forcing_file_names
 from benchcab.model import Model
 from benchcab.utils.fs import mkdir, next_path
 from benchcab.utils.pbs import render_job_script
+from benchcab.utils.repo import SVNRepo, create_repo
 from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterface
 from benchcab.workdir import setup_fluxsite_directory_tree
 
@@ -45,7 +46,7 @@ class Benchcab:
         self.validate_env = validate_env
 
         self._config: Optional[dict] = None
-        self._repos: list[Model] = []
+        self._models: list[Model] = []
         self.tasks: list[Task] = []  # initialise fluxsite tasks lazily
 
     def _validate_environment(self, project: str, modules: list):
@@ -102,18 +103,21 @@ class Benchcab:
             self._config = read_config(config_path)
         return self._config
 
-    def _get_repos(self, config: dict) -> list[Model]:
-        if not self._repos:
-            self._repos = [
-                Model(**repo_config, repo_id=id)
-                for id, repo_config in enumerate(config["realisations"])
-            ]
-        return self._repos
+    def _get_models(self, config: dict) -> list[Model]:
+        if not self._models:
+            for id, sub_config in enumerate(config["realisations"]):
+                name = sub_config.get("name")
+                repo = create_repo(
+                    spec=sub_config.pop("repo"),
+                    path=internal.SRC_DIR / name if name else internal.SRC_DIR,
+                )
+                self._models.append(Model(repo=repo, model_id=id, **sub_config))
+        return self._models
 
     def _initialise_tasks(self, config: dict) -> list[Task]:
         """A helper method that initialises and returns the `tasks` attribute."""
         self.tasks = get_fluxsite_tasks(
-            repos=self._get_repos(config),
+            models=self._get_models(config),
             science_configurations=config.get(
                 "science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS
             ),
@@ -184,15 +188,16 @@ class Benchcab:
 
         print("Checking out repositories...")
         rev_number_log = ""
-        for repo in self._get_repos(config):
-            repo.checkout(verbose=verbose)
-            rev_number_log += (
-                f"{repo.name} last changed revision: "
-                f"{repo.svn_info_show_item('last-changed-revision')}\n"
-            )
+        for model in self._get_models(config):
+            model.repo.checkout(verbose=verbose)
+            rev_number_log += f"{model.name}: {model.repo.get_revision()}\n"
 
         # TODO(Sean) we should archive revision numbers for CABLE-AUX
-        cable_aux_repo = Model(path=internal.CABLE_AUX_RELATIVE_SVN_PATH)
+        cable_aux_repo = SVNRepo(
+            svn_root=internal.CABLE_SVN_ROOT,
+            branch_path=internal.CABLE_AUX_RELATIVE_SVN_PATH,
+            path=internal.SRC_DIR / "CABLE-AUX",
+        )
         cable_aux_repo.checkout(verbose=verbose)
 
         rev_number_log_path = self.root_dir / next_path(
@@ -211,7 +216,7 @@ class Benchcab:
         config = self._get_config(config_path)
         self._validate_environment(project=config["project"], modules=config["modules"])
 
-        for repo in self._get_repos(config):
+        for repo in self._get_models(config):
             if repo.build_script:
                 print(
                     "Compiling CABLE using custom build script for "

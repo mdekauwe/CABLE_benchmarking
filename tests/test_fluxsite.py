@@ -25,26 +25,46 @@ from benchcab.fluxsite import (
     patch_remove_namelist,
 )
 from benchcab.model import Model
+from benchcab.utils.repo import Repo
 
 
 @pytest.fixture()
-def repo(mock_cwd, mock_subprocess_handler):
+def mock_repo():
+    class MockRepo(Repo):
+        def __init__(self) -> None:
+            self.branch = "test-branch"
+            self.revision = "1234"
+
+        def checkout(self, verbose=False):
+            pass
+
+        def get_branch_name(self) -> str:
+            return self.branch
+
+        def get_revision(self) -> str:
+            return self.revision
+
+    return MockRepo()
+
+
+@pytest.fixture()
+def model(mock_cwd, mock_subprocess_handler, mock_repo):
     """Returns a `Model` instance."""
-    _repo = Model(
-        repo_id=1,
-        path="path/to/test-branch",
+    _model = Model(
+        model_id=1,
+        repo=mock_repo,
         patch={"cable": {"some_branch_specific_setting": True}},
     )
-    _repo.subprocess_handler = mock_subprocess_handler
-    _repo.root_dir = mock_cwd
-    return _repo
+    _model.subprocess_handler = mock_subprocess_handler
+    _model.root_dir = mock_cwd
+    return _model
 
 
 @pytest.fixture()
-def task(repo, mock_cwd, mock_subprocess_handler):
+def task(model, mock_cwd, mock_subprocess_handler):
     """Returns a mock `Task` instance."""
     _task = Task(
-        repo=repo,
+        model=model,
         met_forcing_file="forcing-file.nc",
         sci_conf_id=0,
         sci_config={"cable": {"some_setting": True}},
@@ -374,15 +394,13 @@ class TestAddProvenanceInfo:
         # Create mock namelist file in task directory:
         f90nml.write(nml, task_dir / internal.CABLE_NML)
 
-    def test_netcdf_global_attributes(
-        self, task, nc_output_path, mock_subprocess_handler, nml
-    ):
+    def test_netcdf_global_attributes(self, task, nc_output_path, mock_repo, nml):
         """Success case: add global attributes to netcdf file."""
         task.add_provenance_info()
         with netCDF4.Dataset(str(nc_output_path), "r") as nc_output:
             atts = vars(nc_output)
-            assert atts["cable_branch"] == mock_subprocess_handler.stdout
-            assert atts["svn_revision_number"] == mock_subprocess_handler.stdout
+            assert atts["cable_branch"] == mock_repo.branch
+            assert atts["svn_revision_number"] == mock_repo.revision
             assert atts["benchcab_version"] == __version__
             assert atts[r"filename%met"] == nml["cable"]["filename"]["met"]
             assert atts[r"filename%foo"] == nml["cable"]["filename"]["foo"]
@@ -418,12 +436,9 @@ class TestGetFluxsiteTasks:
     """Tests for `get_fluxsite_tasks()`."""
 
     @pytest.fixture()
-    def repos(self, config):
-        """Return a list of `Model` instances used for testing."""
-        return [
-            Model(**branch_config, repo_id=id)
-            for id, branch_config in enumerate(config["realisations"])
-        ]
+    def models(self, mock_repo):
+        """Return a list of `CableRepository` instances used for testing."""
+        return [Model(repo=mock_repo, model_id=id) for id in range(2)]
 
     @pytest.fixture()
     def met_forcings(self):
@@ -436,47 +451,47 @@ class TestGetFluxsiteTasks:
         return config["science_configurations"]
 
     def test_task_product_across_branches_forcings_and_configurations(
-        self, repos, met_forcings, science_configurations
+        self, models, met_forcings, science_configurations
     ):
         """Success case: test task product across branches, forcings and configurations."""
         tasks = get_fluxsite_tasks(
-            repos=repos,
+            models=models,
             science_configurations=science_configurations,
             fluxsite_forcing_file_names=met_forcings,
         )
         assert [
-            (task.repo, task.met_forcing_file, task.sci_config) for task in tasks
+            (task.model, task.met_forcing_file, task.sci_config) for task in tasks
         ] == [
-            (repos[0], met_forcings[0], science_configurations[0]),
-            (repos[0], met_forcings[0], science_configurations[1]),
-            (repos[0], met_forcings[1], science_configurations[0]),
-            (repos[0], met_forcings[1], science_configurations[1]),
-            (repos[1], met_forcings[0], science_configurations[0]),
-            (repos[1], met_forcings[0], science_configurations[1]),
-            (repos[1], met_forcings[1], science_configurations[0]),
-            (repos[1], met_forcings[1], science_configurations[1]),
+            (models[0], met_forcings[0], science_configurations[0]),
+            (models[0], met_forcings[0], science_configurations[1]),
+            (models[0], met_forcings[1], science_configurations[0]),
+            (models[0], met_forcings[1], science_configurations[1]),
+            (models[1], met_forcings[0], science_configurations[0]),
+            (models[1], met_forcings[0], science_configurations[1]),
+            (models[1], met_forcings[1], science_configurations[0]),
+            (models[1], met_forcings[1], science_configurations[1]),
         ]
 
 
 class TestGetFluxsiteComparisons:
     """Tests for `get_fluxsite_comparisons()`."""
 
-    def test_comparisons_for_two_branches_with_two_tasks(self, mock_cwd):
+    def test_comparisons_for_two_branches_with_two_tasks(self, mock_cwd, mock_repo):
         """Success case: comparisons for two branches with two tasks."""
         tasks = [
             Task(
-                repo=Model("path/to/repo", repo_id=repo_id),
+                model=Model(repo=mock_repo, model_id=model_id),
                 met_forcing_file="foo.nc",
                 sci_config={"foo": "bar"},
                 sci_conf_id=0,
             )
-            for repo_id in range(2)
+            for model_id in range(2)
         ]
         comparisons = get_fluxsite_comparisons(tasks, root_dir=mock_cwd)
-        n_repos, n_science_configurations, n_met_forcings = 2, 1, 1
+        n_models, n_science_configurations, n_met_forcings = 2, 1, 1
         assert (
             len(comparisons)
-            == math.comb(n_repos, 2) * n_science_configurations * n_met_forcings
+            == math.comb(n_models, 2) * n_science_configurations * n_met_forcings
         )
         assert comparisons[0].files == (
             mock_cwd
@@ -488,22 +503,22 @@ class TestGetFluxsiteComparisons:
         )
         assert comparisons[0].task_name == "foo_S0_R0_R1"
 
-    def test_comparisons_for_three_branches_with_three_tasks(self, mock_cwd):
+    def test_comparisons_for_three_branches_with_three_tasks(self, mock_cwd, mock_repo):
         """Success case: comparisons for three branches with three tasks."""
         tasks = [
             Task(
-                repo=Model("path/to/repo", repo_id=repo_id),
+                model=Model(repo=mock_repo, model_id=model_id),
                 met_forcing_file="foo.nc",
                 sci_config={"foo": "bar"},
                 sci_conf_id=0,
             )
-            for repo_id in range(3)
+            for model_id in range(3)
         ]
         comparisons = get_fluxsite_comparisons(tasks, root_dir=mock_cwd)
-        n_repos, n_science_configurations, n_met_forcings = 3, 1, 1
+        n_models, n_science_configurations, n_met_forcings = 3, 1, 1
         assert (
             len(comparisons)
-            == math.comb(n_repos, 2) * n_science_configurations * n_met_forcings
+            == math.comb(n_models, 2) * n_science_configurations * n_met_forcings
         )
         assert comparisons[0].files == (
             mock_cwd
@@ -537,12 +552,12 @@ class TestGetFluxsiteComparisons:
 class TestGetComparisonName:
     """Tests for `get_comparison_name()`."""
 
-    def test_comparison_name_convention(self):
+    def test_comparison_name_convention(self, mock_repo):
         """Success case: check comparison name convention."""
         assert (
             get_comparison_name(
-                Model("path/to/repo", repo_id=0),
-                Model("path/to/repo", repo_id=1),
+                Model(repo=mock_repo, model_id=0),
+                Model(repo=mock_repo, model_id=1),
                 met_forcing_file="foo.nc",
                 sci_conf_id=0,
             )

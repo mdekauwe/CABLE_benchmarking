@@ -29,15 +29,36 @@ realisations:
   schema:
     type: "dict"
     schema:
-      path:
-        type: "string"
+      repo:
+        type: "dict"
+        required: true
+        schema:
+          git:
+            type: "dict"
+            excludes: "svn"
+            schema:
+              branch:
+                type: "string"
+                required: true
+              commit:
+                type: "string"
+                required: false
+              url:
+                type: "string"
+                required: false
+          svn:
+            type: "dict"
+            excludes: "git"
+            schema:
+              branch_path:
+                type: "string"
+                required: true
+              revision:
+                type: "integer"
       name:
         type: "string"
         required: false
       build_script:
-        type: "string"
-        required: false
-      revision:
         type: "string"
         required: false
       patch:

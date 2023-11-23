@@ -14,66 +14,96 @@ import pytest
 
 from benchcab import internal
 from benchcab.model import Model, remove_module_lines
+from benchcab.utils.repo import Repo
 
 from .conftest import DEFAULT_STDOUT
 
 
 @pytest.fixture()
-def repo(mock_cwd, mock_subprocess_handler, mock_environment_modules_handler):
+def mock_repo():
+    """Return a mock implementation of the `Repo` interface."""
+
+    class MockRepo(Repo):
+        """A mock implementation of the `Repo` interface used for testing."""
+
+        def __init__(self) -> None:
+            self.handle = "trunk"
+
+        def checkout(self, verbose=False):
+            pass
+
+        def get_branch_name(self) -> str:
+            return self.handle
+
+        def get_revision(self) -> str:
+            pass
+
+    return MockRepo()
+
+
+@pytest.fixture()
+def model(
+    mock_repo, mock_cwd, mock_subprocess_handler, mock_environment_modules_handler
+):
     """Return a mock `Model` instance for testing against."""
-    _repo = Model(path="trunk")
-    _repo.root_dir = mock_cwd
-    _repo.subprocess_handler = mock_subprocess_handler
-    _repo.modules_handler = mock_environment_modules_handler
-    return _repo
+    _model = Model(repo=mock_repo)
+    _model.root_dir = mock_cwd
+    _model.subprocess_handler = mock_subprocess_handler
+    _model.modules_handler = mock_environment_modules_handler
+    return _model
 
 
-class TestRepoID:
-    """Tests for `Model.repo_id`."""
+class TestModelID:
+    """Tests for `Model.model_id`."""
 
-    def test_set_and_get_repo_id(self, repo):
-        """Success case: set and get repository ID."""
+    def test_set_and_get_model_id(self, model):
+        """Success case: set and get model ID."""
         val = 456
-        repo.repo_id = val
-        assert repo.repo_id == val
+        model.model_id = val
+        assert model.model_id == val
 
-    def test_undefined_repo_id(self, repo):
-        """Failure case: access undefined repository ID."""
-        repo.repo_id = None
+    def test_undefined_model_id(self, model):
+        """Failure case: access undefined model ID."""
+        model.model_id = None
         with pytest.raises(
-            RuntimeError, match="Attempting to access undefined repo ID"
+            RuntimeError, match="Attempting to access undefined model ID"
         ):
-            _ = repo.repo_id
+            _ = model.model_id
 
 
 class TestGetExePath:
-    """Tests for `CableRepository.get_exe_path()`."""
+    """Tests for `Model.get_exe_path()`."""
 
-    def test_serial_exe_path(self, repo, mock_cwd):
+    def test_serial_exe_path(self, model, mock_cwd):
         """Success case: get path to serial executable."""
         assert (
-            repo.get_exe_path()
-            == mock_cwd / internal.SRC_DIR / repo.name / "offline" / internal.CABLE_EXE
+            model.get_exe_path()
+            == mock_cwd / internal.SRC_DIR / model.name / "offline" / internal.CABLE_EXE
         )
 
 
+# TODO(Sean) remove for issue https://github.com/CABLE-LSM/benchcab/issues/211
+@pytest.mark.skip(
+    reason="""Skip tests for `checkout` until tests for repo.py
+    have been implemented."""
+)
 class TestCheckout:
     """Tests for `Model.checkout()`."""
 
-    def test_checkout_command_execution(self, repo, mock_cwd, mock_subprocess_handler):
+    def test_checkout_command_execution(self, model, mock_cwd, mock_subprocess_handler):
         """Success case: `svn checkout` command is executed."""
-        repo.checkout()
+        model.checkout()
         assert (
             f"svn checkout https://trac.nci.org.au/svn/cable/trunk {mock_cwd}/src/trunk"
             in mock_subprocess_handler.commands
         )
 
     def test_checkout_command_execution_with_revision_number(
-        self, repo, mock_cwd, mock_subprocess_handler
+        self, model, mock_cwd, mock_subprocess_handler
     ):
         """Success case: `svn checkout` command is executed with specified revision number."""
-        repo.revision = 9000
-        repo.checkout()
+        model.revision = 9000
+        model.checkout()
         assert (
             f"svn checkout -r 9000 https://trac.nci.org.au/svn/cable/trunk {mock_cwd}/src/trunk"
             in mock_subprocess_handler.commands
@@ -86,20 +116,25 @@ class TestCheckout:
             (True, f"Successfully checked out trunk at revision {DEFAULT_STDOUT}\n"),
         ],
     )
-    def test_standard_output(self, repo, verbosity, expected):
+    def test_standard_output(self, model, verbosity, expected):
         """Success case: test standard output."""
         with contextlib.redirect_stdout(io.StringIO()) as buf:
-            repo.checkout(verbose=verbosity)
+            model.checkout(verbose=verbosity)
         assert buf.getvalue() == expected
 
 
+# TODO(Sean) remove for issue https://github.com/CABLE-LSM/benchcab/issues/211
+@pytest.mark.skip(
+    reason="""Skip tests for `svn_info_show_item` until tests for repo.py
+    have been implemented."""
+)
 class TestSVNInfoShowItem:
     """Tests for `Model.svn_info_show_item()`."""
 
-    def test_svn_info_command_execution(self, repo, mock_subprocess_handler, mock_cwd):
+    def test_svn_info_command_execution(self, model, mock_subprocess_handler, mock_cwd):
         """Success case: call svn info command and get result."""
         assert (
-            repo.svn_info_show_item("some-mock-item") == mock_subprocess_handler.stdout
+            model.svn_info_show_item("some-mock-item") == mock_subprocess_handler.stdout
         )
         assert (
             f"svn info --show-item some-mock-item {mock_cwd}/src/trunk"
@@ -107,12 +142,12 @@ class TestSVNInfoShowItem:
         )
 
     def test_white_space_removed_from_standard_output(
-        self, repo, mock_subprocess_handler
+        self, model, mock_subprocess_handler
     ):
         """Success case: test leading and trailing white space is removed from standard output."""
         mock_subprocess_handler.stdout = " \n\n mock standard output \n\n"
         assert (
-            repo.svn_info_show_item("some-mock-item")
+            model.svn_info_show_item("some-mock-item")
             == mock_subprocess_handler.stdout.strip()
         )
 
@@ -121,18 +156,18 @@ class TestPreBuild:
     """Tests for `Model.pre_build()`."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self, repo):
+    def _setup(self, model):
         """Setup precondition for `Model.pre_build()`."""
-        (internal.SRC_DIR / repo.name / "offline").mkdir(parents=True)
-        (internal.SRC_DIR / repo.name / "offline" / "Makefile").touch()
-        (internal.SRC_DIR / repo.name / "offline" / "parallel_cable").touch()
-        (internal.SRC_DIR / repo.name / "offline" / "serial_cable").touch()
-        (internal.SRC_DIR / repo.name / "offline" / "foo.f90").touch()
+        (internal.SRC_DIR / model.name / "offline").mkdir(parents=True)
+        (internal.SRC_DIR / model.name / "offline" / "Makefile").touch()
+        (internal.SRC_DIR / model.name / "offline" / "parallel_cable").touch()
+        (internal.SRC_DIR / model.name / "offline" / "serial_cable").touch()
+        (internal.SRC_DIR / model.name / "offline" / "foo.f90").touch()
 
-    def test_source_files_and_scripts_are_copied_to_tmp_dir(self, repo):
+    def test_source_files_and_scripts_are_copied_to_tmp_dir(self, model):
         """Success case: test source files and scripts are copied to .tmp."""
-        repo.pre_build()
-        tmp_dir = internal.SRC_DIR / repo.name / "offline" / ".tmp"
+        model.pre_build()
+        tmp_dir = internal.SRC_DIR / model.name / "offline" / ".tmp"
         assert (tmp_dir / "Makefile").exists()
         assert (tmp_dir / "parallel_cable").exists()
         assert (tmp_dir / "serial_cable").exists()
@@ -155,10 +190,10 @@ class TestPreBuild:
             ),
         ],
     )
-    def test_standard_output(self, repo, verbosity, expected):
+    def test_standard_output(self, model, verbosity, expected):
         """Success case: test standard output."""
         with contextlib.redirect_stdout(io.StringIO()) as buf:
-            repo.pre_build(verbose=verbosity)
+            model.pre_build(verbose=verbosity)
         assert buf.getvalue() == expected
 
 
@@ -188,19 +223,19 @@ class TestRunBuild:
         }
 
     @pytest.fixture(autouse=True)
-    def _setup(self, repo, netcdf_root):
+    def _setup(self, model, netcdf_root):
         """Setup precondition for `Model.run_build()`."""
-        (internal.SRC_DIR / repo.name / "offline" / ".tmp").mkdir(parents=True)
+        (internal.SRC_DIR / model.name / "offline" / ".tmp").mkdir(parents=True)
 
         # This is required so that we can use the NETCDF_ROOT environment variable
         # when running `make`, and `serial_cable` and `parallel_cable` scripts:
         os.environ["NETCDF_ROOT"] = netcdf_root
 
     def test_build_command_execution(
-        self, repo, mock_subprocess_handler, modules, netcdf_root
+        self, model, mock_subprocess_handler, modules, netcdf_root
     ):
         """Success case: test build commands are run."""
-        repo.run_build(modules)
+        model.run_build(modules)
         assert mock_subprocess_handler.commands == [
             "make -f Makefile",
             './serial_cable "ifort" "-O2 -fp-model precise"'
@@ -209,10 +244,10 @@ class TestRunBuild:
         ]
 
     def test_modules_loaded_at_runtime(
-        self, repo, mock_environment_modules_handler, modules
+        self, model, mock_environment_modules_handler, modules
     ):
         """Success case: test modules are loaded at runtime."""
-        repo.run_build(modules)
+        model.run_build(modules)
         assert (
             "module load " + " ".join(modules)
         ) in mock_environment_modules_handler.commands
@@ -221,10 +256,10 @@ class TestRunBuild:
         ) in mock_environment_modules_handler.commands
 
     def test_commands_are_run_with_environment_variables(
-        self, repo, mock_subprocess_handler, modules, env
+        self, model, mock_subprocess_handler, modules, env
     ):
         """Success case: test commands are run with the correct environment variables."""
-        repo.run_build(modules)
+        model.run_build(modules)
         for kv in env.items():
             assert kv in mock_subprocess_handler.env.items()
 
@@ -235,10 +270,10 @@ class TestRunBuild:
             (True, "Loading modules: foo bar\nUnloading modules: foo bar\n"),
         ],
     )
-    def test_standard_output(self, repo, modules, verbosity, expected):
+    def test_standard_output(self, model, modules, verbosity, expected):
         """Success case: test standard output."""
         with contextlib.redirect_stdout(io.StringIO()) as buf:
-            repo.run_build(modules, verbose=verbosity)
+            model.run_build(modules, verbose=verbosity)
         assert buf.getvalue() == expected
 
 
@@ -246,17 +281,19 @@ class TestPostBuild:
     """Tests for `Model.post_build()`."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self, repo):
+    def _setup(self, model):
         """Setup precondition for `Model.post_build()`."""
-        (internal.SRC_DIR / repo.name / "offline" / ".tmp").mkdir(parents=True)
-        (internal.SRC_DIR / repo.name / "offline" / ".tmp" / internal.CABLE_EXE).touch()
+        (internal.SRC_DIR / model.name / "offline" / ".tmp").mkdir(parents=True)
+        (
+            internal.SRC_DIR / model.name / "offline" / ".tmp" / internal.CABLE_EXE
+        ).touch()
 
-    def test_exe_moved_to_offline_dir(self, repo):
+    def test_exe_moved_to_offline_dir(self, model):
         """Success case: test executable is moved to offline directory."""
-        repo.post_build()
-        tmp_dir = internal.SRC_DIR / repo.name / "offline" / ".tmp"
+        model.post_build()
+        tmp_dir = internal.SRC_DIR / model.name / "offline" / ".tmp"
         assert not (tmp_dir / internal.CABLE_EXE).exists()
-        offline_dir = internal.SRC_DIR / repo.name / "offline"
+        offline_dir = internal.SRC_DIR / model.name / "offline"
         assert (offline_dir / internal.CABLE_EXE).exists()
 
     @pytest.mark.parametrize(
@@ -266,10 +303,10 @@ class TestPostBuild:
             (True, "mv src/trunk/offline/.tmp/cable src/trunk/offline/cable\n"),
         ],
     )
-    def test_standard_output(self, repo, verbosity, expected):
+    def test_standard_output(self, model, verbosity, expected):
         """Success case: test non-verbose standard output."""
         with contextlib.redirect_stdout(io.StringIO()) as buf:
-            repo.post_build(verbose=verbosity)
+            model.post_build(verbose=verbosity)
         assert buf.getvalue() == expected
 
 
@@ -277,15 +314,15 @@ class TestCustomBuild:
     """Tests for `Model.custom_build()`."""
 
     @pytest.fixture()
-    def build_script(self, repo):
+    def build_script(self, model):
         """Create a custom build script and return its path.
 
         The return value is the path relative to root directory of the repository.
         """
-        _build_script = internal.SRC_DIR / repo.name / "my-custom-build.sh"
+        _build_script = internal.SRC_DIR / model.name / "my-custom-build.sh"
         _build_script.parent.mkdir(parents=True)
         _build_script.touch()
-        return _build_script.relative_to(internal.SRC_DIR / repo.name)
+        return _build_script.relative_to(internal.SRC_DIR / model.name)
 
     @pytest.fixture()
     def modules(self):
@@ -293,19 +330,19 @@ class TestCustomBuild:
         return ["foo", "bar"]
 
     def test_build_command_execution(
-        self, repo, mock_subprocess_handler, build_script, modules
+        self, model, mock_subprocess_handler, build_script, modules
     ):
         """Success case: execute the build command for a custom build script."""
-        repo.build_script = str(build_script)
-        repo.custom_build(modules)
+        model.build_script = str(build_script)
+        model.custom_build(modules)
         assert "./tmp-build.sh" in mock_subprocess_handler.commands
 
     def test_modules_loaded_at_runtime(
-        self, repo, mock_environment_modules_handler, build_script, modules
+        self, model, mock_environment_modules_handler, build_script, modules
     ):
         """Success case: test modules are loaded at runtime."""
-        repo.build_script = str(build_script)
-        repo.custom_build(modules)
+        model.build_script = str(build_script)
+        model.custom_build(modules)
         assert (
             "module load " + " ".join(modules)
         ) in mock_environment_modules_handler.commands
@@ -336,25 +373,25 @@ class TestCustomBuild:
             ),
         ],
     )
-    def test_standard_output(self, repo, build_script, modules, verbosity, expected):
+    def test_standard_output(self, model, build_script, modules, verbosity, expected):
         """Success case: test non-verbose standard output for a custom build script."""
-        repo.build_script = str(build_script)
+        model.build_script = str(build_script)
         with contextlib.redirect_stdout(io.StringIO()) as buf:
-            repo.custom_build(modules, verbose=verbosity)
+            model.custom_build(modules, verbose=verbosity)
         assert buf.getvalue() == expected
 
-    def test_file_not_found_exception(self, repo, build_script, modules, mock_cwd):
+    def test_file_not_found_exception(self, model, build_script, modules, mock_cwd):
         """Failure case: cannot find custom build script."""
-        build_script_path = mock_cwd / internal.SRC_DIR / repo.name / build_script
+        build_script_path = mock_cwd / internal.SRC_DIR / model.name / build_script
         build_script_path.unlink()
-        repo.build_script = str(build_script)
+        model.build_script = str(build_script)
         with pytest.raises(
             FileNotFoundError,
             match=f"The build script, {build_script_path}, could not be "
             "found. Do you need to specify a different build script with the 'build_script' "
             "option in config.yaml?",
         ):
-            repo.custom_build(modules)
+            model.custom_build(modules)
 
 
 class TestRemoveModuleLines:
