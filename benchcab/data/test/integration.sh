@@ -17,8 +17,6 @@ git reset --hard 6287539e96fc8ef36dc578201fbf9847314147fb
 cat > config.yaml << EOL
 project: $PROJECT
 
-experiment: AU-Tum
-
 realisations:
   - repo:
       svn:
@@ -34,9 +32,10 @@ modules: [
 ]
 
 fluxsite:
-    pbs:
-        storage:
-            - scratch/$PROJECT
+  experiment: AU-Tum
+  pbs:
+    storage:
+      - scratch/$PROJECT
 EOL
 
 benchcab run -v

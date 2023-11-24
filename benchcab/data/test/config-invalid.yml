@@ -1,7 +1,8 @@
 # A sample configuration that should fail validation.
 project: w97
 
-experiment:  NON EXISTENT EXPERIMENT!!!
+fluxsite:
+  experiment:  NON EXISTENT EXPERIMENT!!!
 
 realisations: [
   {

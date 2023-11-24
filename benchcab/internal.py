@@ -223,6 +223,8 @@ MEORG_EXPERIMENTS = {
     ],
 }
 
+FLUXSITE_DEFAULT_EXPERIMENT = "forty-two-site-test"
+
 OPTIONAL_COMMANDS = ["fluxsite-bitwise-cmp"]
 
 
