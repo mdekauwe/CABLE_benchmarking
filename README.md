@@ -18,7 +18,7 @@ The full documentation is available at [benchcab.readthedocs.io][docs].
 - `benchcab` is a continuation of the efforts made by Martin De Kauwe ([@mdekauwe](https://github.com/mdekauwe)) and Gab Abramowitz ([@gabsun](https://github.com/gabsun)) in developing a CABLE benchmarking framework - we thank them for their contribution.
 
 [conda_badge]: https://img.shields.io/conda/v/accessnri/benchcab
-[codecov_badge]: https://codecov.io/gh/CABLE-LSM/benchcab/branch/master/graph/badge.svg?token=JJYE1YZDXQ
+[codecov_badge]: https://codecov.io/gh/CABLE-LSM/benchcab/branch/main/graph/badge.svg?token=JJYE1YZDXQ
 [readthedocs_badge]: https://readthedocs.org/projects/benchcab/badge/?version=stable
 [license_badge]: https://img.shields.io/github/license/CABLE-LSM/benchcab
 [conda]: https://anaconda.org/accessnri/benchcab
