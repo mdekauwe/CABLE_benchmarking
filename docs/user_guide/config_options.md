@@ -72,7 +72,7 @@ fluxsite:
 
 ### [experiment](#experiment)
 
-: **Default:** `forty-two-site-test`, _optional key_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
+: **Default:** `forty-two-site-test`, _optional key_. :octicons-dash-24: Type of fluxsite experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
 
 : | Key value | Experiment description |
 |-----------|------------------------|
