@@ -17,8 +17,6 @@
 
 project: w97
 
-experiment: five-site-test
-
 realisations:
   - repo:
       svn:

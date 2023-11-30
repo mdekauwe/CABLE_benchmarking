@@ -6,18 +6,6 @@ modules:
   schema:
     type: "string"
 
-experiment:
-  type: "string"
-  allowed: [
-    "five-site-test",
-    "forty-two-site-test",
-    "AU-Tum",
-    "AU-How",
-    "FI-Hyy",
-    "US-Var",
-    "US-Whs"
-  ]
-
 science_configurations:
   type: "list"
   schema: 
@@ -72,6 +60,18 @@ fluxsite:
   type: "dict"
   required: false
   schema:
+    experiment:
+      type: "string"
+      allowed: [
+        "five-site-test",
+        "forty-two-site-test",
+        "AU-Tum",
+        "AU-How",
+        "FI-Hyy",
+        "US-Var",
+        "US-Whs"
+      ]
+      required: false
     multiprocessing:
       type: "boolean"
       required: false

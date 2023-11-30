@@ -122,7 +122,9 @@ class Benchcab:
                 "science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS
             ),
             fluxsite_forcing_file_names=get_met_forcing_file_names(
-                config["experiment"]
+                config.get("fluxsite", {}).get(
+                    "experiment", internal.FLUXSITE_DEFAULT_EXPERIMENT
+                )
             ),
         )
         return self.tasks

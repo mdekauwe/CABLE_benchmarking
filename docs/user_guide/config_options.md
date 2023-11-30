@@ -54,9 +54,25 @@ modules: [
 
 ```
 
-## experiment
+## fluxsite
+Contains settings specific to fluxsite tests.
 
-: **Default:** _required key, no default_. :octicons-dash-24: Type of experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
+This key is _optional_. **Default** settings for the fluxsite tests will be used if it is not present
+
+```yaml
+fluxsite:
+  experiment: AU-How
+  pbs:
+    ncpus: 18
+    mem: 30GB
+    walltime: 06:00:00
+    storage: [scratch/a00, gdata/xy11]
+  multiprocess: True
+```
+
+### [experiment](#experiment)
+
+: **Default:** `forty-two-site-test`, _optional key_. :octicons-dash-24: Type of fluxsite experiment to run. Experiments are defined in the **benchcab-evaluation** workspace on [modelevaluation.org][meorg]. This key specifies the met forcing files used in the test suite. To choose from:
 
 : | Key value | Experiment description |
 |-----------|------------------------|
@@ -69,24 +85,9 @@ modules: [
 | `US-Whs` | Run simulations at the Walnut Gulch Lucky Hills Shrub (US) site |
 
 ```yaml
-
-experiment: "AU-How"
-
-```
-
-## fluxsite
-Contains settings specific to fluxsite tests.
-
-This key is _optional_. **Default** settings for the fluxsite tests will be used if it is not present
-
-```yaml
 fluxsite:
-  pbs:
-    ncpus: 18
-    mem: 30GB
-    walltime: 06:00:00
-    storage: [scratch/a00, gdata/xy11]
-  multiprocess: True
+  experiment: AU-How
+
 ```
 
 ### [pbs](#pbs)
