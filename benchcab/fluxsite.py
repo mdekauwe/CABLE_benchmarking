@@ -93,7 +93,6 @@ class CableError(Exception):
 class Task:
     """A class used to represent a single fluxsite task."""
 
-    root_dir: Path = internal.CWD
     subprocess_handler: SubprocessWrapperInterface = SubprocessWrapper()
 
     def __init__(
@@ -147,10 +146,7 @@ class Task:
         self.fetch_files(verbose=verbose)
 
         nml_path = (
-            self.root_dir
-            / internal.FLUXSITE_DIRS["TASKS"]
-            / self.get_task_name()
-            / internal.CABLE_NML
+            internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name() / internal.CABLE_NML
         )
 
         if verbose:
@@ -162,25 +158,26 @@ class Task:
                     "filename": {
                         "met": str(internal.MET_DIR / self.met_forcing_file),
                         "out": str(
-                            self.root_dir
-                            / internal.FLUXSITE_DIRS["OUTPUT"]
-                            / self.get_output_filename()
+                            (
+                                internal.FLUXSITE_DIRS["OUTPUT"]
+                                / self.get_output_filename()
+                            ).absolute()
                         ),
                         "log": str(
-                            self.root_dir
-                            / internal.FLUXSITE_DIRS["LOG"]
-                            / self.get_log_filename()
+                            (
+                                internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
+                            ).absolute()
                         ),
                         "restart_out": " ",
-                        "type": str(self.root_dir / internal.GRID_FILE),
+                        "type": str(internal.GRID_FILE.absolute()),
                     },
                     "output": {
                         "restart": False,
                     },
                     "fixedCO2": internal.CABLE_FIXED_CO2_CONC,
                     "casafile": {
-                        "phen": str(self.root_dir / internal.PHEN_FILE),
-                        "cnpbiome": str(self.root_dir / internal.CNPBIOME_FILE),
+                        "phen": str(internal.PHEN_FILE.absolute()),
+                        "cnpbiome": str(internal.CNPBIOME_FILE.absolute()),
                     },
                     "spinup": False,
                 }
@@ -210,9 +207,7 @@ class Task:
         if verbose:
             print("  Cleaning task")
 
-        task_dir = (
-            self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
-        )
+        task_dir = internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
 
         cable_exe = task_dir / internal.CABLE_EXE
         if cable_exe.exists():
@@ -230,17 +225,11 @@ class Task:
         if cable_soil_nml.exists():
             cable_soil_nml.unlink()
 
-        output_file = (
-            self.root_dir
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / self.get_output_filename()
-        )
+        output_file = internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
         if output_file.exists():
             output_file.unlink()
 
-        log_file = (
-            self.root_dir / internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
-        )
+        log_file = internal.FLUXSITE_DIRS["LOG"] / self.get_log_filename()
         if log_file.exists():
             log_file.unlink()
 
@@ -253,19 +242,14 @@ class Task:
         - copies contents of 'namelists' directory to 'runs/fluxsite/tasks/<task_name>' directory.
         - copies cable executable from source to 'runs/fluxsite/tasks/<task_name>' directory.
         """
-        task_dir = (
-            self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
-        )
+        task_dir = internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name()
 
         if verbose:
             print(
-                f"  Copying namelist files from {self.root_dir / internal.NAMELIST_DIR} "
-                f"to {task_dir}"
+                f"  Copying namelist files from {internal.NAMELIST_DIR} to {task_dir}"
             )
 
-        shutil.copytree(
-            self.root_dir / internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True
-        )
+        shutil.copytree(internal.NAMELIST_DIR, task_dir, dirs_exist_ok=True)
 
         exe_src = self.model.get_exe_path()
         exe_dest = task_dir / internal.CABLE_EXE
@@ -280,7 +264,7 @@ class Task:
     def run(self, verbose=False):
         """Runs a single fluxsite task."""
         task_name = self.get_task_name()
-        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / task_name
+        task_dir = internal.FLUXSITE_DIRS["TASKS"] / task_name
         if verbose:
             print(
                 f"Running task {task_name}... CABLE standard output "
@@ -303,14 +287,14 @@ class Task:
         Raises `CableError` when CABLE returns a non-zero exit code.
         """
         task_name = self.get_task_name()
-        task_dir = self.root_dir / internal.FLUXSITE_DIRS["TASKS"] / task_name
+        task_dir = internal.FLUXSITE_DIRS["TASKS"] / task_name
         stdout_path = task_dir / internal.CABLE_STDOUT_FILENAME
 
         try:
             with chdir(task_dir):
                 self.subprocess_handler.run_cmd(
                     f"./{internal.CABLE_EXE} {internal.CABLE_NML}",
-                    output_file=stdout_path,
+                    output_file=stdout_path.relative_to(task_dir),
                     verbose=verbose,
                 )
         except CalledProcessError as exc:
@@ -323,16 +307,9 @@ class Task:
         Attributes include branch url, branch revision number and key value pairs in
         the namelist file used to run cable.
         """
-        nc_output_path = (
-            self.root_dir
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / self.get_output_filename()
-        )
+        nc_output_path = internal.FLUXSITE_DIRS["OUTPUT"] / self.get_output_filename()
         nml = f90nml.read(
-            self.root_dir
-            / internal.FLUXSITE_DIRS["TASKS"]
-            / self.get_task_name()
-            / internal.CABLE_NML
+            internal.FLUXSITE_DIRS["TASKS"] / self.get_task_name() / internal.CABLE_NML
         )
         if verbose:
             print(f"Adding attributes to output file: {nc_output_path}")
@@ -389,16 +366,14 @@ def run_tasks_in_parallel(
         pool.map(run_task, tasks, chunksize=1)
 
 
-def get_fluxsite_comparisons(
-    tasks: list[Task], root_dir=internal.CWD
-) -> list[ComparisonTask]:
+def get_fluxsite_comparisons(tasks: list[Task]) -> list[ComparisonTask]:
     """Returns a list of `ComparisonTask` objects to run comparisons with.
 
     Pairs should be matching in science configurations and meteorological
     forcing, but differ in realisations. When multiple realisations are
     specified, return all pair wise combinations between all realisations.
     """
-    output_dir = root_dir / internal.FLUXSITE_DIRS["OUTPUT"]
+    output_dir = internal.FLUXSITE_DIRS["OUTPUT"]
     return [
         ComparisonTask(
             files=(

@@ -34,7 +34,7 @@ def copy2(src: Path, dest: Path, verbose=False):
     shutil.copy2(src, dest)
 
 
-def next_path(path: Path, path_pattern: str, sep: str = "-"):
+def next_path(path_pattern: str, path: Path = Path(), sep: str = "-") -> Path:
     """Finds the next free path in a sequentially named list of
     files with the following pattern in the `path` directory:
 
@@ -54,7 +54,7 @@ def next_path(path: Path, path_pattern: str, sep: str = "-"):
         common_filename, last_file_index = pattern_files_sorted[-1].stem.split(sep)
         new_file_index = int(last_file_index) + 1
 
-    return f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}"
+    return Path(f"{common_filename}{sep}{new_file_index}{loc_pattern.suffix}")
 
 
 def mkdir(new_path: Path, verbose=False, **kwargs):

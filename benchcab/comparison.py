@@ -16,7 +16,6 @@ from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterf
 class ComparisonTask:
     """A class used to represent a single bitwise comparison task."""
 
-    root_dir: Path = internal.CWD
     subprocess_handler: SubprocessWrapperInterface = SubprocessWrapper()
 
     def __init__(
@@ -42,9 +41,7 @@ class ComparisonTask:
             print(f"Success: files {file_a.name} {file_b.name} are identical")
         except CalledProcessError as exc:
             output_file = (
-                self.root_dir
-                / internal.FLUXSITE_DIRS["BITWISE_CMP"]
-                / f"{self.task_name}.txt"
+                internal.FLUXSITE_DIRS["BITWISE_CMP"] / f"{self.task_name}.txt"
             )
             with output_file.open("w", encoding="utf-8") as file:
                 file.write(exc.stdout)

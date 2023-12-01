@@ -33,7 +33,6 @@ from benchcab.workdir import setup_fluxsite_directory_tree
 class Benchcab:
     """A class that represents the `benchcab` application."""
 
-    root_dir: Path = internal.CWD
     subprocess_handler: SubprocessWrapperInterface = SubprocessWrapper()
     modules_handler: EnvironmentModulesInterface = EnvironmentModules()
 
@@ -143,10 +142,10 @@ class Benchcab:
             msg = "Path to benchcab executable is undefined."
             raise RuntimeError(msg)
 
-        job_script_path = self.root_dir / internal.QSUB_FNAME
+        job_script_path = Path(internal.QSUB_FNAME)
         print(
             "Creating PBS job script to run fluxsite tasks on compute "
-            f"nodes: {job_script_path.relative_to(self.root_dir)}"
+            f"nodes: {job_script_path}"
         )
         with job_script_path.open("w", encoding="utf-8") as file:
             contents = render_job_script(
@@ -202,12 +201,8 @@ class Benchcab:
         )
         cable_aux_repo.checkout(verbose=verbose)
 
-        rev_number_log_path = self.root_dir / next_path(
-            self.root_dir, "rev_number-*.log"
-        )
-        print(
-            f"Writing revision number info to {rev_number_log_path.relative_to(self.root_dir)}"
-        )
+        rev_number_log_path = next_path("rev_number-*.log")
+        print(f"Writing revision number info to {rev_number_log_path}")
         with rev_number_log_path.open("w", encoding="utf-8") as file:
             file.write(rev_number_log)
 
