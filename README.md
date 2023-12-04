@@ -2,8 +2,9 @@
 
 [![Documentation status][readthedocs_badge]][docs] [![Test coverage][codecov_badge]][codecov_summary] [![Conda package status][conda_badge]][conda] [![GitHub License][license_badge]][license]
 
-
+<!-- --8<-- [start:contents] -->
 `benchcab` is a testing framework that tests the CABLE land surface model across a range of model configurations and model versions. The tool:
+
 - checks out the model versions specified by the user
 - builds the required executables
 - runs each model version across N standard science configurations
@@ -13,9 +14,13 @@ The user can then pipe the model outputs into a benchmark analysis via [modeleva
 
 The full documentation is available at [benchcab.readthedocs.io][docs].
 
+## License
+
+`benchcab` is distributed under [an Apache License v2.0][apache-license].
+
 ## Acknowledgements
 
-- `benchcab` is a continuation of the efforts made by Martin De Kauwe ([@mdekauwe](https://github.com/mdekauwe)) and Gab Abramowitz ([@gabsun](https://github.com/gabsun)) in developing a CABLE benchmarking framework - we thank them for their contribution.
+`benchcab` is a continuation of the efforts made by Martin De Kauwe ([@mdekauwe](https://github.com/mdekauwe)) and Gab Abramowitz ([@gabsun](https://github.com/gabsun)) in developing a CABLE benchmarking framework - we thank them for their contribution.
 
 [conda_badge]: https://img.shields.io/conda/v/accessnri/benchcab
 [codecov_badge]: https://codecov.io/gh/CABLE-LSM/benchcab/branch/main/graph/badge.svg?token=JJYE1YZDXQ
@@ -26,3 +31,5 @@ The full documentation is available at [benchcab.readthedocs.io][docs].
 [docs]: https://benchcab.readthedocs.io
 [license]: https://github.com/CABLE-LSM/benchcab/blob/main/LICENSE
 [meorg]: https://modelevaluation.org
+[apache-license]: https://www.apache.org/licenses/LICENSE-2.0
+<!-- --8<-- [end:contents] -->
