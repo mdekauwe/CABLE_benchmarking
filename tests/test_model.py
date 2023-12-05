@@ -42,12 +42,9 @@ def mock_repo():
 
 
 @pytest.fixture()
-def model(
-    mock_repo, mock_cwd, mock_subprocess_handler, mock_environment_modules_handler
-):
+def model(mock_repo, mock_subprocess_handler, mock_environment_modules_handler):
     """Return a mock `Model` instance for testing against."""
     _model = Model(repo=mock_repo)
-    _model.root_dir = mock_cwd
     _model.subprocess_handler = mock_subprocess_handler
     _model.modules_handler = mock_environment_modules_handler
     return _model
@@ -74,11 +71,11 @@ class TestModelID:
 class TestGetExePath:
     """Tests for `Model.get_exe_path()`."""
 
-    def test_serial_exe_path(self, model, mock_cwd):
+    def test_serial_exe_path(self, model):
         """Success case: get path to serial executable."""
         assert (
             model.get_exe_path()
-            == mock_cwd / internal.SRC_DIR / model.name / "offline" / internal.CABLE_EXE
+            == internal.SRC_DIR / model.name / "offline" / internal.CABLE_EXE
         )
 
 
@@ -90,22 +87,22 @@ class TestGetExePath:
 class TestCheckout:
     """Tests for `Model.checkout()`."""
 
-    def test_checkout_command_execution(self, model, mock_cwd, mock_subprocess_handler):
+    def test_checkout_command_execution(self, model, mock_subprocess_handler):
         """Success case: `svn checkout` command is executed."""
         model.checkout()
         assert (
-            f"svn checkout https://trac.nci.org.au/svn/cable/trunk {mock_cwd}/src/trunk"
+            "svn checkout https://trac.nci.org.au/svn/cable/trunk src/trunk"
             in mock_subprocess_handler.commands
         )
 
     def test_checkout_command_execution_with_revision_number(
-        self, model, mock_cwd, mock_subprocess_handler
+        self, model, mock_subprocess_handler
     ):
         """Success case: `svn checkout` command is executed with specified revision number."""
         model.revision = 9000
         model.checkout()
         assert (
-            f"svn checkout -r 9000 https://trac.nci.org.au/svn/cable/trunk {mock_cwd}/src/trunk"
+            "svn checkout -r 9000 https://trac.nci.org.au/svn/cable/trunk src/trunk"
             in mock_subprocess_handler.commands
         )
 
@@ -131,13 +128,13 @@ class TestCheckout:
 class TestSVNInfoShowItem:
     """Tests for `Model.svn_info_show_item()`."""
 
-    def test_svn_info_command_execution(self, model, mock_subprocess_handler, mock_cwd):
+    def test_svn_info_command_execution(self, model, mock_subprocess_handler):
         """Success case: call svn info command and get result."""
         assert (
             model.svn_info_show_item("some-mock-item") == mock_subprocess_handler.stdout
         )
         assert (
-            f"svn info --show-item some-mock-item {mock_cwd}/src/trunk"
+            "svn info --show-item some-mock-item src/trunk"
             in mock_subprocess_handler.commands
         )
 
@@ -350,11 +347,6 @@ class TestCustomBuild:
             "module unload " + " ".join(modules)
         ) in mock_environment_modules_handler.commands
 
-    # TODO(Sean) fix for issue https://github.com/CABLE-LSM/benchcab/issues/162
-    @pytest.mark.skip(
-        reason="""This will always fail since `parametrize()` parameters are
-        dependent on the `mock_cwd` fixture."""
-    )
     @pytest.mark.parametrize(
         ("verbosity", "expected"),
         [
@@ -380,9 +372,9 @@ class TestCustomBuild:
             model.custom_build(modules, verbose=verbosity)
         assert buf.getvalue() == expected
 
-    def test_file_not_found_exception(self, model, build_script, modules, mock_cwd):
+    def test_file_not_found_exception(self, model, build_script, modules):
         """Failure case: cannot find custom build script."""
-        build_script_path = mock_cwd / internal.SRC_DIR / model.name / build_script
+        build_script_path = internal.SRC_DIR / model.name / build_script
         build_script_path.unlink()
         model.build_script = str(build_script)
         with pytest.raises(

@@ -20,7 +20,6 @@ from benchcab.utils.subprocess import SubprocessWrapper, SubprocessWrapperInterf
 class Model:
     """A class used to represent a CABLE model version."""
 
-    root_dir: Path = internal.CWD
     subprocess_handler: SubprocessWrapperInterface = SubprocessWrapper()
     modules_handler: EnvironmentModulesInterface = EnvironmentModules()
 
@@ -61,19 +60,12 @@ class Model:
     def get_exe_path(self) -> Path:
         """Return the path to the built executable."""
         return (
-            self.root_dir
-            / internal.SRC_DIR
-            / self.name
-            / self.src_dir
-            / "offline"
-            / internal.CABLE_EXE
+            internal.SRC_DIR / self.name / self.src_dir / "offline" / internal.CABLE_EXE
         )
 
     def custom_build(self, modules: list[str], verbose=False):
         """Build CABLE using a custom build script."""
-        build_script_path = (
-            self.root_dir / internal.SRC_DIR / self.name / self.build_script
-        )
+        build_script_path = internal.SRC_DIR / self.name / self.build_script
 
         if not build_script_path.is_file():
             msg = (
@@ -110,50 +102,40 @@ class Model:
 
     def pre_build(self, verbose=False):
         """Runs CABLE pre-build steps."""
-        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
+        path_to_repo = internal.SRC_DIR / self.name
         tmp_dir = path_to_repo / self.src_dir / "offline" / ".tmp"
         if not tmp_dir.exists():
             if verbose:
-                print(f"mkdir {tmp_dir.relative_to(self.root_dir)}")
+                print(f"mkdir {tmp_dir}")
             tmp_dir.mkdir()
 
         for pattern in internal.OFFLINE_SOURCE_FILES:
             for path in (path_to_repo / self.src_dir).glob(pattern):
                 if not path.is_file():
                     continue
-                copy2(
-                    path.relative_to(self.root_dir),
-                    tmp_dir.relative_to(self.root_dir),
-                    verbose=verbose,
-                )
+                copy2(path, tmp_dir, verbose=verbose)
 
         copy2(
-            (path_to_repo / self.src_dir / "offline" / "Makefile").relative_to(
-                self.root_dir
-            ),
-            tmp_dir.relative_to(self.root_dir),
+            path_to_repo / self.src_dir / "offline" / "Makefile",
+            tmp_dir,
             verbose=verbose,
         )
 
         copy2(
-            (path_to_repo / self.src_dir / "offline" / "parallel_cable").relative_to(
-                self.root_dir
-            ),
-            tmp_dir.relative_to(self.root_dir),
+            path_to_repo / self.src_dir / "offline" / "parallel_cable",
+            tmp_dir,
             verbose=verbose,
         )
 
         copy2(
-            (path_to_repo / self.src_dir / "offline" / "serial_cable").relative_to(
-                self.root_dir
-            ),
-            tmp_dir.relative_to(self.root_dir),
+            path_to_repo / self.src_dir / "offline" / "serial_cable",
+            tmp_dir,
             verbose=verbose,
         )
 
     def run_build(self, modules: list[str], verbose=False):
         """Runs CABLE build scripts."""
-        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
+        path_to_repo = internal.SRC_DIR / self.name
         tmp_dir = path_to_repo / self.src_dir / "offline" / ".tmp"
 
         with chdir(tmp_dir), self.modules_handler.load(modules, verbose=verbose):
@@ -177,14 +159,12 @@ class Model:
 
     def post_build(self, verbose=False):
         """Runs CABLE post-build steps."""
-        path_to_repo = self.root_dir / internal.SRC_DIR / self.name
+        path_to_repo = internal.SRC_DIR / self.name
         tmp_dir = path_to_repo / self.src_dir / "offline" / ".tmp"
 
         rename(
-            (tmp_dir / internal.CABLE_EXE).relative_to(self.root_dir),
-            (path_to_repo / self.src_dir / "offline" / internal.CABLE_EXE).relative_to(
-                self.root_dir
-            ),
+            tmp_dir / internal.CABLE_EXE,
+            path_to_repo / self.src_dir / "offline" / internal.CABLE_EXE,
             verbose=verbose,
         )
 

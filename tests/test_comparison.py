@@ -25,18 +25,17 @@ def files():
 
 
 @pytest.fixture()
-def comparison_task(files, mock_cwd, mock_subprocess_handler):
+def comparison_task(files, mock_subprocess_handler):
     """Returns a mock `ComparisonTask` instance for testing against."""
     _comparison_task = ComparisonTask(files=files, task_name=TASK_NAME)
     _comparison_task.subprocess_handler = mock_subprocess_handler
-    _comparison_task.root_dir = mock_cwd
     return _comparison_task
 
 
 class TestRun:
     """Tests for `ComparisonTask.run()`."""
 
-    @pytest.fixture()
+    @pytest.fixture(autouse=True)
     def bitwise_cmp_dir(self):
         """Create and return the fluxsite bitwise comparison directory."""
         internal.FLUXSITE_DIRS["BITWISE_CMP"].mkdir(parents=True)
@@ -78,11 +77,6 @@ class TestRun:
         with stdout_file.open("r", encoding="utf-8") as file:
             assert file.read() == mock_subprocess_handler.stdout
 
-    # TODO(Sean) fix for issue https://github.com/CABLE-LSM/benchcab/issues/162
-    @pytest.mark.skip(
-        reason="""This will always fail since `parametrize()` parameters are
-        dependent on the `mock_cwd` fixture."""
-    )
     @pytest.mark.parametrize(
         ("verbosity", "expected"),
         [
@@ -90,14 +84,14 @@ class TestRun:
                 False,
                 f"Failure: files {FILE_NAME_A} {FILE_NAME_B} differ. Results of "
                 "diff have been written to "
-                f"{internal.FLUXSITE_DIRS['BITWISE_CMP']}/{TASK_NAME}\n",
+                f"{internal.FLUXSITE_DIRS['BITWISE_CMP']}/{TASK_NAME}.txt\n",
             ),
             (
                 True,
                 f"Comparing files {FILE_NAME_A} and {FILE_NAME_B} bitwise...\n"
                 f"Failure: files {FILE_NAME_A} {FILE_NAME_B} differ. Results of "
                 "diff have been written to "
-                f"{internal.FLUXSITE_DIRS['BITWISE_CMP']}/{TASK_NAME}\n",
+                f"{internal.FLUXSITE_DIRS['BITWISE_CMP']}/{TASK_NAME}.txt\n",
             ),
         ],
     )

@@ -48,7 +48,7 @@ def mock_repo():
 
 
 @pytest.fixture()
-def model(mock_cwd, mock_subprocess_handler, mock_repo):
+def model(mock_subprocess_handler, mock_repo):
     """Returns a `Model` instance."""
     _model = Model(
         model_id=1,
@@ -56,12 +56,11 @@ def model(mock_cwd, mock_subprocess_handler, mock_repo):
         patch={"cable": {"some_branch_specific_setting": True}},
     )
     _model.subprocess_handler = mock_subprocess_handler
-    _model.root_dir = mock_cwd
     return _model
 
 
 @pytest.fixture()
-def task(model, mock_cwd, mock_subprocess_handler):
+def task(model, mock_subprocess_handler):
     """Returns a mock `Task` instance."""
     _task = Task(
         model=model,
@@ -70,7 +69,6 @@ def task(model, mock_cwd, mock_subprocess_handler):
         sci_config={"cable": {"some_setting": True}},
     )
     _task.subprocess_handler = mock_subprocess_handler
-    _task.root_dir = mock_cwd
     return _task
 
 
@@ -260,7 +258,7 @@ class TestSetupTask:
         exe_build_dir.mkdir(parents=True)
         (exe_build_dir / internal.CABLE_EXE).touch()
 
-    def test_all_settings_are_patched_into_namelist_file(self, task, mock_cwd):
+    def test_all_settings_are_patched_into_namelist_file(self, task):
         """Success case: test all settings are patched into task namelist file."""
         task.setup_task()
         task_dir = internal.FLUXSITE_DIRS["TASKS"] / task.get_task_name()
@@ -269,32 +267,27 @@ class TestSetupTask:
             "filename": {
                 "met": str(internal.MET_DIR / "forcing-file.nc"),
                 "out": str(
-                    mock_cwd
-                    / internal.FLUXSITE_DIRS["OUTPUT"]
-                    / task.get_output_filename()
+                    (
+                        internal.FLUXSITE_DIRS["OUTPUT"] / task.get_output_filename()
+                    ).absolute()
                 ),
                 "log": str(
-                    mock_cwd / internal.FLUXSITE_DIRS["LOG"] / task.get_log_filename()
+                    (internal.FLUXSITE_DIRS["LOG"] / task.get_log_filename()).absolute()
                 ),
                 "restart_out": " ",
-                "type": str(mock_cwd / internal.GRID_FILE),
+                "type": str(internal.GRID_FILE.absolute()),
             },
             "output": {"restart": False},
             "fixedco2": internal.CABLE_FIXED_CO2_CONC,
             "casafile": {
-                "phen": str(mock_cwd / internal.PHEN_FILE),
-                "cnpbiome": str(mock_cwd / internal.CNPBIOME_FILE),
+                "phen": str(internal.PHEN_FILE.absolute()),
+                "cnpbiome": str(internal.CNPBIOME_FILE.absolute()),
             },
             "spinup": False,
             "some_setting": True,
             "some_branch_specific_setting": True,
         }
 
-    # TODO(Sean) fix for issue https://github.com/CABLE-LSM/benchcab/issues/162
-    @pytest.mark.skip(
-        reason="""This will always fail since `parametrize()` parameters are
-        dependent on the `mock_cwd` fixture."""
-    )
     @pytest.mark.parametrize(
         ("verbosity", "expected"),
         [
@@ -406,11 +399,6 @@ class TestAddProvenanceInfo:
             assert atts[r"filename%foo"] == nml["cable"]["filename"]["foo"]
             assert atts[r"bar"] == ".true."
 
-    # TODO(Sean) fix for issue https://github.com/CABLE-LSM/benchcab/issues/162
-    @pytest.mark.skip(
-        reason="""This will always fail since `parametrize()` parameters are
-        dependent on the `mock_cwd` fixture."""
-    )
     @pytest.mark.parametrize(
         ("verbosity", "expected"),
         [
@@ -476,7 +464,7 @@ class TestGetFluxsiteTasks:
 class TestGetFluxsiteComparisons:
     """Tests for `get_fluxsite_comparisons()`."""
 
-    def test_comparisons_for_two_branches_with_two_tasks(self, mock_cwd, mock_repo):
+    def test_comparisons_for_two_branches_with_two_tasks(self, mock_repo):
         """Success case: comparisons for two branches with two tasks."""
         tasks = [
             Task(
@@ -487,23 +475,19 @@ class TestGetFluxsiteComparisons:
             )
             for model_id in range(2)
         ]
-        comparisons = get_fluxsite_comparisons(tasks, root_dir=mock_cwd)
+        comparisons = get_fluxsite_comparisons(tasks)
         n_models, n_science_configurations, n_met_forcings = 2, 1, 1
         assert (
             len(comparisons)
             == math.comb(n_models, 2) * n_science_configurations * n_met_forcings
         )
         assert comparisons[0].files == (
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[0].get_output_filename(),
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[1].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[0].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[1].get_output_filename(),
         )
         assert comparisons[0].task_name == "foo_S0_R0_R1"
 
-    def test_comparisons_for_three_branches_with_three_tasks(self, mock_cwd, mock_repo):
+    def test_comparisons_for_three_branches_with_three_tasks(self, mock_repo):
         """Success case: comparisons for three branches with three tasks."""
         tasks = [
             Task(
@@ -514,35 +498,23 @@ class TestGetFluxsiteComparisons:
             )
             for model_id in range(3)
         ]
-        comparisons = get_fluxsite_comparisons(tasks, root_dir=mock_cwd)
+        comparisons = get_fluxsite_comparisons(tasks)
         n_models, n_science_configurations, n_met_forcings = 3, 1, 1
         assert (
             len(comparisons)
             == math.comb(n_models, 2) * n_science_configurations * n_met_forcings
         )
         assert comparisons[0].files == (
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[0].get_output_filename(),
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[1].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[0].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[1].get_output_filename(),
         )
         assert comparisons[1].files == (
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[0].get_output_filename(),
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[2].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[0].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[2].get_output_filename(),
         )
         assert comparisons[2].files == (
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[1].get_output_filename(),
-            mock_cwd
-            / internal.FLUXSITE_DIRS["OUTPUT"]
-            / tasks[2].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[1].get_output_filename(),
+            internal.FLUXSITE_DIRS["OUTPUT"] / tasks[2].get_output_filename(),
         )
         assert comparisons[0].task_name == "foo_S0_R0_R1"
         assert comparisons[1].task_name == "foo_S0_R0_R2"

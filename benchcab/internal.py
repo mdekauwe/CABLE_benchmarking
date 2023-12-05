@@ -61,7 +61,8 @@ CNPBIOME_FILE = (
 )
 
 # Fluxsite directory tree
-FLUXSITE_DIRS = {}
+FLUXSITE_DIRS: dict[str, Path] = {}
+
 # Relative path to root directory for CABLE fluxsite runs
 FLUXSITE_DIRS["RUN"] = RUN_DIR / "fluxsite"
 
