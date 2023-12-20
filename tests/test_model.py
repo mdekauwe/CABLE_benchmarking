@@ -140,8 +140,6 @@ class TestPreBuild:
         """Setup precondition for `Model.pre_build()`."""
         (internal.SRC_DIR / model.name / "offline").mkdir(parents=True)
         (internal.SRC_DIR / model.name / "offline" / "Makefile").touch()
-        (internal.SRC_DIR / model.name / "offline" / "parallel_cable").touch()
-        (internal.SRC_DIR / model.name / "offline" / "serial_cable").touch()
         (internal.SRC_DIR / model.name / "offline" / "foo.f90").touch()
 
     def test_source_files_and_scripts_are_copied_to_tmp_dir(self, model):
@@ -149,8 +147,6 @@ class TestPreBuild:
         model.pre_build()
         tmp_dir = internal.SRC_DIR / model.name / "offline" / ".tmp"
         assert (tmp_dir / "Makefile").exists()
-        assert (tmp_dir / "parallel_cable").exists()
-        assert (tmp_dir / "serial_cable").exists()
         assert (tmp_dir / "foo.f90").exists()
 
 
@@ -184,21 +180,14 @@ class TestRunBuild:
         """Setup precondition for `Model.run_build()`."""
         (internal.SRC_DIR / model.name / "offline" / ".tmp").mkdir(parents=True)
 
-        # This is required so that we can use the NETCDF_ROOT environment variable
-        # when running `make`, and `serial_cable` and `parallel_cable` scripts:
+        # This is required so that we can use the NETCDF_ROOT environment
+        # variable when running `make`:
         os.environ["NETCDF_ROOT"] = netcdf_root
 
-    def test_build_command_execution(
-        self, model, mock_subprocess_handler, modules, netcdf_root
-    ):
+    def test_build_command_execution(self, model, mock_subprocess_handler, modules):
         """Success case: test build commands are run."""
         model.run_build(modules)
-        assert mock_subprocess_handler.commands == [
-            "make -f Makefile",
-            './serial_cable "ifort" "-O2 -fp-model precise"'
-            f' "-L{netcdf_root}/lib/Intel -O0" "-lnetcdf -lnetcdff" '
-            f'"{netcdf_root}/include/Intel"',
-        ]
+        assert mock_subprocess_handler.commands == ["make"]
 
     def test_modules_loaded_at_runtime(
         self, model, mock_environment_modules_handler, modules
