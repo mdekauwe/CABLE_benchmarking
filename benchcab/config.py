@@ -66,6 +66,21 @@ def validate_config(config: dict) -> bool:
     # Invalid
     raise ConfigValidationException(v)
 
+def read_optional_data(config: dict):
+
+    config["name"] = config.get("name", Path("."))
+    config["science_configurations"] = config.get("science_configurations", internal.DEFAULT_SCIENCE_CONFIGURATIONS)
+
+    config["fluxsite"] = config.get("fluxsite", {})
+    config["fluxsite"]["experiment"] = config["fluxsite"].get("experiment", internal.FLUXSITE_DEFAULT_EXPERIMENT)
+    config["fluxsite"]["pbs"] = config["fluxsite"].get("pbs", {})
+
+    pbs_config = config["fluxsite"]["pbs"]
+    pbs_config_params = ["mem", "ncpus", "storage", "walltime"]
+    for pcp in pbs_config_params:
+        pbs_config[pcp] = pbs_config.get(pcp, internal.FLUXSITE_DEFAULT_PBS[pcp])
+
+    pbs_config["multiprocess"] = internal.FLUXSITE_DEFAULT_MULTIPROCESS
 
 def read_config(config_path: str) -> dict:
     """Reads the config file and returns a dictionary containing the configurations.
@@ -89,6 +104,8 @@ def read_config(config_path: str) -> dict:
     # Load the configuration file.
     with open(Path(config_path), "r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
+
+    read_optional_data(config)
 
     # Validate and return.
     validate_config(config)
